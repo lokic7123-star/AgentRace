@@ -1,4 +1,4 @@
-﻿# AgentRace (arace) 2.0
+# AgentRace (arace) 2.0
 
 > **主 Agent 智能编排分工 + 专精子 Agent 协同 + 硬性客观质量门禁引擎**
 > 基于物理级 Git 工作树隔离、黑盒 QA 契约盲测、AST 防作弊审查与全量终极物理门禁，让多个本地 AI Agent（Antigravity/Gemini、OpenCode、Reasonix、OpenClaw、DSH、Claude、Codex）在严苛质量护栏下可靠协同交付。数据 100% 留在本地。
@@ -11,40 +11,40 @@ AgentRace 坚守 **"不信自我汇报，只信物理验证"（Zero-Trust Self-R
 
 ```mermaid
 flowchart TD
-    User([👤 开发者输入总体任务需求]) --> Supervisor[👑 主协调 Agent (Supervisor / Architect)]
+    User(["👤 开发者输入总体任务需求"]) --> Supervisor["👑 主协调 Agent (Supervisor / Architect)"]
     
-    subgraph S1 [第一阶段：智能拆解与依赖编排]
-        Supervisor --> Decompose[1. 需求分析与 DAG 拓扑拆解]
-        Decompose --> TaskList[2. 结构化子任务清单 & 专精角色分配]
+    subgraph S1 ["第一阶段：智能拆解与依赖编排"]
+        Supervisor --> Decompose["1. 需求分析与 DAG 拓扑拆解"]
+        Decompose --> TaskList["2. 结构化子任务清单 & 专精角色分配"]
     end
     
-    subgraph S2 [第二阶段：专精子 Agent 隔离执行与黑盒 QA]
-        TaskList --> Sub1[👷 核心模块 Agent (如 OpenCode / Gemini)]
-        TaskList --> Sub2[🎨 算法/逻辑 Agent (如 Reasonix / DSH)]
-        TaskList --> Sub3[🧪 黑盒 QA 测试 Agent (独立编写盲测断言)]
+    subgraph S2 ["第二阶段：专精子 Agent 隔离执行与黑盒 QA"]
+        TaskList --> Sub1["👷 核心模块 Agent (如 OpenCode / Gemini)"]
+        TaskList --> Sub2["🎨 算法/逻辑 Agent (如 Reasonix / DSH)"]
+        TaskList --> Sub3["🧪 黑盒 QA 测试 Agent (独立编写盲测断言)"]
         
-        Sub1 --> WT1[(Git Worktree 1)]
-        Sub2 --> WT2[(Git Worktree 2)]
-        Sub3 --> WT3[(Git Worktree 3)]
+        Sub1 --> WT1[("Git Worktree 1")]
+        Sub2 --> WT2[("Git Worktree 2")]
+        Sub3 --> WT3[("Git Worktree 3")]
     end
     
-    subgraph S3 [第三阶段：硬性客观质量门禁 (Hard Gates)]
-        WT1 --> Gate1{Build / Lint / Tests\n+ AST 防作弊 + 熔断器}
-        WT2 --> Gate2{Build / Lint / Tests\n+ AST 防作弊 + 熔断器}
-        WT3 --> Gate3{Build / Lint / Tests\n+ AST 防作弊 + 熔断器}
+    subgraph S3 ["第三阶段：硬性客观质量门禁 (Hard Gates)"]
+        WT1 --> Gate1{"Build / Lint / Tests<br>+ AST 防作弊 + 熔断器"}
+        WT2 --> Gate2{"Build / Lint / Tests<br>+ AST 防作弊 + 熔断器"}
+        WT3 --> Gate3{"Build / Lint / Tests<br>+ AST 防作弊 + 熔断器"}
         
-        Gate1 -- 失败重试 (<=3次) --> Sub1
-        Gate2 -- 失败重试 (<=3次) --> Sub2
-        Gate3 -- 失败重试 (<=3次) --> Sub3
+        Gate1 -- "失败重试 (最多3次)" --> Sub1
+        Gate2 -- "失败重试 (最多3次)" --> Sub2
+        Gate3 -- "失败重试 (最多3次)" --> Sub3
     end
     
-    subgraph S4 [第四阶段：主 Agent 架构级集成与终极全量门禁]
-        Gate1 -- 100% PASS --> SupervisorReview[👑 主 Agent 架构集成 & 冲突消解]
-        Gate2 -- 100% PASS --> SupervisorReview
-        Gate3 -- 100% PASS --> SupervisorReview
-        SupervisorReview --> FinalGate{终极全量物理门禁\nFull Regression Suite}
-        FinalGate -- 通过 --> MergeFinal[(VERIFIED_READY 终版交付分支)]
-        FinalGate -- 失败 --> Bisection[二分归因排查 + 靶向修复 / 人工接管]
+    subgraph S4 ["第四阶段：主 Agent 架构级集成与终极全量门禁"]
+        Gate1 -- "100% PASS" --> SupervisorReview["👑 主 Agent 架构集成 & 冲突消解"]
+        Gate2 -- "100% PASS" --> SupervisorReview
+        Gate3 -- "100% PASS" --> SupervisorReview
+        SupervisorReview --> FinalGate{"终极全量物理门禁<br>Full Regression Suite"}
+        FinalGate -- "通过" --> MergeFinal[("VERIFIED_READY 终版交付分支")]
+        FinalGate -- "失败" --> Bisection["二分归因排查 + 靶向修复 / 人工接管"]
     end
 ```
 
