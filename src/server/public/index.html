@@ -74,7 +74,7 @@
     <div class="flex items-center gap-3">
       <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-emerald-500/30 transition cursor-pointer">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="detected-count-text">4 个 Agent 本地已就绪</span>
+        <span id="detected-count-text">1 个运行中 · 3 个按需拉起</span>
       </button>
     </div>
   </header>
@@ -100,10 +100,10 @@
             <span>👑</span> 主协调 Agent:
           </label>
           <select id="quick-judge-select" class="bg-slate-800 text-slate-100 text-sm font-semibold border border-purple-500/60 rounded-xl px-4 py-2 min-w-[240px] focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer shadow-md">
-            <option value="antigravity">🟢 Google Antigravity / Gemini (已就绪)</option>
-            <option value="opencode">🟢 OpenCode Assistant (已就绪)</option>
-            <option value="openclaw">🟢 OpenClaw Agent (已就绪)</option>
-            <option value="reasonix">🟢 Reasonix AI Agent (已就绪)</option>
+            <option value="antigravity">🟢 Google Antigravity / Gemini (进程运行中)</option>
+            <option value="opencode">🔵 OpenCode Assistant (发起时按需拉起)</option>
+            <option value="openclaw">🔵 OpenClaw Agent (发起时按需拉起)</option>
+            <option value="reasonix">🔵 Reasonix AI Agent (发起时按需拉起)</option>
           </select>
         </div>
         <button onclick="triggerQuickBlend()" id="btn-quick-blend" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5 cursor-pointer">
@@ -127,7 +127,7 @@
             <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，自由选择本次要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
           </div>
           <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            ● 4 个本地 Agent 已就绪
+            ● 1 个运行中 · 3 个按需拉起
           </span>
         </div>
 
@@ -141,47 +141,47 @@
         <div class="space-y-2.5">
           <label class="block text-xs font-bold text-slate-300">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/95 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
               <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-emerald-500">
               <div class="truncate">
                 <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
                   Google Antigravity
                 </div>
-                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+                <div class="text-[10px] text-emerald-400 font-semibold truncate">🟢 进程在后台运行中</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-              <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-emerald-500">
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/80 border-blue-500/40 shadow-sm cursor-pointer hover:border-blue-400 transition">
+              <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-blue-500">
               <div class="truncate">
                 <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                   OpenCode
                 </div>
-                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+                <div class="text-[10px] text-blue-300 font-medium truncate">🔵 本地已安装 (发起时自动拉起)</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-              <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-emerald-500">
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/80 border-blue-500/40 shadow-sm cursor-pointer hover:border-blue-400 transition">
+              <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-blue-500">
               <div class="truncate">
                 <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                   OpenClaw
                 </div>
-                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+                <div class="text-[10px] text-blue-300 font-medium truncate">🔵 本地已安装 (发起时自动拉起)</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-              <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-emerald-500">
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/80 border-blue-500/40 shadow-sm cursor-pointer hover:border-blue-400 transition">
+              <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-blue-500">
               <div class="truncate">
                 <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
                   Reasonix
                 </div>
-                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+                <div class="text-[10px] text-blue-300 font-medium truncate">🔵 本地已安装 (发起时自动拉起)</div>
               </div>
             </label>
           </div>
@@ -253,10 +253,10 @@
             <div class="flex items-center gap-2">
               <label for="studio-judge-select" class="text-xs font-semibold text-purple-200">主统筹 Agent:</label>
               <select id="studio-judge-select" class="bg-slate-800 border border-purple-500/60 text-slate-100 text-sm font-semibold rounded-xl px-4 py-2 min-w-[240px] focus:outline-none cursor-pointer shadow-md">
-                <option value="antigravity">🟢 Google Antigravity / Gemini (已就绪)</option>
-                <option value="opencode">🟢 OpenCode Assistant (已就绪)</option>
-                <option value="openclaw">🟢 OpenClaw Agent (已就绪)</option>
-                <option value="reasonix">🟢 Reasonix AI Agent (已就绪)</option>
+                <option value="antigravity">🟢 Google Antigravity / Gemini (进程运行中)</option>
+                <option value="opencode">🔵 OpenCode Assistant (发起时按需拉起)</option>
+                <option value="openclaw">🔵 OpenClaw Agent (发起时按需拉起)</option>
+                <option value="reasonix">🔵 Reasonix AI Agent (发起时按需拉起)</option>
               </select>
             </div>
           </div>
@@ -303,60 +303,60 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detector-agent-grid">
           <!-- Pre-rendered default cards -->
-          <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-xl border bg-slate-900/95 border-emerald-500/80 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
                 <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                   Google Antigravity / Gemini
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ 本地就绪</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 进程运行中 (Active)</span>
               </div>
               <p class="text-xs text-slate-400 leading-relaxed">Google Antigravity IDE & Gemini Autonomous Agent</p>
             </div>
             <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Local\Programs\antigravity\Antigravity.exe</div>
           </div>
 
-          <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-xl border bg-slate-900/80 border-blue-500/50 shadow-md flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
                 <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
                   OpenCode Assistant
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ 本地就绪</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 本地已安装 (按需拉起)</span>
               </div>
               <p class="text-xs text-slate-400 leading-relaxed">OpenCode Local AI Coding Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Local\Programs\@opencode-aidesktop\OpenCode.exe</div>
+            <div class="text-[11px] font-mono text-blue-300 truncate">路径: AppData\Local\Programs\@opencode-aidesktop\OpenCode.exe</div>
           </div>
 
-          <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-xl border bg-slate-900/80 border-blue-500/50 shadow-md flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
                 <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
                   OpenClaw Agent
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ 本地就绪</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 本地已安装 (按需拉起)</span>
               </div>
               <p class="text-xs text-slate-400 leading-relaxed">OpenClaw Autonomous Developer Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-emerald-400 truncate">路径: D:\OpenClawTray\OpenClaw.Tray.WinUI.exe</div>
+            <div class="text-[11px] font-mono text-blue-300 truncate">路径: D:\OpenClawTray\OpenClaw.Tray.WinUI.exe</div>
           </div>
 
-          <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-xl border bg-slate-900/80 border-blue-500/50 shadow-md flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
                 <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
                   Reasonix AI Agent
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ 本地就绪</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 本地已安装 (按需拉起)</span>
               </div>
               <p class="text-xs text-slate-400 leading-relaxed">Reasonix AI Autonomous Reasoning & Coding Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Local\Reasonix</div>
+            <div class="text-[11px] font-mono text-blue-300 truncate">路径: AppData\Local\Reasonix</div>
           </div>
         </div>
       </div>
