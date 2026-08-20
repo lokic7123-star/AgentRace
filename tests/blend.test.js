@@ -25,7 +25,7 @@ test('market agents adapters create valid commands', () => {
 
 test('detectInstalledAgents includes comprehensive market agents list', () => {
   const agents = detectInstalledAgents();
-  assert.ok(agents.length >= 12);
+  assert.ok(agents.length >= 20);
   assert.ok(agents.some(a => a.name === 'dsh'));
   assert.ok(agents.some(a => a.name === 'claude'));
   assert.ok(agents.some(a => a.name === 'codex'));
@@ -33,4 +33,8 @@ test('detectInstalledAgents includes comprehensive market agents list', () => {
   assert.ok(agents.some(a => a.name === 'windsurf'));
   assert.ok(agents.some(a => a.name === 'goose'));
   assert.ok(agents.some(a => a.name === 'cline'));
+  assert.ok(agents.some(a => a.name === 'ollama'));
+  assert.ok(agents.some(a => a.name === 'lmstudio'));
+  assert.ok(agents.some(a => a.name === 'tabnine'));
+  assert.ok(agents.some(a => a.name === 'sgpt'));
 });

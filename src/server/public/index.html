@@ -1316,39 +1316,72 @@
       if (tab === 'activity') renderActivityLog();
     }
 
-    // SSE Connection for live updates
-    const evtSource = new EventSource('/api/events');
-    evtSource.onmessage = (e) => {
-      loadStatus();
-    };
-    // Live agent status push — update detection dots without full-page reload
-    evtSource.addEventListener('agent_status', (e) => {
-      try {
-        const { agents } = JSON.parse(e.data);
-        detectedAgents = agents;
-        renderDetection(agents);
-        populateJudgeSelectors(agents);
-        populateInlineAgentCheckboxes(agents);
-      } catch {}
-    });
-    evtSource.addEventListener('orchestration_progress', (e) => {
-      loadStatus();
-    });
-    evtSource.addEventListener('race_complete', (e) => {
-      loadStatus();
-      loadDetection();
-      loadHistory();
-    });
-    evtSource.addEventListener('task_updated', (e) => {
-      loadStatus();
-      loadHistory();
-    });
-    evtSource.addEventListener('task_switched', (e) => {
-      loadStatus();
-      loadDiffs();
-    });
+    // SSE Connection for live updates with auto-reconnect
+    let evtSource = null;
+    let sseReconnectTimer = null;
 
-    // Initial load: instant detection & status
+    function setupSSE() {
+      if (evtSource) {
+        try { evtSource.close(); } catch {}
+      }
+
+      evtSource = new EventSource('/api/events');
+
+      evtSource.onopen = () => {
+        if (sseReconnectTimer) {
+          clearTimeout(sseReconnectTimer);
+          sseReconnectTimer = null;
+        }
+      };
+
+      evtSource.onmessage = (e) => {
+        loadStatus();
+      };
+
+      // Live agent status push — update detection dots without full-page reload
+      evtSource.addEventListener('agent_status', (e) => {
+        try {
+          const { agents } = JSON.parse(e.data);
+          detectedAgents = agents;
+          renderDetection(agents);
+          populateJudgeSelectors(agents);
+          populateInlineAgentCheckboxes(agents);
+        } catch {}
+      });
+
+      evtSource.addEventListener('orchestration_progress', (e) => {
+        loadStatus();
+      });
+
+      evtSource.addEventListener('race_complete', (e) => {
+        loadStatus();
+        loadDetection();
+        loadHistory();
+      });
+
+      evtSource.addEventListener('task_updated', (e) => {
+        loadStatus();
+        loadHistory();
+      });
+
+      evtSource.addEventListener('task_switched', (e) => {
+        loadStatus();
+        loadDiffs();
+      });
+
+      evtSource.onerror = () => {
+        if (!sseReconnectTimer) {
+          sseReconnectTimer = setTimeout(() => {
+            sseReconnectTimer = null;
+            setupSSE();
+            loadStatus();
+          }, 3000);
+        }
+      };
+    }
+
+    // Initial load: instant detection, status, and SSE setup
+    setupSSE();
     loadDetection();
     loadStatus();
     loadHistory();

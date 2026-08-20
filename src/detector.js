@@ -192,6 +192,56 @@ export const KNOWN_AGENTS = [
     extraPaths: [],
     versionFlag: '--version',
     description: 'Mentat Interactive Coding Agent'
+  },
+  {
+    name: 'ollama',
+    displayName: 'Ollama Local Models',
+    type: 'autonomous_agent',
+    binaries: ['ollama', 'ollama.exe'],
+    extraPaths: [
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Ollama', 'ollama.exe'),
+      '/usr/local/bin/ollama',
+      '/usr/bin/ollama'
+    ],
+    versionFlag: '--version',
+    description: 'Ollama Local LLM Runner & Agent'
+  },
+  {
+    name: 'lmstudio',
+    displayName: 'LM Studio / lms CLI',
+    type: 'autonomous_agent',
+    binaries: ['lms', 'lms.cmd', 'lmstudio', 'lmstudio.cmd'],
+    extraPaths: [
+      path.join(os.homedir(), '.lmstudio', 'bin', 'lms.cmd'),
+      path.join(os.homedir(), 'AppData', 'Local', 'LM-Studio', 'LM Studio.exe'),
+      path.join(os.homedir(), '.cache', 'lm-studio', 'bin', 'lms')
+    ],
+    versionFlag: 'version',
+    description: 'LM Studio Local Headless Inference & Agent CLI'
+  },
+  {
+    name: 'sgpt',
+    displayName: 'Shell-GPT (SGPT)',
+    type: 'autonomous_agent',
+    binaries: ['sgpt', 'sgpt.exe', 'sgpt.cmd'],
+    extraPaths: [
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Python', 'Python311', 'Scripts', 'sgpt.exe'),
+      path.join(os.homedir(), '.local', 'bin', 'sgpt')
+    ],
+    versionFlag: '--version',
+    description: 'Shell-GPT Command-Line Coding Assistant'
+  },
+  {
+    name: 'tabnine',
+    displayName: 'Tabnine Chat / CLI',
+    type: 'autonomous_agent',
+    binaries: ['tabnine', 'tabnine.cmd', 'Tabnine.exe'],
+    extraPaths: [
+      path.join(os.homedir(), 'AppData', 'Roaming', 'TabNine', 'bin'),
+      path.join(os.homedir(), '.tabnine', 'bin')
+    ],
+    versionFlag: '--version',
+    description: 'Tabnine AI Code Completion & Chat Agent'
   }
 ];
 

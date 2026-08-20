@@ -21,10 +21,15 @@ export async function keepCommand(args = []) {
   }
 
   const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
-  const targetAgent = runInfo.agents.find(a => a.name.toLowerCase() === agentName);
+  const targetAgent = runInfo.agents.find(a => 
+    a.name.toLowerCase() === agentName ||
+    (a.id && a.id.toLowerCase() === agentName) ||
+    (a.role && a.role.toLowerCase() === agentName)
+  );
 
   if (!targetAgent) {
-    console.error(c('red', `Error: Agent '${agentName}' was not found in run ${runInfo.runId}. Available: ${runInfo.agents.map(a => a.name).join(', ')}`));
+    const available = runInfo.agents.map(a => a.id ? `${a.name} (${a.id})` : a.name).join(', ');
+    console.error(c('red', `Error: Agent/Subtask '${agentName}' was not found in run ${runInfo.runId}. Available: ${available}`));
     return EXIT_CODES.GENERAL_ERROR;
   }
 

@@ -19,11 +19,16 @@ export async function diffCommand(args = []) {
   const targetAgent = args.find(a => !a.startsWith('-'))?.toLowerCase();
 
   const agentsToDiff = targetAgent
-    ? runInfo.agents.filter(a => a.name.toLowerCase() === targetAgent)
+    ? runInfo.agents.filter(a => 
+        a.name.toLowerCase() === targetAgent ||
+        (a.id && a.id.toLowerCase() === targetAgent) ||
+        (a.role && a.role.toLowerCase() === targetAgent)
+      )
     : runInfo.agents;
 
   if (agentsToDiff.length === 0) {
-    console.error(c('red', `Error: Agent '${targetAgent}' was not part of run ${runInfo.runId}.`));
+    const available = runInfo.agents.map(a => a.id ? `${a.name} (${a.id})` : a.name).join(', ');
+    console.error(c('red', `Error: Agent/Subtask '${targetAgent}' was not part of run ${runInfo.runId}. Available: ${available}`));
     return EXIT_CODES.GENERAL_ERROR;
   }
 

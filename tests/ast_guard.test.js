@@ -25,3 +25,15 @@ test('analyzeTestDiffSecurity passes legitimate tests', () => {
   assert.strictEqual(res.isSuspicious, false);
   assert.strictEqual(res.score, 100);
 });
+
+test('analyzeTestDiffSecurity catches assert.ok(true), assert.equal(1, 1), and test.todo', () => {
+  const diffWithTrivial = `
++  test.todo('future test');
++  assert.ok(true);
++  assert.equal(1, 1);
++  expect(true).toBeTruthy();
+`;
+  const res = analyzeTestDiffSecurity(diffWithTrivial, 'test/fake.test.js');
+  assert.strictEqual(res.isSuspicious, true);
+  assert.ok(res.warnings.length >= 3);
+});
