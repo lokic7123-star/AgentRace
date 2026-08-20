@@ -137,6 +137,19 @@
           <textarea id="inline-task-input" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition shadow-inner font-sans leading-relaxed" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
         </div>
 
+        <!-- Mode Selector -->
+        <div class="flex items-center gap-4 bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 flex-wrap">
+          <span class="text-xs font-bold text-slate-300 shrink-0">⚙️ 协同模式:</span>
+          <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-300 bg-purple-950/40 border border-purple-500/50 px-3.5 py-2 rounded-xl transition">
+            <input type="radio" name="arace-mode" value="orchestration" checked class="accent-purple-500">
+            👑 主 Agent 智能编排分工 (Supervisor 拆解 + 专精执行 + 硬性门禁) [推荐]
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-400 hover:text-slate-200 px-3.5 py-2 rounded-xl transition">
+            <input type="radio" name="arace-mode" value="race" class="accent-emerald-500">
+            🏁 多 Agent 锦标赛竞速 (同题打擂)
+          </label>
+        </div>
+
         <!-- Agent Team Selector Grid (Only locally installed agents) -->
         <div class="space-y-3">
           <div class="flex items-center justify-between flex-wrap gap-2">
@@ -988,12 +1001,24 @@
       const checkedAgents = Array.from(document.querySelectorAll('#inline-agent-selector-grid input[type="checkbox"]:checked')).map(cb => cb.value);
       if (checkedAgents.length === 0) return alert('请至少选择一个参与协同的 Agent');
       
-      await fetch('/api/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, agents: checkedAgents })
-      });
-      alert('已启动多 Agent 任务协同！各个 Agent 正在隔离环境中分工实现与独立验真...');
+      const supervisor = document.getElementById('quick-judge-select')?.value || 'antigravity';
+      const mode = document.querySelector('input[name="arace-mode"]:checked')?.value || 'orchestration';
+
+      if (mode === 'orchestration') {
+        await fetch('/api/orchestrate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task, supervisor, agents: checkedAgents })
+        });
+        alert(`已启动「主 Agent 智能编排分工」！主 Agent「${supervisor.toUpperCase()}」正在拆解子任务并派发给专精团队，各子任务通过硬性客观门禁后将自动整合交付。`);
+      } else {
+        await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task, agents: checkedAgents })
+        });
+        alert('已启动「多 Agent 锦标赛竞速」！各个 Agent 正在隔离环境中完整实现与独立打擂...');
+      }
       loadStatus();
     }
 

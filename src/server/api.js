@@ -11,6 +11,7 @@ import { synthesizeEnsemble } from '../synthesizer.js';
 import { keepCommand } from '../commands/keep.js';
 import { discardCommand } from '../commands/discard.js';
 import { runRace } from '../engine.js';
+import { Supervisor } from '../supervisor.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -297,6 +298,33 @@ export function createServer(repoRoot = process.cwd()) {
         });
 
         jsonResponse(res, 202, { message: 'Race started' });
+        return;
+      }
+
+      if (pathname === '/api/orchestrate') {
+        const { task, supervisor = 'antigravity', agents = ['antigravity', 'opencode', 'reasonix'] } = body;
+        if (!task) {
+          jsonResponse(res, 400, { error: 'Task description is required' });
+          return;
+        }
+
+        const sup = new Supervisor(supervisor, config);
+        broadcastEvent('orchestration_start', { task, supervisor, agents });
+
+        sup.runOrchestration({
+          taskText: task,
+          rootDir: root,
+          availableAgents: agents,
+          onProgress: (p) => {
+            broadcastEvent('orchestration_progress', p);
+          }
+        }).then(result => {
+          broadcastEvent('orchestration_complete', result);
+        }).catch(err => {
+          broadcastEvent('orchestration_error', { error: err.message });
+        });
+
+        jsonResponse(res, 202, { message: 'Supervisor orchestration started' });
         return;
       }
 
