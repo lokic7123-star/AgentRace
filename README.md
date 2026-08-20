@@ -1,6 +1,6 @@
-# AgentRace (`arace`) v0.1 MVP & Antigravity Plugin
+# AgentRace (arace)
 
-> **面向私有代码库的本地多 Agent 并行比拼与客观验真工具。**
+> **面向私有代码库的本地多 Agent 并行比拼与客观验真工具**
 > 在隔离的 Git 工作树（Git Worktree）中并发运行多个 Agent，利用项目自身测试套件串行独占验真，一键合并最佳改动，数据 100% 留在本地。
 
 ---
