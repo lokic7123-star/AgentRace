@@ -6,6 +6,7 @@ import { getRepoRoot, getWorktreeDiff } from '../git.js';
 import { loadProjectConfig } from '../config.js';
 import { getLatestRun, getStats, markAgentKept } from '../db.js';
 import { analyzeTestDiffSecurity } from '../ast_guard.js';
+import { detectInstalledAgents } from '../detector.js';
 import { synthesizeEnsemble } from '../synthesizer.js';
 import { keepCommand } from '../commands/keep.js';
 import { discardCommand } from '../commands/discard.js';
@@ -69,6 +70,12 @@ export function createServer(repoRoot = process.cwd()) {
       }
       const dbRun = getLatestRun(root);
       jsonResponse(res, 200, { activeRun, latestDbRun: dbRun });
+      return;
+    }
+
+    if (pathname === '/api/detect') {
+      const detected = detectInstalledAgents(config.adapters);
+      jsonResponse(res, 200, { agents: detected });
       return;
     }
 

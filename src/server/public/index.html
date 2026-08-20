@@ -58,19 +58,23 @@
       <button onclick="switchTab('studio')" id="tab-studio" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
         🔀 AI 融合工作台
       </button>
+      <button onclick="switchTab('detector')" id="tab-detector" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
+        🤖 Agent 探测诊断
+      </button>
       <button onclick="switchTab('stats')" id="tab-stats" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
         📈 战绩画像
       </button>
     </nav>
 
-    <!-- Quick Actions -->
+    <!-- Quick Actions & Detected Badge -->
     <div class="flex items-center gap-3">
       <button onclick="showNewRaceModal()" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-semibold text-slate-950 text-xs shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
         <span>+</span> 发起新比拼
       </button>
-      <div id="connection-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 text-[11px] text-emerald-400 border border-emerald-500/30">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 本地服务已就绪
-      </div>
+      <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] text-emerald-400 border border-emerald-500/30 transition cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="detected-count-text">正在探测 Agent...</span>
+      </button>
     </div>
   </header>
 
@@ -88,8 +92,14 @@
         <h2 id="current-task-text" class="text-base font-semibold text-slate-100">正在获取最新比拼任务...</h2>
       </div>
       <div class="flex items-center gap-2">
-        <button onclick="triggerBlend('dsh')" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/20 transition flex items-center gap-1.5">
-          <span>🤖</span> AI 融合所有优点 (DSH)
+        <div class="flex items-center gap-1.5 bg-slate-800/90 border border-slate-700 rounded-xl p-1">
+          <span class="text-[11px] text-slate-400 pl-2">裁判:</span>
+          <select id="quick-judge-select" class="bg-transparent text-xs text-purple-300 font-semibold focus:outline-none pr-2 py-1 cursor-pointer">
+            <!-- Populated dynamically with available agents -->
+          </select>
+        </div>
+        <button onclick="triggerQuickBlend()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/20 transition flex items-center gap-1.5">
+          <span>🤖</span> AI 优点融合
         </button>
         <button onclick="discardCurrentRace()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition">
           丢弃环境
@@ -126,31 +136,32 @@
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- AI Blend Panel -->
         <div class="lg:col-span-2 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-5">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
               <h3 class="font-bold text-lg text-purple-300 flex items-center gap-2">
-                <span>🤖</span> AI 智能交叉融合 (Ensemble Synthesis)
+                <span>🤖</span> 自定义裁判 AI 交叉融合 (Ensemble Synthesis)
               </h3>
-              <p class="text-xs text-slate-400 mt-1">自动提取胜出者的架构实现与对手发现的边缘测试用例，生成 100% 验证通过的终版代码。</p>
+              <p class="text-xs text-slate-400 mt-1">您可以自由指定任意可用 Agent 作为裁判。裁判将自动综合各方案优势，生成 100% 验证通过的终版。</p>
             </div>
-            <select id="judge-agent-select" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-purple-300">
-              <option value="dsh">裁判: DeepSeek Harness (DSH)</option>
-              <option value="claude">裁判: Claude Code</option>
-              <option value="gemini">裁判: Gemini 2.5 Pro</option>
-            </select>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-slate-300">指定裁判模型:</span>
+              <select id="studio-judge-select" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-purple-300 font-semibold cursor-pointer">
+                <!-- Dynamically populated -->
+              </select>
+            </div>
           </div>
 
           <div class="p-4 rounded-xl bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 space-y-2">
-            <p class="font-semibold">融合机制：</p>
+            <p class="font-semibold">融合机制与自由裁判选择：</p>
             <ul class="list-disc list-inside space-y-1 text-slate-300">
-              <li>收集各 Agent 提交的完整 Diff 与通过/失败的用例明细</li>
-              <li>在独立的 <code class="text-purple-300">arace/ensemble</code> 工作树中运行代码合成</li>
+              <li>收集参与竞速的各 Agent 提交的完整 Diff 与测试通过用例</li>
+              <li>在独立的 <code class="text-purple-300">arace/ensemble</code> 工作树中运行裁判进行代码合成</li>
               <li>自动触发 Build、Lint 与全量单元测试门禁二次验真</li>
             </ul>
           </div>
 
-          <button onclick="triggerBlend(document.getElementById('judge-agent-select').value)" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 transition flex items-center justify-center gap-2">
-            <span>✨</span> 立即执行多 Agent 优点融合
+          <button onclick="triggerStudioBlend()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 transition flex items-center justify-center gap-2">
+            <span>✨</span> 由选定裁判执行多 Agent 优点融合
           </button>
         </div>
 
@@ -165,7 +176,26 @@
       </div>
     </section>
 
-    <!-- TAB 4: 战绩画像 (Stats) -->
+    <!-- TAB 4: Agent 探测诊断 (Detector) -->
+    <section id="panel-detector" class="hidden space-y-6">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-lg text-slate-100">本地 Agent 工具链自动探测与准备状态</h3>
+            <p class="text-xs text-slate-400 mt-1">系统已自动扫描 PATH 中的命令行 Agent，所有可用 Agent 均可作为参赛者或融合裁判调用</p>
+          </div>
+          <button onclick="loadDetection(true)" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 transition">
+            🔄 重新扫描
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detector-agent-grid">
+          <!-- Populated by loadDetection() -->
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: 战绩画像 (Stats) -->
     <section id="panel-stats" class="hidden space-y-6">
       <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
         <div class="flex items-center justify-between">
@@ -210,20 +240,9 @@
           <textarea id="modal-task-input" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-emerald-500" placeholder="例如：优化连接池超时重试逻辑，补充并发单元测试"></textarea>
         </div>
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">参与比拼的 Agent</label>
-          <div class="grid grid-cols-2 gap-2 text-slate-300">
-            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
-              <input type="checkbox" value="dsh" checked class="rounded accent-emerald-500"> DeepSeek Harness (DSH)
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
-              <input type="checkbox" value="claude" checked class="rounded accent-emerald-500"> Claude Code
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
-              <input type="checkbox" value="codex" checked class="rounded accent-emerald-500"> OpenAI Codex
-            </label>
-            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
-              <input type="checkbox" value="aider" class="rounded accent-emerald-500"> Aider
-            </label>
+          <label class="block font-semibold text-slate-300 mb-1">参与比拼的 Agent (根据本地探测自动匹配)</label>
+          <div class="grid grid-cols-2 gap-2 text-slate-300" id="modal-agents-checkbox-grid">
+            <!-- Dynamically populated -->
           </div>
         </div>
       </div>
@@ -236,6 +255,91 @@
   <script>
     let currentData = null;
     let currentDiffs = [];
+    let detectedAgents = [];
+
+    async function loadDetection(showToast = false) {
+      try {
+        const res = await fetch('/api/detect');
+        const data = await res.json();
+        detectedAgents = data.agents || [];
+        renderDetection(detectedAgents);
+        populateJudgeSelectors(detectedAgents);
+        populateModalAgentCheckboxes(detectedAgents);
+        if (showToast) alert(`探测完成！共发现 ${detectedAgents.filter(a => a.available).length} 个可用 Agent。`);
+      } catch (err) {
+        console.error('Failed to detect agents:', err);
+      }
+    }
+
+    function renderDetection(agents) {
+      const available = agents.filter(a => a.available);
+      const countBadge = document.getElementById('detected-count-text');
+      countBadge.textContent = `${available.length} 个 Agent 可用`;
+
+      const grid = document.getElementById('detector-agent-grid');
+      grid.innerHTML = '';
+
+      agents.forEach(a => {
+        const card = document.createElement('div');
+        card.className = `p-4 rounded-xl border ${a.available ? 'bg-slate-900/80 border-emerald-500/40' : 'bg-slate-900/30 border-slate-800 opacity-60'} flex flex-col justify-between space-y-3`;
+        card.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <h4 class="font-bold text-sm text-slate-100">${a.displayName}</h4>
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'}">
+                ${a.available ? '✓ 可用就绪' : '未检测到'}
+              </span>
+            </div>
+            <p class="text-xs text-slate-400">${a.description}</p>
+          </div>
+          <div class="text-[11px] font-mono text-slate-500 truncate" title="${a.path || '未安装'}">
+            路径: ${a.path || '未在 PATH 中找到'}
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function populateJudgeSelectors(agents) {
+      const quickSelect = document.getElementById('quick-judge-select');
+      const studioSelect = document.getElementById('studio-judge-select');
+      quickSelect.innerHTML = '';
+      studioSelect.innerHTML = '';
+
+      const list = agents.length > 0 ? agents : [
+        { name: 'dsh', displayName: 'DeepSeek Harness (DSH)' },
+        { name: 'claude', displayName: 'Claude Code' },
+        { name: 'codex', displayName: 'OpenAI Codex' },
+        { name: 'gemini', displayName: 'Gemini 2.5 Pro' }
+      ];
+
+      list.forEach(a => {
+        const opt1 = document.createElement('option');
+        opt1.value = a.name;
+        opt1.textContent = a.displayName || a.name;
+        quickSelect.appendChild(opt1);
+
+        const opt2 = document.createElement('option');
+        opt2.value = a.name;
+        opt2.textContent = `${a.displayName || a.name}${a.available ? ' (已就绪)' : ''}`;
+        studioSelect.appendChild(opt2);
+      });
+    }
+
+    function populateModalAgentCheckboxes(agents) {
+      const grid = document.getElementById('modal-agents-checkbox-grid');
+      grid.innerHTML = '';
+
+      agents.forEach(a => {
+        const label = document.createElement('label');
+        label.className = `flex items-center gap-2 p-2 rounded-lg border cursor-pointer ${a.available ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-900/40 border-slate-800 text-slate-500'}`;
+        label.innerHTML = `
+          <input type="checkbox" value="${a.name}" ${a.available ? 'checked' : ''} class="rounded accent-emerald-500">
+          <span class="truncate">${a.displayName || a.name}</span>
+        `;
+        grid.appendChild(label);
+      });
+    }
 
     async function loadStatus() {
       try {
@@ -275,7 +379,6 @@
         document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit} (${active.branchName})`;
         document.getElementById('current-task-text').textContent = active.taskText;
 
-        // Render agent cards
         const container = document.getElementById('agent-cards-container');
         const keepButtons = document.getElementById('quick-keep-buttons');
         container.innerHTML = '';
@@ -333,7 +436,6 @@
           `;
           container.appendChild(card);
 
-          // Populate Studio keep button
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
           btn.className = `w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-between transition ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`;
@@ -395,8 +497,18 @@
       `;
     }
 
-    async function triggerBlend(judge = 'dsh') {
-      if (!confirm(`确定使用 ${judge} 作为裁判执行多 Agent 优点融合吗？`)) return;
+    function triggerQuickBlend() {
+      const judge = document.getElementById('quick-judge-select').value || 'dsh';
+      executeBlend(judge);
+    }
+
+    function triggerStudioBlend() {
+      const judge = document.getElementById('studio-judge-select').value || 'dsh';
+      executeBlend(judge);
+    }
+
+    async function executeBlend(judge) {
+      if (!confirm(`确定使用「${judge}」作为裁判执行多 Agent 优点融合吗？`)) return;
       try {
         const res = await fetch('/api/blend', {
           method: 'POST',
@@ -404,7 +516,7 @@
           body: JSON.stringify({ judge })
         });
         const data = await res.json();
-        alert('AI 融合完成！已生成 ensemble 分支。');
+        alert(`AI 融合完成！裁判「${judge}」已成功合成最优方案至 ensemble 分支。`);
         loadStatus();
         loadDiffs();
       } catch (err) {
@@ -466,7 +578,7 @@
     }
 
     function switchTab(tab) {
-      ['arena', 'diff', 'studio', 'stats'].forEach(t => {
+      ['arena', 'diff', 'studio', 'detector', 'stats'].forEach(t => {
         document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
         const btn = document.getElementById(`tab-${t}`);
         if (t === tab) {
@@ -476,6 +588,7 @@
         }
       });
       if (tab === 'diff') loadDiffs();
+      if (tab === 'detector') loadDetection();
       if (tab === 'stats') loadStats();
     }
 
@@ -486,6 +599,7 @@
     };
 
     // Initial load
+    loadDetection();
     loadStatus();
     setInterval(loadStatus, 5000);
   </script>
