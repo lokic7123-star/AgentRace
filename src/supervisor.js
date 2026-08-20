@@ -407,8 +407,35 @@ export class Supervisor {
         gatePassed: finalVerify.test.passed && finalVerify.build.passed && finalVerify.lint.passed
       },
       agents: [
-        ...subtaskResults.map(r => ({ name: r.agent, branch: r.branchName, path: r.worktreePath })),
-        { name: 'supervisor', branch: finalWt.branchName, path: finalWt.worktreePath }
+        ...subtaskResults.map(r => ({
+          id: r.subtask.id,
+          role: r.subtask.role,
+          title: r.subtask.title,
+          description: r.subtask.description,
+          outputFile: r.subtask.outputFile,
+          name: r.agent,
+          branch: r.branchName,
+          path: r.worktreePath,
+          attempts: r.attempts,
+          gatePassed: r.gatePassed,
+          verify: r.verify,
+          diffStats: r.diffStats
+        })),
+        {
+          id: 'integrated',
+          role: 'supervisor_integration',
+          title: '主 Agent 架构级全量集成与终极门禁',
+          description: '整合所有子模块，执行全量终极物理门禁',
+          outputFile: '全量项目交付',
+          name: 'supervisor',
+          branch: finalWt.branchName,
+          path: finalWt.worktreePath,
+          attempts: 1,
+          gatePassed: finalVerify.test.passed && finalVerify.build.passed && finalVerify.lint.passed,
+          verify: finalVerify,
+          diffStats: finalStats,
+          isSupervisor: true
+        }
       ]
     };
 
