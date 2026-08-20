@@ -216,3 +216,35 @@ export function getStats({ repoPath, sinceDays = 30, category = null }) {
     agentMetrics
   };
 }
+
+export function getRunHistory({ repoPath, limit = 50 } = {}) {
+  const db = getDatabase();
+  let query = `SELECT * FROM runs`;
+  const params = [];
+  if (repoPath) {
+    query += ` WHERE repo_path = ?`;
+    params.push(repoPath);
+  }
+  query += ` ORDER BY created_at DESC LIMIT ?`;
+  params.push(limit);
+
+  const runs = db.prepare(query).all(...params);
+  return runs.map(run => {
+    const results = db.prepare(`SELECT * FROM run_results WHERE run_id = ?`).all(run.id);
+    return { ...run, results };
+  });
+}
+
+export function getRunById(runId) {
+  const db = getDatabase();
+  const run = db.prepare(`SELECT * FROM runs WHERE id = ?`).get(runId);
+  if (!run) return null;
+  const results = db.prepare(`SELECT * FROM run_results WHERE run_id = ?`).all(runId);
+  return { ...run, results };
+}
+
+export function updateRunTaskText(runId, taskText) {
+  const db = getDatabase();
+  db.prepare(`UPDATE runs SET task_text = ? WHERE id = ?`).run(taskText, runId);
+}
+

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { getRepoRoot, getWorktreeDiff } from '../git.js';
 import { loadProjectConfig } from '../config.js';
-import { getLatestRun, getStats, markAgentKept } from '../db.js';
+import { getLatestRun, getStats, markAgentKept, getRunHistory, getRunById, updateRunTaskText } from '../db.js';
 import { analyzeTestDiffSecurity } from '../ast_guard.js';
 import { detectInstalledAgents } from '../detector.js';
 import { synthesizeEnsemble } from '../synthesizer.js';
@@ -90,6 +90,12 @@ export function createServer(repoRoot = process.cwd()) {
     if (pathname === '/api/detect') {
       const detected = detectInstalledAgents(config.adapters);
       jsonResponse(res, 200, { agents: detected });
+      return;
+    }
+
+    if (pathname === '/api/history') {
+      const history = getRunHistory({ repoPath: root, limit: 50 });
+      jsonResponse(res, 200, { history });
       return;
     }
 
@@ -469,6 +475,71 @@ export function createServer(repoRoot = process.cwd()) {
         const code = await discardCommand([]);
         broadcastEvent('race_discarded', { success: code === 0 });
         jsonResponse(res, 200, { success: code === 0 });
+        return;
+      }
+
+      if (pathname === '/api/task/update') {
+        const { runId, taskText } = body;
+        if (!taskText || !taskText.trim()) {
+          jsonResponse(res, 400, { error: 'Task text is required' });
+          return;
+        }
+        if (runId) {
+          try { updateRunTaskText(runId, taskText.trim()); } catch {}
+        }
+        const latestRunFile = path.join(root, '.arace', 'latest_run.json');
+        if (fs.existsSync(latestRunFile)) {
+          try {
+            const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
+            runInfo.taskText = taskText.trim();
+            fs.writeFileSync(latestRunFile, JSON.stringify(runInfo, null, 2));
+          } catch {}
+        }
+        broadcastEvent('task_updated', { runId, taskText: taskText.trim() });
+        jsonResponse(res, 200, { success: true, taskText: taskText.trim() });
+        return;
+      }
+
+      if (pathname === '/api/task/switch') {
+        const { runId } = body;
+        if (!runId) {
+          jsonResponse(res, 400, { error: 'runId is required' });
+          return;
+        }
+        const run = getRunById(runId);
+        if (!run) {
+          jsonResponse(res, 404, { error: 'Task not found' });
+          return;
+        }
+        const switchedRun = {
+          runId: run.id,
+          mode: 'orchestration',
+          status: 'completed',
+          taskText: run.task_text,
+          taskCategory: run.task_category,
+          baseCommit: run.base_commit,
+          branchName: 'main',
+          agents: (run.results || []).map(r => ({
+            name: r.agent,
+            branch: `arace/${run.id}/${r.agent}`,
+            gatePassed: r.test_passed && r.build_passed && r.lint_passed,
+            verify: {
+              build: { passed: !!r.build_passed },
+              lint: { passed: !!r.lint_passed },
+              test: { passed: !!r.test_passed, passedCount: r.tests_passed_count, totalCount: r.tests_total_count }
+            },
+            diffStats: {
+              sourceAdded: r.source_lines_added,
+              sourceRemoved: r.source_lines_removed,
+              testAdded: r.test_lines_added,
+              testRemoved: r.test_lines_removed
+            }
+          }))
+        };
+        const latestRunFile = path.join(root, '.arace', 'latest_run.json');
+        fs.writeFileSync(latestRunFile, JSON.stringify(switchedRun, null, 2));
+        broadcastEvent('task_switched', switchedRun);
+        jsonResponse(res, 200, { success: true, activeRun: switchedRun });
         return;
       }
     }
