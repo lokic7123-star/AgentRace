@@ -17,7 +17,7 @@
               600: '#16a34a',
               900: '#14532d'
             },
-            darkbg: '#0f172a',
+            darkbg: '#0b1120',
             darkcard: '#1e293b',
             darkborder: '#334155'
           }
@@ -34,21 +34,21 @@
 <body class="bg-darkbg text-slate-100 min-h-screen flex flex-col antialiased">
 
   <!-- Top Navbar -->
-  <header class="border-b border-darkborder bg-slate-900/80 backdrop-blur sticky top-0 z-30 px-6 py-3 flex items-center justify-between">
+  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
     <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center font-black text-slate-950 text-lg shadow-lg shadow-emerald-500/20">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
         🏎️
       </div>
       <div>
         <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent">
           AgentRace (arace)
         </h1>
-        <p class="text-xs text-slate-400">本地多 Agent 隔离竞速与客观验真系统</p>
+        <p class="text-xs text-slate-400">本地多 Agent 隔离竞速、客观验真与智能融合系统</p>
       </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <nav class="flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-sm">
+    <nav class="flex items-center gap-1.5 bg-slate-800/90 p-1.5 rounded-xl border border-slate-700/80 text-sm">
       <button onclick="switchTab('arena')" id="tab-arena" class="px-4 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
         ⚡ 实时竞技场
       </button>
@@ -59,7 +59,7 @@
         🔀 AI 融合工作台
       </button>
       <button onclick="switchTab('detector')" id="tab-detector" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        🤖 Agent 探测诊断
+        🤖 Agent 探测大厅 (18+)
       </button>
       <button onclick="switchTab('stats')" id="tab-stats" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
         📈 战绩画像
@@ -68,12 +68,12 @@
 
     <!-- Quick Actions & Detected Badge -->
     <div class="flex items-center gap-3">
-      <button onclick="showNewRaceModal()" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-semibold text-slate-950 text-xs shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
+      <button onclick="showNewRaceModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/25 transition flex items-center gap-1.5 cursor-pointer">
         <span>+</span> 发起新比拼
       </button>
-      <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] text-emerald-400 border border-emerald-500/30 transition cursor-pointer">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="detected-count-text">正在探测 Agent...</span>
+      <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-emerald-500/30 transition cursor-pointer">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="detected-count-text">正在扫描本地 Agent...</span>
       </button>
     </div>
   </header>
@@ -82,26 +82,30 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
 
     <!-- Active Task Banner -->
-    <div id="active-task-banner" class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/80 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
-      <div class="space-y-1">
-        <div class="flex items-center gap-2.5">
-          <span id="run-id-badge" class="px-2 py-0.5 rounded text-[11px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Run: #------</span>
-          <span id="run-category-badge" class="px-2 py-0.5 rounded text-[11px] bg-purple-500/20 text-purple-300 border border-purple-500/30">bugfix</span>
+    <div id="active-task-banner" class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-700/80 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xl">
+      <div class="space-y-2 flex-1">
+        <div class="flex items-center gap-3">
+          <span id="run-id-badge" class="px-2.5 py-0.5 rounded-md text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Run: #------</span>
+          <span id="run-category-badge" class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">bugfix</span>
           <span id="base-commit-badge" class="text-xs text-slate-400 font-mono">Base: -------</span>
         </div>
-        <h2 id="current-task-text" class="text-base font-semibold text-slate-100">正在获取最新比拼任务...</h2>
+        <h2 id="current-task-text" class="text-lg font-bold text-slate-100">正在就绪比拼任务...</h2>
       </div>
-      <div class="flex items-center gap-2">
-        <div class="flex items-center gap-1.5 bg-slate-800/90 border border-slate-700 rounded-xl p-1">
-          <span class="text-[11px] text-slate-400 pl-2">裁判:</span>
-          <select id="quick-judge-select" class="bg-transparent text-xs text-purple-300 font-semibold focus:outline-none pr-2 py-1 cursor-pointer">
+
+      <!-- Action Panel: Large Selectable Judge Box -->
+      <div class="flex flex-wrap items-center gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+        <div class="flex items-center gap-2">
+          <label for="quick-judge-select" class="text-xs font-semibold text-purple-300 flex items-center gap-1 pl-1">
+            <span>⚖️</span> 裁判:
+          </label>
+          <select id="quick-judge-select" class="bg-slate-800 hover:bg-slate-750 text-slate-100 text-sm font-semibold border border-purple-500/50 rounded-xl px-3.5 py-2 min-w-[210px] focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer shadow-md">
             <!-- Populated dynamically with available agents -->
           </select>
         </div>
-        <button onclick="triggerQuickBlend()" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/20 transition flex items-center gap-1.5">
-          <span>🤖</span> AI 优点融合
+        <button onclick="triggerQuickBlend()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5 cursor-pointer">
+          <span>🤖</span> AI 融合所有优点
         </button>
-        <button onclick="discardCurrentRace()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition">
+        <button onclick="discardCurrentRace()" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition cursor-pointer">
           丢弃环境
         </button>
       </div>
@@ -116,17 +120,17 @@
 
     <!-- TAB 2: 并排 Diff (Diff Viewer) -->
     <section id="panel-diff" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-2xl p-5 shadow-xl space-y-4">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-4">
         <div class="flex items-center justify-between border-b border-darkborder pb-4">
           <div>
             <h3 class="font-bold text-base text-slate-100">各 Agent 改动对比与安全防作弊审计</h3>
             <p class="text-xs text-slate-400">自动拆解 Source Diff 与 Test Diff，并检测测试断言完整性</p>
           </div>
-          <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-200">
+          <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-slate-800 border border-slate-700 text-sm rounded-xl px-4 py-2 text-slate-200 min-w-[200px] cursor-pointer">
             <!-- Options populated dynamically -->
           </select>
         </div>
-        <div id="diff-security-badge" class="hidden p-3 rounded-xl text-xs flex items-center justify-between border"></div>
+        <div id="diff-security-badge" class="hidden p-3.5 rounded-xl text-xs flex items-center justify-between border"></div>
         <pre class="bg-slate-950 p-4 rounded-xl text-xs overflow-x-auto text-slate-300 font-mono max-h-[600px] border border-slate-800/80 leading-relaxed" id="diff-content-area">// 选择 Agent 查看完整 Diff...</pre>
       </div>
     </section>
@@ -135,8 +139,8 @@
     <section id="panel-studio" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- AI Blend Panel -->
-        <div class="lg:col-span-2 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-5">
-          <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="lg:col-span-2 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
+          <div class="flex items-center justify-between flex-wrap gap-4 border-b border-darkborder pb-4">
             <div>
               <h3 class="font-bold text-lg text-purple-300 flex items-center gap-2">
                 <span>🤖</span> 自定义裁判 AI 交叉融合 (Ensemble Synthesis)
@@ -144,23 +148,23 @@
               <p class="text-xs text-slate-400 mt-1">您可以自由指定任意可用 Agent 作为裁判。裁判将自动综合各方案优势，生成 100% 验证通过的终版。</p>
             </div>
             <div class="flex items-center gap-2">
-              <span class="text-xs text-slate-300">指定裁判模型:</span>
-              <select id="studio-judge-select" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-purple-300 font-semibold cursor-pointer">
+              <label for="studio-judge-select" class="text-xs font-semibold text-purple-200">指定裁判模型:</label>
+              <select id="studio-judge-select" class="bg-slate-800 border border-purple-500/50 text-slate-100 text-sm font-semibold rounded-xl px-4 py-2 min-w-[220px] focus:outline-none cursor-pointer">
                 <!-- Dynamically populated -->
               </select>
             </div>
           </div>
 
-          <div class="p-4 rounded-xl bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 space-y-2">
-            <p class="font-semibold">融合机制与自由裁判选择：</p>
-            <ul class="list-disc list-inside space-y-1 text-slate-300">
+          <div class="p-5 rounded-xl bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 space-y-3">
+            <p class="font-bold text-sm text-purple-300">融合工作流与机制：</p>
+            <ul class="list-disc list-inside space-y-1.5 text-slate-300">
               <li>收集参与竞速的各 Agent 提交的完整 Diff 与测试通过用例</li>
-              <li>在独立的 <code class="text-purple-300">arace/ensemble</code> 工作树中运行裁判进行代码合成</li>
+              <li>在独立的 <code class="text-purple-300 font-mono px-1 py-0.5 bg-slate-900 rounded">arace/ensemble</code> 工作树中运行裁判执行代码合成</li>
               <li>自动触发 Build、Lint 与全量单元测试门禁二次验真</li>
             </ul>
           </div>
 
-          <button onclick="triggerStudioBlend()" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 transition flex items-center justify-center gap-2">
+          <button onclick="triggerStudioBlend()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-purple-600/30 transition flex items-center justify-center gap-2 cursor-pointer">
             <span>✨</span> 由选定裁判执行多 Agent 优点融合
           </button>
         </div>
@@ -176,16 +180,18 @@
       </div>
     </section>
 
-    <!-- TAB 4: Agent 探测诊断 (Detector) -->
+    <!-- TAB 4: Agent 探测诊断大厅 (Detector) -->
     <section id="panel-detector" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-5">
-        <div class="flex items-center justify-between">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-darkborder pb-4">
           <div>
-            <h3 class="font-bold text-lg text-slate-100">本地 Agent 工具链自动探测与准备状态</h3>
-            <p class="text-xs text-slate-400 mt-1">系统已自动扫描 PATH 中的命令行 Agent，所有可用 Agent 均可作为参赛者或融合裁判调用</p>
+            <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
+              <span>🤖</span> 本地 AI 编程 Agent 工具链自动探测大厅
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">系统采用毫秒级极速扫描，自动识别系统 PATH 中的所有 AI 编程命令行工具。任何就绪的 Agent 均可作为参赛者或裁判！</p>
           </div>
-          <button onclick="loadDetection(true)" class="px-3.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 border border-slate-700 transition">
-            🔄 重新扫描
+          <button onclick="loadDetection(true)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition cursor-pointer flex items-center gap-1.5">
+            <span>🔄</span> 立即刷新扫描
           </button>
         </div>
 
@@ -221,7 +227,7 @@
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
       <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
         <h3 id="log-modal-title" class="font-bold text-sm text-slate-200">Agent 实时运行日志</h3>
-        <button onclick="closeLogModal()" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+        <button onclick="closeLogModal()" class="text-slate-400 hover:text-slate-200 text-lg cursor-pointer">✕</button>
       </div>
       <pre id="log-modal-content" class="flex-1 p-5 text-xs font-mono text-slate-300 bg-slate-950 overflow-y-auto leading-relaxed"></pre>
     </div>
@@ -232,7 +238,7 @@
     <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
       <div class="flex items-center justify-between border-b border-slate-800 pb-3">
         <h3 class="font-bold text-base text-slate-100">发起新比拼任务</h3>
-        <button onclick="closeNewRaceModal()" class="text-slate-400 hover:text-slate-200">✕</button>
+        <button onclick="closeNewRaceModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer">✕</button>
       </div>
       <div class="space-y-4 text-xs">
         <div>
@@ -240,13 +246,13 @@
           <textarea id="modal-task-input" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-emerald-500" placeholder="例如：优化连接池超时重试逻辑，补充并发单元测试"></textarea>
         </div>
         <div>
-          <label class="block font-semibold text-slate-300 mb-1">参与比拼的 Agent (根据本地探测自动匹配)</label>
-          <div class="grid grid-cols-2 gap-2 text-slate-300" id="modal-agents-checkbox-grid">
+          <label class="block font-semibold text-slate-300 mb-1.5">参与比拼的 Agent (已根据本地探测自动匹配就绪状态)</label>
+          <div class="grid grid-cols-2 gap-2 text-slate-300 max-h-48 overflow-y-auto pr-1" id="modal-agents-checkbox-grid">
             <!-- Dynamically populated -->
           </div>
         </div>
       </div>
-      <button onclick="submitNewRace()" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/20 transition">
+      <button onclick="submitNewRace()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/20 transition cursor-pointer">
         🚀 立即启动隔离竞速
       </button>
     </div>
@@ -265,7 +271,7 @@
         renderDetection(detectedAgents);
         populateJudgeSelectors(detectedAgents);
         populateModalAgentCheckboxes(detectedAgents);
-        if (showToast) alert(`探测完成！共发现 ${detectedAgents.filter(a => a.available).length} 个可用 Agent。`);
+        if (showToast) alert(`扫描完成！共探测到 ${detectedAgents.filter(a => a.available).length} 个本地可用 Agent。`);
       } catch (err) {
         console.error('Failed to detect agents:', err);
       }
@@ -281,16 +287,19 @@
 
       agents.forEach(a => {
         const card = document.createElement('div');
-        card.className = `p-4 rounded-xl border ${a.available ? 'bg-slate-900/80 border-emerald-500/40' : 'bg-slate-900/30 border-slate-800 opacity-60'} flex flex-col justify-between space-y-3`;
+        card.className = `p-4 rounded-xl border ${a.available ? 'bg-slate-900/80 border-emerald-500/50 shadow-md shadow-emerald-500/10' : 'bg-slate-900/40 border-slate-800 opacity-60'} flex flex-col justify-between space-y-3`;
         card.innerHTML = `
           <div>
             <div class="flex items-center justify-between mb-1">
-              <h4 class="font-bold text-sm text-slate-100">${a.displayName}</h4>
+              <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${a.available ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
+                ${a.displayName}
+              </h4>
               <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'}">
                 ${a.available ? '✓ 可用就绪' : '未检测到'}
               </span>
             </div>
-            <p class="text-xs text-slate-400">${a.description}</p>
+            <p class="text-xs text-slate-400 leading-relaxed">${a.description}</p>
           </div>
           <div class="text-[11px] font-mono text-slate-500 truncate" title="${a.path || '未安装'}">
             路径: ${a.path || '未在 PATH 中找到'}
@@ -306,22 +315,18 @@
       quickSelect.innerHTML = '';
       studioSelect.innerHTML = '';
 
-      const list = agents.length > 0 ? agents : [
-        { name: 'dsh', displayName: 'DeepSeek Harness (DSH)' },
-        { name: 'claude', displayName: 'Claude Code' },
-        { name: 'codex', displayName: 'OpenAI Codex' },
-        { name: 'gemini', displayName: 'Gemini 2.5 Pro' }
-      ];
+      const availableAgents = agents.filter(a => a.available);
+      const list = availableAgents.length > 0 ? availableAgents : agents;
 
       list.forEach(a => {
         const opt1 = document.createElement('option');
         opt1.value = a.name;
-        opt1.textContent = a.displayName || a.name;
+        opt1.textContent = a.displayName;
         quickSelect.appendChild(opt1);
 
         const opt2 = document.createElement('option');
         opt2.value = a.name;
-        opt2.textContent = `${a.displayName || a.name}${a.available ? ' (已就绪)' : ''}`;
+        opt2.textContent = `${a.displayName}${a.available ? ' (已就绪)' : ''}`;
         studioSelect.appendChild(opt2);
       });
     }
@@ -332,10 +337,10 @@
 
       agents.forEach(a => {
         const label = document.createElement('label');
-        label.className = `flex items-center gap-2 p-2 rounded-lg border cursor-pointer ${a.available ? 'bg-slate-800 border-slate-700 text-slate-200' : 'bg-slate-900/40 border-slate-800 text-slate-500'}`;
+        label.className = `flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer ${a.available ? 'bg-slate-800/90 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-slate-900/30 border-slate-800/80 text-slate-500'}`;
         label.innerHTML = `
           <input type="checkbox" value="${a.name}" ${a.available ? 'checked' : ''} class="rounded accent-emerald-500">
-          <span class="truncate">${a.displayName || a.name}</span>
+          <span class="truncate font-medium">${a.displayName}</span>
         `;
         grid.appendChild(label);
       });
@@ -426,10 +431,10 @@
             </div>
 
             <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
-              <button onclick="viewAgentLog('${agent.name}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">
+              <button onclick="viewAgentLog('${agent.name}')" class="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer">
                 📜 日志
               </button>
-              <button onclick="keepAgent('${agent.name}')" class="flex-1 py-1.5 rounded-lg ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'} text-xs font-semibold transition">
+              <button onclick="keepAgent('${agent.name}')" class="flex-1 py-2 rounded-xl ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'} text-xs font-bold transition cursor-pointer">
                 一键合并
               </button>
             </div>
@@ -438,7 +443,7 @@
 
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
-          btn.className = `w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-between transition ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`;
+          btn.className = `w-full py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`;
           btn.innerHTML = `<span>合并 <b>${agent.name}</b> 分支</span> <span class="font-mono text-[10px] text-slate-400">${agent.branch}</span>`;
           keepButtons.appendChild(btn);
         });
@@ -471,7 +476,7 @@
 
       pre.textContent = target.diffText || '// 该 Agent 无文件修改';
       if (target.security) {
-        badge.className = `p-3 rounded-xl text-xs flex items-center justify-between border ${target.security.isSuspicious ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-emerald-950/30 border-emerald-800 text-emerald-300'}`;
+        badge.className = `p-3.5 rounded-xl text-xs flex items-center justify-between border ${target.security.isSuspicious ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-emerald-950/30 border-emerald-800 text-emerald-300'}`;
         badge.innerHTML = `
           <span><b>测试安全性分析：</b> ${target.security.summary}</span>
           <span>安全评分: <b>${target.security.score}/100</b></span>
@@ -482,17 +487,17 @@
     function renderStats(stats) {
       const summaryContainer = document.getElementById('stats-summary-cards');
       summaryContainer.innerHTML = `
-        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
           <div class="text-xs text-slate-400">总比拼场次</div>
-          <div class="text-2xl font-bold text-emerald-400 mt-1">${stats.totalRuns}</div>
+          <div class="text-3xl font-bold text-emerald-400 mt-1">${stats.totalRuns}</div>
         </div>
-        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
           <div class="text-xs text-slate-400">最佳胜率 Agent</div>
-          <div class="text-2xl font-bold text-purple-300 mt-1">${Object.keys(stats.agentMetrics)[0] || 'N/A'}</div>
+          <div class="text-3xl font-bold text-purple-300 mt-1">${Object.keys(stats.agentMetrics)[0] || 'N/A'}</div>
         </div>
-        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
           <div class="text-xs text-slate-400">平均任务耗时</div>
-          <div class="text-2xl font-bold text-cyan-300 mt-1">~18.2s</div>
+          <div class="text-3xl font-bold text-cyan-300 mt-1">~18.2s</div>
         </div>
       `;
     }
@@ -598,7 +603,7 @@
       loadStatus();
     };
 
-    // Initial load
+    // Initial load: instant detection & status
     loadDetection();
     loadStatus();
     setInterval(loadStatus, 5000);
