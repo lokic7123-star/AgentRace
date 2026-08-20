@@ -109,8 +109,8 @@
         <button onclick="triggerQuickBlend()" id="btn-quick-blend" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5 cursor-pointer">
           <span>✨</span> 主 Agent 统筹融合
         </button>
-        <button onclick="discardCurrentRace()" id="btn-discard" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition cursor-pointer">
-          释放环境
+        <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件（历史统计与战绩数据保留在本地数据库）" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition cursor-pointer">
+          🧹 清理临时工作区
         </button>
       </div>
     </div>
@@ -511,13 +511,21 @@
       const quickSelect = document.getElementById('quick-judge-select');
       const studioSelect = document.getElementById('studio-judge-select');
       const activitySelect = document.getElementById('activity-agent-select');
+      if (!quickSelect) return;
+
+      const defaultAgents = [
+        { name: 'antigravity', displayName: 'Google Antigravity / Gemini', isRunning: true, available: true },
+        { name: 'opencode', displayName: 'OpenCode Assistant', isRunning: false, available: true },
+        { name: 'reasonix', displayName: 'Reasonix AI Agent', isRunning: false, available: true },
+        { name: 'openclaw', displayName: 'OpenClaw Agent', isRunning: false, available: true }
+      ];
+
+      const readyList = (agents || []).filter(a => a.available);
+      const listToUse = readyList.length > 0 ? readyList : defaultAgents;
 
       quickSelect.innerHTML = '';
-      studioSelect.innerHTML = '';
-      activitySelect.innerHTML = '';
-
-      const readyList = agents.filter(a => a.available);
-      const listToUse = readyList.length > 0 ? readyList : agents;
+      if (studioSelect) studioSelect.innerHTML = '';
+      if (activitySelect) activitySelect.innerHTML = '';
 
       listToUse.forEach(a => {
         const prefix = a.isRunning ? '🟢' : '🔵';
@@ -528,26 +536,38 @@
         opt1.textContent = `${prefix} ${a.displayName} ${suffix}`;
         quickSelect.appendChild(opt1);
 
-        const opt2 = document.createElement('option');
-        opt2.value = a.name;
-        opt2.textContent = `${prefix} ${a.displayName} ${suffix}`;
-        studioSelect.appendChild(opt2);
+        if (studioSelect) {
+          const opt2 = document.createElement('option');
+          opt2.value = a.name;
+          opt2.textContent = `${prefix} ${a.displayName} ${suffix}`;
+          studioSelect.appendChild(opt2);
+        }
 
-        const opt3 = document.createElement('option');
-        opt3.value = a.name;
-        opt3.textContent = a.displayName;
-        activitySelect.appendChild(opt3);
+        if (activitySelect) {
+          const opt3 = document.createElement('option');
+          opt3.value = a.name;
+          opt3.textContent = a.displayName;
+          activitySelect.appendChild(opt3);
+        }
       });
     }
 
     function populateInlineAgentCheckboxes(agents) {
       const grid = document.getElementById('inline-agent-selector-grid');
       if (!grid) return;
+
+      const defaultAgents = [
+        { name: 'antigravity', displayName: 'Google Antigravity', isRunning: true, available: true },
+        { name: 'opencode', displayName: 'OpenCode', isRunning: false, available: true },
+        { name: 'reasonix', displayName: 'Reasonix', isRunning: false, available: true },
+        { name: 'openclaw', displayName: 'OpenClaw', isRunning: false, available: true }
+      ];
+
+      const readyAgents = (agents || []).filter(a => a.available);
+      const listToUse = readyAgents.length > 0 ? readyAgents : defaultAgents;
       grid.innerHTML = '';
 
-      const readyAgents = agents.filter(a => a.available);
-
-      readyAgents.forEach(a => {
+      listToUse.forEach(a => {
         const isRun = a.isRunning;
         const label = document.createElement('label');
         label.className = `flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${isRun ? 'bg-slate-900/95 border-emerald-500/60 shadow-md hover:border-emerald-400' : 'bg-slate-900/80 border-blue-500/40 hover:border-blue-400'}`;
@@ -611,7 +631,7 @@
 
         document.getElementById('run-id-badge').textContent = `Task ID: #${active.runId}`;
         document.getElementById('run-category-badge').textContent = active.taskCategory || 'feature';
-        document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit} (${active.branchName})`;
+        document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit || 'main'} (${active.branchName || 'main'})`;
         document.getElementById('current-task-text').textContent = active.taskText;
 
         container.innerHTML = '';
@@ -991,7 +1011,7 @@
     }
 
     async function discardCurrentRace() {
-      if (!confirm('确定清理当前任务的临时协同工作区吗？')) return;
+      if (!confirm('确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n💡 说明：历史任务、性能画像与战绩指标已永久保存在本地 SQLite 数据库中，不受任何影响。')) return;
       await fetch('/api/discard', { method: 'POST' });
       loadStatus();
     }

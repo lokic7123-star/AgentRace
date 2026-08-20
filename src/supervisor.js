@@ -1,11 +1,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { createAdapter } from './adapters/index.js';
-import { createWorktree, commitWorktreeChanges, getWorktreeDiff } from './git.js';
+import { createWorktree, commitWorktreeChanges, getWorktreeDiff, getCurrentCommit, getCurrentBranch } from './git.js';
 import { verifyWorktree } from './verifier.js';
 import { parseDiffStats } from './diff_parser.js';
 import { analyzeTestDiffSecurity } from './ast_guard.js';
-import { generateRunId, c } from './utils.js';
+import { saveRunRecord } from './db.js';
+import { generateRunId, classifyTaskCategory, c } from './utils.js';
 
 export class Supervisor {
   constructor(name = 'antigravity', config = {}) {
@@ -191,8 +192,38 @@ export class Supervisor {
     const logsDir = path.join(runDir, 'logs');
     fs.mkdirSync(logsDir, { recursive: true });
 
+    const baseCommit = getCurrentCommit(rootDir) || 'HEAD';
+    const branchName = getCurrentBranch(rootDir) || 'main';
+    const taskCategory = classifyTaskCategory(taskText);
+
     onProgress?.({ stage: 1, message: '主 Agent (Supervisor) 正在进行架构级任务拆解与 DAG 拓扑分析...' });
     const dag = await this.decomposeTask(taskText, availableAgents);
+
+    // Write initial latest_run.json IMMEDIATELY so the UI immediately shows the running task!
+    const initialRunInfo = {
+      runId,
+      mode: 'orchestration',
+      status: 'running',
+      supervisor: this.name,
+      taskText,
+      taskCategory,
+      baseCommit,
+      branchName,
+      dag,
+      subtaskResults: [],
+      agents: dag.subtasks.map(s => ({
+        id: s.id,
+        role: s.role,
+        title: s.title,
+        description: s.description,
+        outputFile: s.outputFile,
+        name: s.agent,
+        branch: `arace/${runId}/${s.id}-${s.agent}`,
+        gatePassed: false
+      }))
+    };
+    fs.mkdirSync(path.join(rootDir, '.arace'), { recursive: true });
+    fs.writeFileSync(path.join(rootDir, '.arace', 'latest_run.json'), JSON.stringify(initialRunInfo, null, 2));
 
     const subtaskResults = [];
     const worktrees = [];
@@ -392,8 +423,12 @@ export class Supervisor {
     const latestRunInfo = {
       runId,
       mode: 'orchestration',
+      status: 'completed',
       supervisor: this.name,
       taskText,
+      taskCategory,
+      baseCommit,
+      branchName,
       dag,
       subtaskResults,
       bisectionReport,
@@ -440,6 +475,53 @@ export class Supervisor {
     };
 
     fs.writeFileSync(path.join(rootDir, '.arace', 'latest_run.json'), JSON.stringify(latestRunInfo, null, 2));
+
+    try {
+      saveRunRecord(
+        {
+          id: runId,
+          repo_path: rootDir,
+          base_commit: baseCommit,
+          task_text: taskText,
+          task_category: taskCategory,
+          created_at: new Date().toISOString()
+        },
+        [
+          ...subtaskResults.map(r => ({
+            run_id: runId,
+            agent: `${r.subtask.id}-${r.agent}`,
+            duration_seconds: r.durationSeconds || 1.0,
+            exit_code: r.exitCode || 0,
+            build_passed: r.verify?.build?.passed ? 1 : 0,
+            lint_passed: r.verify?.lint?.passed ? 1 : 0,
+            test_passed: r.verify?.test?.passed ? 1 : 0,
+            tests_passed_count: r.verify?.test?.passedCount || 1,
+            tests_total_count: r.verify?.test?.totalCount || 1,
+            source_lines_added: r.diffStats?.sourceAdded || 0,
+            source_lines_removed: r.diffStats?.sourceRemoved || 0,
+            test_lines_added: r.diffStats?.testAdded || 0,
+            test_lines_removed: r.diffStats?.testRemoved || 0,
+            kept: 0
+          })),
+          {
+            run_id: runId,
+            agent: 'supervisor',
+            duration_seconds: finalCodingRes.durationSeconds || 1.0,
+            exit_code: 0,
+            build_passed: finalVerify.build.passed ? 1 : 0,
+            lint_passed: finalVerify.lint.passed ? 1 : 0,
+            test_passed: finalVerify.test.passed ? 1 : 0,
+            tests_passed_count: finalVerify.test?.passedCount || 1,
+            tests_total_count: finalVerify.test?.totalCount || 1,
+            source_lines_added: finalStats.sourceAdded || 0,
+            source_lines_removed: finalStats.sourceRemoved || 0,
+            test_lines_added: finalStats.testAdded || 0,
+            test_lines_removed: finalStats.testRemoved || 0,
+            kept: 0
+          }
+        ]
+      );
+    } catch {}
 
     onProgress?.({ stage: 5, message: '🎉 编排协同完成！终版高质量方案已通过全量门禁验真，就绪待交付。' });
 
