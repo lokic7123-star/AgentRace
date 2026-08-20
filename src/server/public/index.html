@@ -605,12 +605,88 @@
         document.getElementById('current-task-text').textContent = '🎯 当前系统空闲就绪 — 点击右上方「+ 发起新任务」让主 Agent 带领团队协同冲刺！';
 
         container.innerHTML = `
-          <div class="col-span-full py-16 text-center space-y-4 bg-slate-900/40 border border-dashed border-slate-800 rounded-3xl">
-            <div class="text-4xl">🚀</div>
-            <h3 class="text-base font-bold text-slate-200">准备好开始多 Agent 任务协同了吗？</h3>
-            <p class="text-xs text-slate-400 max-w-md mx-auto">输入一个编码需求，主 Agent 与协同 Agent 将在沙盒中分工实现并独立验真，自动为您产出兼具优雅架构与完整测试的最优方案！</p>
-            <button onclick="showNewRaceModal()" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/25 transition cursor-pointer">
-              + 立即发起任务协同
+          <div class="col-span-full bg-darkcard border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6">
+            <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
+              <div>
+                <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                  <span>🚀</span> 发起多 Agent 任务协同攻坚
+                </h3>
+                <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，并选择参与攻坚的 Agent 团队。主 Agent 统筹协调，各 Agent 在独立物理沙盒中分工实现并严谨验真。</p>
+              </div>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                ● 2 个本地 Agent 已就绪
+              </span>
+            </div>
+
+            <!-- Task Input -->
+            <div class="space-y-2">
+              <label class="block text-xs font-bold text-slate-300">任务需求描述 (Task Prompt):</label>
+              <textarea id="inline-task-input" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 transition shadow-inner font-sans" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
+            </div>
+
+            <!-- Agent Team Selector Grid -->
+            <div class="space-y-2.5">
+              <label class="block text-xs font-bold text-slate-300">选择参与攻坚的 Agent 团队 (可多选):</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="inline-agent-selector-grid">
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+                  <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-emerald-500">
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      Google Antigravity / Gemini
+                    </div>
+                    <div class="text-[10px] text-emerald-400 font-semibold">✓ 本地已就绪 (可以直接调用)</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+                  <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-emerald-500">
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      OpenCode Assistant
+                    </div>
+                    <div class="text-[10px] text-emerald-400 font-semibold">✓ 本地已就绪 (可以直接调用)</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
+                  <input type="checkbox" value="dsh" class="w-4 h-4 rounded accent-emerald-500">
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-slate-300">DeepSeek Harness (DSH)</div>
+                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
+                  <input type="checkbox" value="claude" class="w-4 h-4 rounded accent-emerald-500">
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-slate-300">Claude Code</div>
+                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
+                  <input type="checkbox" value="codex" class="w-4 h-4 rounded accent-emerald-500">
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-slate-300">OpenAI Codex / CLI</div>
+                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
+                  </div>
+                </label>
+
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
+                  <input type="checkbox" value="aider" class="w-4 h-4 rounded accent-emerald-500">
+                  <div class="truncate">
+                    <div class="font-bold text-xs text-slate-300">Aider AI</div>
+                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button onclick="submitInlineTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-black text-slate-950 text-sm shadow-xl shadow-emerald-500/25 transition cursor-pointer flex items-center justify-center gap-2">
+              <span>🚀</span> 立即启动多 Agent 协同攻坚任务
             </button>
           </div>
         `;
@@ -746,6 +822,21 @@
       document.getElementById('new-race-modal').classList.add('hidden');
     }
 
+    async function submitInlineTask() {
+      const task = document.getElementById('inline-task-input')?.value || '';
+      if (!task.trim()) return alert('请输入任务需求描述');
+      const checkedAgents = Array.from(document.querySelectorAll('#inline-agent-selector-grid input[type="checkbox"]:checked')).map(cb => cb.value);
+      if (checkedAgents.length === 0) return alert('请至少选择一个参与协同的 Agent');
+      
+      await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task, agents: checkedAgents })
+      });
+      alert('已启动多 Agent 任务协同！各个 Agent 正在隔离环境中分工实现与独立验真...');
+      loadStatus();
+    }
+
     async function submitNewRace() {
       const task = document.getElementById('modal-task-input').value;
       if (!task.trim()) return alert('请输入任务需求描述');
@@ -758,6 +849,7 @@
         body: JSON.stringify({ task, agents: checkedAgents })
       });
       alert('已启动多 Agent 任务协同！各个 Agent 正在隔离环境中并行分析与编码...');
+      loadStatus();
     }
 
     function switchTab(tab) {
