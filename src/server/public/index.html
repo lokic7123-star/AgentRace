@@ -452,12 +452,18 @@
       const grid = document.getElementById('modal-agents-checkbox-grid');
       grid.innerHTML = '';
 
-      agents.forEach(a => {
+      // Put available ones first
+      const sorted = [...agents].sort((a, b) => (b.available ? 1 : 0) - (a.available ? 1 : 0));
+
+      sorted.forEach(a => {
         const label = document.createElement('label');
-        label.className = `flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer ${a.available ? 'bg-slate-800/90 border-slate-700 text-slate-200 hover:border-emerald-500/50' : 'bg-slate-900/30 border-slate-800/80 text-slate-500'}`;
+        label.className = `flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition ${a.available ? 'bg-slate-800/90 border-emerald-500/50 text-slate-100 hover:bg-slate-750' : 'bg-slate-900/30 border-slate-800 text-slate-500 opacity-60'}`;
         label.innerHTML = `
           <input type="checkbox" value="${a.name}" ${a.available ? 'checked' : ''} class="rounded accent-emerald-500">
-          <span class="truncate font-medium">${a.displayName} ${a.available ? '<b class="text-emerald-400 text-[10px]">(已就绪)</b>' : ''}</span>
+          <div class="truncate">
+            <div class="font-medium text-xs truncate">${a.displayName}</div>
+            <div class="text-[10px] ${a.available ? 'text-emerald-400 font-semibold' : 'text-slate-500'}">${a.available ? '✓ 本地已就绪，可直接调用' : '未检测到客户端'}</div>
+          </div>
         `;
         grid.appendChild(label);
       });
