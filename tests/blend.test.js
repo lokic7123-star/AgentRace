@@ -12,9 +12,26 @@ test('DSH adapter creation and command generation', () => {
   assert.ok(args.some(a => a.includes('Fix memory leak')));
 });
 
-test('detectInstalledAgents includes DSH in known agents list', () => {
+test('market agents adapters create valid commands', () => {
+  const agents = ['dsh', 'claude', 'codex', 'aider', 'gemini', 'cursor', 'windsurf', 'copilot', 'openhands', 'cody', 'goose', 'cline', 'plandex', 'mentat', 'ollama', 'sgpt', 'opencode', 'tabnine'];
+  for (const name of agents) {
+    const adapter = createAdapter(name);
+    assert.ok(adapter);
+    assert.strictEqual(adapter.name, name);
+    const { command } = adapter.buildCommand('Test task', '/tmp/worktree');
+    assert.ok(command);
+  }
+});
+
+test('detectInstalledAgents includes comprehensive market agents list', () => {
   const agents = detectInstalledAgents();
-  const dsh = agents.find(a => a.name === 'dsh');
-  assert.ok(dsh);
-  assert.strictEqual(dsh.name, 'dsh');
+  assert.ok(agents.length >= 18);
+  assert.ok(agents.some(a => a.name === 'dsh'));
+  assert.ok(agents.some(a => a.name === 'claude'));
+  assert.ok(agents.some(a => a.name === 'codex'));
+  assert.ok(agents.some(a => a.name === 'openhands'));
+  assert.ok(agents.some(a => a.name === 'windsurf'));
+  assert.ok(agents.some(a => a.name === 'goose'));
+  assert.ok(agents.some(a => a.name === 'cline'));
+  assert.ok(agents.some(a => a.name === 'ollama'));
 });

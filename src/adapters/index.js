@@ -109,11 +109,9 @@ export class BaseAdapter {
   }
 
   async runMock({ taskText, worktreePath, logStream, startTime }) {
-    // Built-in smart mock for testing / dry-runs
     await new Promise(r => setTimeout(r, 400 + Math.random() * 300));
     logStream.write(`[MOCK AGENT ${this.name}] Processing task: ${taskText}\n`);
 
-    // Let's create or modify a mock file to simulate agent work
     const sampleFile = path.join(worktreePath, 'src', `${this.name}_solution.js`);
     fs.mkdirSync(path.dirname(sampleFile), { recursive: true });
     fs.writeFileSync(sampleFile, `// Solution by ${this.name}\n// Task: ${taskText}\nexport function solve() { return true; }\n`);
@@ -133,71 +131,147 @@ export class BaseAdapter {
 }
 
 export class DshAdapter extends BaseAdapter {
-  constructor(config = {}) {
-    super('dsh', config);
-  }
-
+  constructor(config = {}) { super('dsh', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'dsh';
-    const args = ['run', `"${taskText.replace(/"/g, '\\"')}"`];
-    if (this.config.flags) {
-      args.push(...this.config.flags);
-    }
-    return { command: customCmd, args };
+    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
   }
 }
 
 export class ClaudeAdapter extends BaseAdapter {
-  constructor(config = {}) {
-    super('claude', config);
-  }
-
+  constructor(config = {}) { super('claude', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'claude';
-    const args = ['-p', `"${taskText.replace(/"/g, '\\"')}"`, '--dangerously-skip-permissions'];
-    if (this.config.flags) {
-      args.push(...this.config.flags);
-    }
-    return { command: customCmd, args };
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`, '--dangerously-skip-permissions'] };
   }
 }
 
 export class CodexAdapter extends BaseAdapter {
-  constructor(config = {}) {
-    super('codex', config);
-  }
-
+  constructor(config = {}) { super('codex', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'codex';
-    const args = ['-p', `"${taskText.replace(/"/g, '\\"')}"`];
-    if (this.config.flags) {
-      args.push(...this.config.flags);
-    }
-    return { command: customCmd, args };
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
   }
 }
 
 export class AiderAdapter extends BaseAdapter {
-  constructor(config = {}) {
-    super('aider', config);
-  }
-
+  constructor(config = {}) { super('aider', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'aider';
-    const args = ['--message', `"${taskText.replace(/"/g, '\\"')}"`, '--yes-always', '--no-git'];
-    return { command: customCmd, args };
+    return { command: customCmd, args: ['--message', `"${taskText.replace(/"/g, '\\"')}"`, '--yes-always', '--no-git'] };
   }
 }
 
 export class GeminiAdapter extends BaseAdapter {
-  constructor(config = {}) {
-    super('gemini', config);
-  }
-
+  constructor(config = {}) { super('gemini', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'agy';
-    const args = ['-p', `"${taskText.replace(/"/g, '\\"')}"`];
-    return { command: customCmd, args };
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class CursorAdapter extends BaseAdapter {
+  constructor(config = {}) { super('cursor', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'cursor-agent';
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class WindsurfAdapter extends BaseAdapter {
+  constructor(config = {}) { super('windsurf', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'windsurf';
+    return { command: customCmd, args: ['--prompt', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class CopilotAdapter extends BaseAdapter {
+  constructor(config = {}) { super('copilot', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'copilot';
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class OpenHandsAdapter extends BaseAdapter {
+  constructor(config = {}) { super('openhands', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'openhands';
+    return { command: customCmd, args: ['--prompt', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class CodyAdapter extends BaseAdapter {
+  constructor(config = {}) { super('cody', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'cody';
+    return { command: customCmd, args: ['chat', '-m', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class GooseAdapter extends BaseAdapter {
+  constructor(config = {}) { super('goose', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'goose';
+    return { command: customCmd, args: ['run', '--instruction', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class ClineAdapter extends BaseAdapter {
+  constructor(config = {}) { super('cline', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'cline';
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class PlandexAdapter extends BaseAdapter {
+  constructor(config = {}) { super('plandex', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'plandex';
+    return { command: customCmd, args: ['tell', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class MentatAdapter extends BaseAdapter {
+  constructor(config = {}) { super('mentat', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'mentat';
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class OllamaAdapter extends BaseAdapter {
+  constructor(config = {}) { super('ollama', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'ollama';
+    const model = this.config.model || 'deepseek-coder';
+    return { command: customCmd, args: ['run', model, `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class SgptAdapter extends BaseAdapter {
+  constructor(config = {}) { super('sgpt', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'sgpt';
+    return { command: customCmd, args: ['--code', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class OpenCodeAdapter extends BaseAdapter {
+  constructor(config = {}) { super('opencode', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'opencode';
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class TabnineAdapter extends BaseAdapter {
+  constructor(config = {}) { super('tabnine', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'tabnine';
+    return { command: customCmd, args: ['--prompt', `"${taskText.replace(/"/g, '\\"')}"`] };
   }
 }
 
@@ -219,17 +293,27 @@ export class CustomAdapter extends BaseAdapter {
 export function createAdapter(agentName, customAdapters = {}) {
   const config = customAdapters[agentName] || {};
   switch (agentName.toLowerCase()) {
-    case 'dsh':
-      return new DshAdapter(config);
-    case 'claude':
-      return new ClaudeAdapter(config);
-    case 'codex':
-      return new CodexAdapter(config);
-    case 'aider':
-      return new AiderAdapter(config);
+    case 'dsh': return new DshAdapter(config);
+    case 'claude': return new ClaudeAdapter(config);
+    case 'codex': return new CodexAdapter(config);
+    case 'aider': return new AiderAdapter(config);
     case 'gemini':
-    case 'agy':
-      return new GeminiAdapter(config);
+    case 'agy': return new GeminiAdapter(config);
+    case 'cursor': return new CursorAdapter(config);
+    case 'windsurf': return new WindsurfAdapter(config);
+    case 'copilot': return new CopilotAdapter(config);
+    case 'openhands':
+    case 'opendevin': return new OpenHandsAdapter(config);
+    case 'cody': return new CodyAdapter(config);
+    case 'goose': return new GooseAdapter(config);
+    case 'cline':
+    case 'roo': return new ClineAdapter(config);
+    case 'plandex': return new PlandexAdapter(config);
+    case 'mentat': return new MentatAdapter(config);
+    case 'ollama': return new OllamaAdapter(config);
+    case 'sgpt': return new SgptAdapter(config);
+    case 'opencode': return new OpenCodeAdapter(config);
+    case 'tabnine': return new TabnineAdapter(config);
     default:
       return new CustomAdapter(agentName, config);
   }
