@@ -39,13 +39,11 @@ export function detectCoWSupport(testDir = process.cwd()) {
 }
 
 /**
- * Perform fast dependency cloning or fallback prepare command
+ * Fast dependency cloning with CoW, hardlink mirror, or prepare command
  */
 export async function initializeWorktreeDependencies({ repoRoot, worktreePath, prepareCmd }) {
   const cow = detectCoWSupport(repoRoot);
-
-  // Common dependency directories
-  const depDirs = ['node_modules', 'vendor', 'target'];
+  const depDirs = ['node_modules', 'vendor', 'target', '.venv'];
   let clonedViaCoW = false;
 
   if (cow.supported) {
@@ -68,7 +66,23 @@ export async function initializeWorktreeDependencies({ repoRoot, worktreePath, p
     }
   }
 
-  // If not cloned via CoW, or if user specified a prepare command
+  // If not CoW, try creating directory symlink or junction on Windows/Linux if safe
+  if (!clonedViaCoW) {
+    for (const dep of depDirs) {
+      const srcDep = path.join(repoRoot, dep);
+      const dstDep = path.join(worktreePath, dep);
+      if (fs.existsSync(srcDep) && !fs.existsSync(dstDep)) {
+        try {
+          // On Windows, create directory junction
+          const isWin = os.platform() === 'win32';
+          fs.symlinkSync(srcDep, dstDep, isWin ? 'junction' : 'dir');
+          clonedViaCoW = true;
+        } catch {}
+      }
+    }
+  }
+
+  // If not cloned via CoW or link, fallback to prepare command
   if (!clonedViaCoW && prepareCmd && prepareCmd.trim()) {
     try {
       execSync(prepareCmd, {
@@ -82,5 +96,5 @@ export async function initializeWorktreeDependencies({ repoRoot, worktreePath, p
     }
   }
 
-  return { clonedViaCoW, method: clonedViaCoW ? cow.method : 'prepare_cmd' };
+  return { clonedViaCoW, method: clonedViaCoW ? (cow.supported ? cow.method : 'junction_mirror') : 'prepare_cmd' };
 }

@@ -21,6 +21,7 @@ verify:
 # 默认运行参数
 defaults:
   agents:
+    - dsh
     - claude
     - codex
   timeout: 600s

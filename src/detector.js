@@ -3,6 +3,13 @@ import os from 'node:os';
 
 export const KNOWN_AGENTS = [
   {
+    name: 'dsh',
+    displayName: 'DeepSeek Harness (DSH)',
+    binaries: ['dsh', 'dsh.cmd', 'dsh.exe'],
+    versionFlag: '--version',
+    description: 'DeepSeek Harness multi-agent orchestrator'
+  },
+  {
     name: 'claude',
     displayName: 'Claude Code',
     binaries: ['claude', 'claude.cmd'],

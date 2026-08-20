@@ -132,6 +132,21 @@ export class BaseAdapter {
   }
 }
 
+export class DshAdapter extends BaseAdapter {
+  constructor(config = {}) {
+    super('dsh', config);
+  }
+
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'dsh';
+    const args = ['run', `"${taskText.replace(/"/g, '\\"')}"`];
+    if (this.config.flags) {
+      args.push(...this.config.flags);
+    }
+    return { command: customCmd, args };
+  }
+}
+
 export class ClaudeAdapter extends BaseAdapter {
   constructor(config = {}) {
     super('claude', config);
@@ -139,7 +154,6 @@ export class ClaudeAdapter extends BaseAdapter {
 
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'claude';
-    // Claude Code headless flags
     const args = ['-p', `"${taskText.replace(/"/g, '\\"')}"`, '--dangerously-skip-permissions'];
     if (this.config.flags) {
       args.push(...this.config.flags);
@@ -205,6 +219,8 @@ export class CustomAdapter extends BaseAdapter {
 export function createAdapter(agentName, customAdapters = {}) {
   const config = customAdapters[agentName] || {};
   switch (agentName.toLowerCase()) {
+    case 'dsh':
+      return new DshAdapter(config);
     case 'claude':
       return new ClaudeAdapter(config);
     case 'codex':

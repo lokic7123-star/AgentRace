@@ -8,45 +8,51 @@ import { diffCommand } from '../src/commands/diff.js';
 import { keepCommand } from '../src/commands/keep.js';
 import { discardCommand } from '../src/commands/discard.js';
 import { statsCommand } from '../src/commands/stats.js';
+import { blendCommand } from '../src/commands/blend.js';
+import { pickCommand } from '../src/commands/pick.js';
+import { uiCommand } from '../src/commands/ui.js';
 import { c, symbols } from '../src/utils.js';
 import { EXIT_CODES } from '../src/types.js';
 
-const VERSION = '0.1.0';
+const VERSION = '0.2.0';
 
 function printHelp() {
   console.log(`
 ${c('bold', 'AgentRace (arace)')} v${VERSION}
-${c('dim', 'Local Multi-Agent Benchmark & Objective Verification Engine')}
+${c('dim', 'Local Multi-Agent Benchmark, Objective Verification & AI Ensemble Engine')}
 
 ${c('bold', 'USAGE:')}
   arace <command> [options]
   arace "<task>" [options]               (Shortcut for \`arace run\`)
 
-${c('bold', 'COMMANDS:')}
+${c('bold', 'CORE RACING COMMANDS:')}
   ${c('cyan', 'run')} <task>              Start multi-agent race in isolated worktrees
-  ${c('cyan', 'detect')}                  Scan local machine for available Agent CLIs
+  ${c('cyan', 'detect')}                  Scan local machine for available Agent CLIs (DSH, Claude, Codex, Aider...)
   ${c('cyan', 'doctor')}                  Environment self-check & diagnosis (use --fix to prune)
   ${c('cyan', 'diff')} [agent]            Inspect unified diff vs base commit (--stat, --compare)
-  ${c('cyan', 'keep')} <agent>            Merge winning agent's code and cleanup worktrees
+
+${c('bold', 'AI ENSEMBLE & MERGE COMMANDS:')}
+  ${c('cyan', 'blend')} [--judge <agent>] Merge best architectural & test traits using AI Synthesizer
+  ${c('cyan', 'pick')} <file>:<agent>     Cherry-pick specific files from different agents
+  ${c('cyan', 'keep')} <agent>            Merge winning or ensemble agent's code and cleanup
   ${c('cyan', 'discard')}                 Discard all temporary worktrees and race branches
+
+${c('bold', 'WEB DASHBOARD & ANALYTICS:')}
+  ${c('cyan', 'ui')} [--port 3333]        Launch modern interactive Web Arena & Ensemble Studio
   ${c('cyan', 'stats')}                   Historical analytics and agent benchmark metrics
 
 ${c('bold', 'OPTIONS for `run`:')}
-  --with <agent1,agent2>    Specify agents to compete (default: claude, codex)
+  --with <agent1,agent2>    Specify agents to compete (default: dsh, claude, codex)
   --timeout <duration>      Overall task timeout (e.g. 600s, 5m, default: 600s)
   --allow-dirty             Allow running with uncommitted working tree changes
-
-${c('bold', 'OPTIONS for `stats`:')}
-  --since <Nd>              Filter stats by time window (default: 30d)
-  --category <name>         Filter by category (bugfix, refactor, feature, test)
-  --json                    Output structured JSON metrics
+  --ui                      Launch web UI after starting race
 
 ${c('bold', 'EXAMPLES:')}
-  arace "Fix connection pool memory leak in redis client"
-  arace run "Refactor user authentication service" --with claude,aider
-  arace diff claude
-  arace keep claude
-  arace stats --since 14d
+  arace "Fix connection pool memory leak in redis client" --with dsh,claude,codex
+  arace blend --judge dsh
+  arace pick src/service.js:claude test/service.test.js:dsh
+  arace keep ensemble
+  arace ui
 `);
 }
 
@@ -80,11 +86,20 @@ async function main() {
       case 'diff':
         exitCode = await diffCommand(rawArgs.slice(1));
         break;
+      case 'blend':
+        exitCode = await blendCommand(rawArgs.slice(1));
+        break;
+      case 'pick':
+        exitCode = await pickCommand(rawArgs.slice(1));
+        break;
       case 'keep':
         exitCode = await keepCommand(rawArgs.slice(1));
         break;
       case 'discard':
         exitCode = await discardCommand(rawArgs.slice(1));
+        break;
+      case 'ui':
+        exitCode = await uiCommand(rawArgs.slice(1));
         break;
       case 'stats':
         exitCode = await statsCommand(rawArgs.slice(1));

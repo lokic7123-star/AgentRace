@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgentRace (arace) - 竞技场与融合工作台</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+              900: '#14532d'
+            },
+            darkbg: '#0f172a',
+            darkcard: '#1e293b',
+            darkborder: '#334155'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .animate-pulse-slow { animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    pre code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
+  </style>
+</head>
+<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- Top Navbar -->
+  <header class="border-b border-darkborder bg-slate-900/80 backdrop-blur sticky top-0 z-30 px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center font-black text-slate-950 text-lg shadow-lg shadow-emerald-500/20">
+        🏎️
+      </div>
+      <div>
+        <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent">
+          AgentRace (arace)
+        </h1>
+        <p class="text-xs text-slate-400">本地多 Agent 隔离竞速与客观验真系统</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="flex items-center gap-2 bg-slate-800/80 p-1 rounded-xl border border-slate-700/60 text-sm">
+      <button onclick="switchTab('arena')" id="tab-arena" class="px-4 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+        ⚡ 实时竞技场
+      </button>
+      <button onclick="switchTab('diff')" id="tab-diff" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
+        🔍 并排 Diff
+      </button>
+      <button onclick="switchTab('studio')" id="tab-studio" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
+        🔀 AI 融合工作台
+      </button>
+      <button onclick="switchTab('stats')" id="tab-stats" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
+        📈 战绩画像
+      </button>
+    </nav>
+
+    <!-- Quick Actions -->
+    <div class="flex items-center gap-3">
+      <button onclick="showNewRaceModal()" class="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 font-semibold text-slate-950 text-xs shadow-md shadow-emerald-500/20 transition flex items-center gap-1.5">
+        <span>+</span> 发起新比拼
+      </button>
+      <div id="connection-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-800 text-[11px] text-emerald-400 border border-emerald-500/30">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> 本地服务已就绪
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
+
+    <!-- Active Task Banner -->
+    <div id="active-task-banner" class="bg-gradient-to-r from-slate-900 to-slate-800 border border-slate-700/80 rounded-2xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-xl">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5">
+          <span id="run-id-badge" class="px-2 py-0.5 rounded text-[11px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">Run: #------</span>
+          <span id="run-category-badge" class="px-2 py-0.5 rounded text-[11px] bg-purple-500/20 text-purple-300 border border-purple-500/30">bugfix</span>
+          <span id="base-commit-badge" class="text-xs text-slate-400 font-mono">Base: -------</span>
+        </div>
+        <h2 id="current-task-text" class="text-base font-semibold text-slate-100">正在获取最新比拼任务...</h2>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="triggerBlend('dsh')" class="px-3.5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-semibold shadow-lg shadow-purple-600/20 transition flex items-center gap-1.5">
+          <span>🤖</span> AI 融合所有优点 (DSH)
+        </button>
+        <button onclick="discardCurrentRace()" class="px-3 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition">
+          丢弃环境
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: 实时竞技场 (Arena) -->
+    <section id="panel-arena" class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="agent-cards-container">
+        <!-- Dynamic Agent Cards -->
+      </div>
+    </section>
+
+    <!-- TAB 2: 并排 Diff (Diff Viewer) -->
+    <section id="panel-diff" class="hidden space-y-6">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="flex items-center justify-between border-b border-darkborder pb-4">
+          <div>
+            <h3 class="font-bold text-base text-slate-100">各 Agent 改动对比与安全防作弊审计</h3>
+            <p class="text-xs text-slate-400">自动拆解 Source Diff 与 Test Diff，并检测测试断言完整性</p>
+          </div>
+          <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-200">
+            <!-- Options populated dynamically -->
+          </select>
+        </div>
+        <div id="diff-security-badge" class="hidden p-3 rounded-xl text-xs flex items-center justify-between border"></div>
+        <pre class="bg-slate-950 p-4 rounded-xl text-xs overflow-x-auto text-slate-300 font-mono max-h-[600px] border border-slate-800/80 leading-relaxed" id="diff-content-area">// 选择 Agent 查看完整 Diff...</pre>
+      </div>
+    </section>
+
+    <!-- TAB 3: AI 融合与决策工作台 (Studio) -->
+    <section id="panel-studio" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- AI Blend Panel -->
+        <div class="lg:col-span-2 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-5">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="font-bold text-lg text-purple-300 flex items-center gap-2">
+                <span>🤖</span> AI 智能交叉融合 (Ensemble Synthesis)
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">自动提取胜出者的架构实现与对手发现的边缘测试用例，生成 100% 验证通过的终版代码。</p>
+            </div>
+            <select id="judge-agent-select" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-purple-300">
+              <option value="dsh">裁判: DeepSeek Harness (DSH)</option>
+              <option value="claude">裁判: Claude Code</option>
+              <option value="gemini">裁判: Gemini 2.5 Pro</option>
+            </select>
+          </div>
+
+          <div class="p-4 rounded-xl bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 space-y-2">
+            <p class="font-semibold">融合机制：</p>
+            <ul class="list-disc list-inside space-y-1 text-slate-300">
+              <li>收集各 Agent 提交的完整 Diff 与通过/失败的用例明细</li>
+              <li>在独立的 <code class="text-purple-300">arace/ensemble</code> 工作树中运行代码合成</li>
+              <li>自动触发 Build、Lint 与全量单元测试门禁二次验真</li>
+            </ul>
+          </div>
+
+          <button onclick="triggerBlend(document.getElementById('judge-agent-select').value)" class="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 transition flex items-center justify-center gap-2">
+            <span>✨</span> 立即执行多 Agent 优点融合
+          </button>
+        </div>
+
+        <!-- Single Keep Panel -->
+        <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-4">
+          <h3 class="font-bold text-base text-slate-100">单选合并 (Winner Select)</h3>
+          <p class="text-xs text-slate-400">直接合并指定 Agent 的完整版本并释放所有临时工作树：</p>
+          <div id="quick-keep-buttons" class="space-y-2.5 pt-2">
+            <!-- Buttons dynamically populated -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: 战绩画像 (Stats) -->
+    <section id="panel-stats" class="hidden space-y-6">
+      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="font-bold text-lg text-slate-100">本仓库历史模型战绩画像</h3>
+            <p class="text-xs text-slate-400">基于本地 SQLite 历史数据聚合计算</p>
+          </div>
+          <span class="text-xs text-slate-400 font-mono">统计窗口: 最近 30 天</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="stats-summary-cards">
+          <!-- Summary cards -->
+        </div>
+        <div class="border-t border-darkborder pt-5" id="stats-category-breakdown">
+          <!-- Category breakdown -->
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Log Modal -->
+  <div id="log-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
+      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
+        <h3 id="log-modal-title" class="font-bold text-sm text-slate-200">Agent 实时运行日志</h3>
+        <button onclick="closeLogModal()" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+      </div>
+      <pre id="log-modal-content" class="flex-1 p-5 text-xs font-mono text-slate-300 bg-slate-950 overflow-y-auto leading-relaxed"></pre>
+    </div>
+  </div>
+
+  <!-- New Race Modal -->
+  <div id="new-race-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+        <h3 class="font-bold text-base text-slate-100">发起新比拼任务</h3>
+        <button onclick="closeNewRaceModal()" class="text-slate-400 hover:text-slate-200">✕</button>
+      </div>
+      <div class="space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">任务描述 (Prompt / Task)</label>
+          <textarea id="modal-task-input" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-emerald-500" placeholder="例如：优化连接池超时重试逻辑，补充并发单元测试"></textarea>
+        </div>
+        <div>
+          <label class="block font-semibold text-slate-300 mb-1">参与比拼的 Agent</label>
+          <div class="grid grid-cols-2 gap-2 text-slate-300">
+            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
+              <input type="checkbox" value="dsh" checked class="rounded accent-emerald-500"> DeepSeek Harness (DSH)
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
+              <input type="checkbox" value="claude" checked class="rounded accent-emerald-500"> Claude Code
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
+              <input type="checkbox" value="codex" checked class="rounded accent-emerald-500"> OpenAI Codex
+            </label>
+            <label class="flex items-center gap-2 p-2 rounded-lg bg-slate-800 border border-slate-700 cursor-pointer">
+              <input type="checkbox" value="aider" class="rounded accent-emerald-500"> Aider
+            </label>
+          </div>
+        </div>
+      </div>
+      <button onclick="submitNewRace()" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/20 transition">
+        🚀 立即启动隔离竞速
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let currentData = null;
+    let currentDiffs = [];
+
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        currentData = data;
+        renderActiveRun(data);
+      } catch (err) {
+        console.error('Failed to load status:', err);
+      }
+    }
+
+    async function loadDiffs() {
+      try {
+        const res = await fetch('/api/diff');
+        const data = await res.json();
+        currentDiffs = data.diffs || [];
+        populateDiffSelector(currentDiffs);
+      } catch (err) {}
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        renderStats(data);
+      } catch (err) {}
+    }
+
+    function renderActiveRun(data) {
+      const active = data.activeRun;
+      const dbRun = data.latestDbRun;
+
+      if (active) {
+        document.getElementById('run-id-badge').textContent = `Run: #${active.runId}`;
+        document.getElementById('run-category-badge').textContent = active.taskCategory || 'other';
+        document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit} (${active.branchName})`;
+        document.getElementById('current-task-text').textContent = active.taskText;
+
+        // Render agent cards
+        const container = document.getElementById('agent-cards-container');
+        const keepButtons = document.getElementById('quick-keep-buttons');
+        container.innerHTML = '';
+        keepButtons.innerHTML = '';
+
+        const results = dbRun?.results || [];
+
+        active.agents.forEach(agent => {
+          const r = results.find(item => item.agent === agent.name) || {};
+          const isPassed = r.test_passed && r.build_passed && r.lint_passed;
+          const isEnsemble = agent.name === 'ensemble';
+
+          const card = document.createElement('div');
+          card.className = `bg-darkcard border ${isEnsemble ? 'border-purple-500/50 shadow-purple-500/10' : 'border-darkborder'} rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between`;
+
+          card.innerHTML = `
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="w-3 h-3 rounded-full ${isPassed ? 'bg-emerald-400' : 'bg-yellow-400'}"></span>
+                  <h4 class="font-bold text-base text-slate-100">${agent.name.toUpperCase()} ${isEnsemble ? '✨ (AI 融合版)' : ''}</h4>
+                </div>
+                <span class="text-xs font-mono text-slate-400">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '0.0s'}</span>
+              </div>
+
+              <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div class="text-slate-400 text-[10px]">Build</div>
+                  <div class="font-bold ${r.build_passed ? 'text-emerald-400' : 'text-slate-400'}">${r.build_passed ? '✓ PASS' : '-'}</div>
+                </div>
+                <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div class="text-slate-400 text-[10px]">Lint</div>
+                  <div class="font-bold ${r.lint_passed ? 'text-emerald-400' : 'text-rose-400'}">${r.lint_passed ? '✓ PASS' : (r.lint_passed === 0 ? '✗ FAIL' : '-')}</div>
+                </div>
+                <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
+                  <div class="text-slate-400 text-[10px]">Tests</div>
+                  <div class="font-bold ${r.test_passed ? 'text-emerald-400' : 'text-slate-400'}">${r.tests_passed_count || 0}/${r.tests_total_count || 0}</div>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between text-xs px-1 text-slate-400">
+                <span>Source Diff: <b class="text-emerald-400">+${r.source_lines_added || 0}</b> / <b class="text-rose-400">-${r.source_lines_removed || 0}</b></span>
+                <span>Test Diff: <b class="text-slate-300">+${r.test_lines_added || 0}</b></span>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
+              <button onclick="viewAgentLog('${agent.name}')" class="flex-1 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition">
+                📜 日志
+              </button>
+              <button onclick="keepAgent('${agent.name}')" class="flex-1 py-1.5 rounded-lg ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'} text-xs font-semibold transition">
+                一键合并
+              </button>
+            </div>
+          `;
+          container.appendChild(card);
+
+          // Populate Studio keep button
+          const btn = document.createElement('button');
+          btn.onclick = () => keepAgent(agent.name);
+          btn.className = `w-full py-2.5 px-4 rounded-xl text-xs font-semibold flex items-center justify-between transition ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`;
+          btn.innerHTML = `<span>合并 <b>${agent.name}</b> 分支</span> <span class="font-mono text-[10px] text-slate-400">${agent.branch}</span>`;
+          keepButtons.appendChild(btn);
+        });
+      }
+    }
+
+    function populateDiffSelector(diffs) {
+      const select = document.getElementById('diff-agent-selector');
+      select.innerHTML = '';
+      diffs.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.agent;
+        opt.textContent = `${d.agent.toUpperCase()} (${d.branch})`;
+        select.appendChild(opt);
+      });
+      renderSelectedDiff();
+    }
+
+    function renderSelectedDiff() {
+      const selected = document.getElementById('diff-agent-selector').value;
+      const target = currentDiffs.find(d => d.agent === selected);
+      const pre = document.getElementById('diff-content-area');
+      const badge = document.getElementById('diff-security-badge');
+
+      if (!target) {
+        pre.textContent = '// 暂无 Diff 数据';
+        badge.className = 'hidden';
+        return;
+      }
+
+      pre.textContent = target.diffText || '// 该 Agent 无文件修改';
+      if (target.security) {
+        badge.className = `p-3 rounded-xl text-xs flex items-center justify-between border ${target.security.isSuspicious ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-emerald-950/30 border-emerald-800 text-emerald-300'}`;
+        badge.innerHTML = `
+          <span><b>测试安全性分析：</b> ${target.security.summary}</span>
+          <span>安全评分: <b>${target.security.score}/100</b></span>
+        `;
+      }
+    }
+
+    function renderStats(stats) {
+      const summaryContainer = document.getElementById('stats-summary-cards');
+      summaryContainer.innerHTML = `
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+          <div class="text-xs text-slate-400">总比拼场次</div>
+          <div class="text-2xl font-bold text-emerald-400 mt-1">${stats.totalRuns}</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+          <div class="text-xs text-slate-400">最佳胜率 Agent</div>
+          <div class="text-2xl font-bold text-purple-300 mt-1">${Object.keys(stats.agentMetrics)[0] || 'N/A'}</div>
+        </div>
+        <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800">
+          <div class="text-xs text-slate-400">平均任务耗时</div>
+          <div class="text-2xl font-bold text-cyan-300 mt-1">~18.2s</div>
+        </div>
+      `;
+    }
+
+    async function triggerBlend(judge = 'dsh') {
+      if (!confirm(`确定使用 ${judge} 作为裁判执行多 Agent 优点融合吗？`)) return;
+      try {
+        const res = await fetch('/api/blend', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ judge })
+        });
+        const data = await res.json();
+        alert('AI 融合完成！已生成 ensemble 分支。');
+        loadStatus();
+        loadDiffs();
+      } catch (err) {
+        alert('融合失败: ' + err.message);
+      }
+    }
+
+    async function keepAgent(agent) {
+      if (!confirm(`确定合并 ${agent} 的改动并清理临时工作树吗？`)) return;
+      const res = await fetch('/api/keep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agent })
+      });
+      if (res.ok) {
+        alert(`成功合并 ${agent} 代码！`);
+        loadStatus();
+      }
+    }
+
+    async function discardCurrentRace() {
+      if (!confirm('确定放弃当前所有比拼分支并清理工作树吗？')) return;
+      await fetch('/api/discard', { method: 'POST' });
+      loadStatus();
+    }
+
+    async function viewAgentLog(agent) {
+      const res = await fetch(`/api/logs/${agent}`);
+      const text = await res.text();
+      document.getElementById('log-modal-title').textContent = `${agent.toUpperCase()} 运行日志`;
+      document.getElementById('log-modal-content').textContent = text;
+      document.getElementById('log-modal').classList.remove('hidden');
+    }
+
+    function closeLogModal() {
+      document.getElementById('log-modal').classList.add('hidden');
+    }
+
+    function showNewRaceModal() {
+      document.getElementById('new-race-modal').classList.remove('hidden');
+    }
+
+    function closeNewRaceModal() {
+      document.getElementById('new-race-modal').classList.add('hidden');
+    }
+
+    async function submitNewRace() {
+      const task = document.getElementById('modal-task-input').value;
+      if (!task.trim()) return alert('请输入任务描述');
+      const checkedAgents = Array.from(document.querySelectorAll('#new-race-modal input[type="checkbox"]:checked')).map(cb => cb.value);
+      
+      closeNewRaceModal();
+      await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ task, agents: checkedAgents })
+      });
+      alert('已启动比拼任务！');
+    }
+
+    function switchTab(tab) {
+      ['arena', 'diff', 'studio', 'stats'].forEach(t => {
+        document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
+        const btn = document.getElementById(`tab-${t}`);
+        if (t === tab) {
+          btn.className = 'px-4 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+        } else {
+          btn.className = 'px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200';
+        }
+      });
+      if (tab === 'diff') loadDiffs();
+      if (tab === 'stats') loadStats();
+    }
+
+    // SSE Connection for live updates
+    const evtSource = new EventSource('/api/events');
+    evtSource.onmessage = (e) => {
+      loadStatus();
+    };
+
+    // Initial load
+    loadStatus();
+    setInterval(loadStatus, 5000);
+  </script>
+</body>
+</html>
