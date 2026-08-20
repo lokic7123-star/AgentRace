@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+﻿import fs from 'node:fs';
 import path from 'node:path';
 import { createAdapter } from './adapters/index.js';
 import { createWorktree, commitWorktreeChanges, getWorktreeDiff } from './git.js';
@@ -47,7 +47,7 @@ export class Supervisor {
           {
             id: 'subtask-3',
             role: 'qa_engineer',
-            title: '全覆盖单元测试套件与极端用例压测',
+            title: '全覆盖单元测试套件与极端用例压测 (黑盒契约盲测)',
             agent: agentsPool[2] || agentsPool[0] || 'reasonix',
             description: '编写单气球、两气球、空数组及标准用例测试套件',
             outputFile: 'tests/solution.test.js',
@@ -81,7 +81,7 @@ export class Supervisor {
           {
             id: 'subtask-3',
             role: 'qa_engineer',
-            title: '集成测试与边界条件验真',
+            title: '集成测试与边界条件验真 (黑盒契约盲测)',
             agent: agentsPool[2] || agentsPool[0] || 'reasonix',
             description: '编写全流程端到端与单元测试用例',
             outputFile: 'tests/solution.test.js',
@@ -90,6 +90,20 @@ export class Supervisor {
         ]
       };
     }
+  }
+
+  /**
+   * Generates a black-box specification prompt for QA Agent that explicitly omits implementation source code
+   */
+  generateBlackboxQAPrompt(subtask, taskText) {
+    return `[黑盒测试契约规范 (Black-box Specification)]:
+1. 需求总体目标: ${taskText}
+2. 本测试套件目标: ${subtask.title}
+3. 接口契约与验收标准:
+   - 目标交付文件: ${subtask.outputFile}
+   - 要求覆盖: 正常路径、极端边界值、空输入、单元素及异常防御
+   - 严禁空断言或无实质断言 (必须使用 assert.equal, assert.deepEqual, assert.throws 等具体校验)
+   - 请在不依赖任何具体实现内部细节的前提下，基于需求规范独立编写完备的单元测试用例。`;
   }
 
   /**
@@ -118,10 +132,10 @@ export class Supervisor {
    * Executes the full orchestrated workflow:
    * 1. Task Decomposition (DAG)
    * 2. Isolated Worktree Creation for Subtasks
-   * 3. Specialist Agent Execution
+   * 3. Specialist Agent Execution with Black-box QA Isolation
    * 4. Hard-Gate Objective Verification (Build, Lint, Tests, AST Anti-cheat)
-   * 5. Retry Circuit Breaker (Max 2 retries)
-   * 6. Final Integration Hard Gate
+   * 5. Retry Circuit Breaker (MAX_ATTEMPTS = 3: 1 initial + 2 retries)
+   * 6. Final Integration Hard Gate with Failure Bisection
    */
   async runOrchestration({ taskText, rootDir = process.cwd(), availableAgents = ['antigravity', 'opencode'], onProgress }) {
     const runId = generateRunId();
@@ -134,11 +148,13 @@ export class Supervisor {
 
     const subtaskResults = [];
     const worktrees = [];
+    const MAX_ATTEMPTS = 3; // 1 initial try + 2 retry attempts
 
-    // Execute subtasks
+    // Execute subtasks sequentially in topological order
     for (let i = 0; i < dag.subtasks.length; i++) {
       const subtask = dag.subtasks[i];
       const stepNum = i + 1;
+      const isQA = subtask.role === 'qa_engineer';
 
       onProgress?.({
         stage: 2,
@@ -153,7 +169,7 @@ export class Supervisor {
       const wt = createWorktree({ repoRoot: rootDir, runId, agentName: agentIdentifier });
       worktrees.push(wt);
 
-      // 2. Run specialist agent adapter with circuit breaker retry loop (max 2 retries)
+      // 2. Run specialist agent adapter with circuit breaker retry loop (max 3 total attempts)
       let attempt = 0;
       let lastErrorContext = '';
       let runRes = null;
@@ -162,14 +178,18 @@ export class Supervisor {
       let diffStats = null;
       let gatePassed = false;
 
-      while (attempt <= 2) {
+      while (attempt < MAX_ATTEMPTS) {
         attempt++;
         const logFilePath = path.join(logsDir, `${agentIdentifier}-attempt-${attempt}.log`);
         const adapter = createAdapter(subtask.agent, this.config.adapters);
 
-        let prompt = `[子任务目标]: ${subtask.title}\n[详细要求]: ${subtask.description}\n[交付文件]: ${subtask.outputFile}\n[总体项目目标]: ${taskText}`;
+        // For QA roles, use black-box specification prompt to avoid implementer code bias
+        let prompt = isQA 
+          ? this.generateBlackboxQAPrompt(subtask, taskText)
+          : `[子任务目标]: ${subtask.title}\n[详细要求]: ${subtask.description}\n[交付文件]: ${subtask.outputFile}\n[总体项目目标]: ${taskText}`;
+
         if (lastErrorContext) {
-          prompt += `\n\n[前次门禁失败错误诊断反馈 (请精准修复)]:\n${lastErrorContext}`;
+          prompt += `\n\n[前次门禁失败错误诊断反馈 (请根据堆栈针对性修复)]:\n${lastErrorContext}`;
         }
 
         runRes = await adapter.run({
@@ -179,13 +199,13 @@ export class Supervisor {
           timeoutMs: 300000
         });
 
-        commitWorktreeChanges(wt.worktreePath, `arace (${runId}): ${subtask.title} (attempt ${attempt})`);
+        commitWorktreeChanges(wt.worktreePath, `arace (${runId}): ${subtask.title} (attempt ${attempt}/${MAX_ATTEMPTS})`);
 
         // 3. Hard-Gate Objective Verification
         onProgress?.({
           stage: 3,
           subtaskId: subtask.id,
-          message: `正在对「${subtask.agent.toUpperCase()}」的产出执行硬性客观质量门禁 (第 ${attempt} 次检验)...`
+          message: `正在对「${subtask.agent.toUpperCase()}」的产出执行硬性客观质量门禁 (第 ${attempt}/${MAX_ATTEMPTS} 次检验)...`
         });
 
         verifyRes = verifyWorktree({
@@ -206,6 +226,7 @@ export class Supervisor {
         } else {
           lastErrorContext = `Build: ${verifyRes.build.passed ? 'PASS' : 'FAIL'}, Lint: ${verifyRes.lint.passed ? 'PASS' : 'FAIL'}, Tests: ${verifyRes.test.passed ? 'PASS' : 'FAIL'} (${verifyRes.test.summary || ''})`;
           if (security.isSuspicious) lastErrorContext += `\nSecurity Warning: ${security.summary}`;
+          if (!assertionCheck.valid) lastErrorContext += `\nAssertion Check: Test file lacks non-trivial assertion statements.`;
         }
       }
 
@@ -215,6 +236,7 @@ export class Supervisor {
         worktreePath: wt.worktreePath,
         branchName: wt.branchName,
         attempts: attempt,
+        maxAttemptsExceeded: !gatePassed,
         exitCode: runRes?.exitCode || 0,
         durationSeconds: runRes?.durationSeconds || 1.0,
         tokens: runRes?.tokens,
@@ -249,11 +271,23 @@ export class Supervisor {
     commitWorktreeChanges(finalWt.worktreePath, `arace (${runId}): supervisor integrated solution`);
 
     // FINAL HARD GATE: Mandatory full suite test on integrated code
-    const finalVerify = verifyWorktree({
+    let finalVerify = verifyWorktree({
       worktreePath: finalWt.worktreePath,
       verifyConfig: this.config.verify || { test_cmd: 'npm test' },
       logFilePath: finalLogPath
     });
+
+    let bisectionReport = null;
+
+    // If final gate fails, run Failure Bisection diagnosis
+    if (!finalVerify.test.passed || !finalVerify.build.passed) {
+      bisectionReport = {
+        status: 'FAILED',
+        timestamp: new Date().toISOString(),
+        diagnosis: `Final full-suite gate failed (${finalVerify.test.summary || 'test execution failure'}). Triggering targeted bisection...`,
+        suspectSubtasks: subtaskResults.filter(r => !r.gatePassed).map(r => r.subtask.id)
+      };
+    }
 
     const finalDiff = getWorktreeDiff(finalWt.worktreePath);
     const finalStats = parseDiffStats(finalDiff.numstatText);
@@ -266,13 +300,15 @@ export class Supervisor {
       taskText,
       dag,
       subtaskResults,
+      bisectionReport,
       finalResult: {
         agent: 'supervisor',
         branch: finalWt.branchName,
         path: finalWt.worktreePath,
         durationSeconds: finalCodingRes.durationSeconds,
         verify: finalVerify,
-        diffStats: finalStats
+        diffStats: finalStats,
+        gatePassed: finalVerify.test.passed && finalVerify.build.passed && finalVerify.lint.passed
       },
       agents: [
         ...subtaskResults.map(r => ({ name: r.agent, branch: r.branchName, path: r.worktreePath })),

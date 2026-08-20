@@ -13,6 +13,21 @@ test('Supervisor decomposes algorithmic task into specialist DAG', async () => {
   assert.deepEqual(dag.subtasks[1].deps, ['subtask-1']);
 });
 
+test('Supervisor generates black-box specification prompt for QA Agent', () => {
+  const supervisor = new Supervisor('antigravity');
+  const qaSubtask = {
+    id: 'subtask-3',
+    role: 'qa_engineer',
+    title: '全覆盖单元测试套件',
+    outputFile: 'tests/solution.test.js'
+  };
+  const prompt = supervisor.generateBlackboxQAPrompt(qaSubtask, '优化 Redis 连接池并发锁');
+  
+  assert.ok(prompt.includes('黑盒测试契约规范'));
+  assert.ok(prompt.includes('严禁空断言'));
+  assert.ok(!prompt.includes('function solve(')); // Does not leak implementation source
+});
+
 test('Supervisor decomposes engineering task into modular DAG', async () => {
   const supervisor = new Supervisor('antigravity');
   const dag = await supervisor.decomposeTask('重构连接池并增加健康检查与指标上报', ['antigravity', 'opencode', 'reasonix']);
