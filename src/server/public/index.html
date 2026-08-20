@@ -117,8 +117,84 @@
 
     <!-- TAB 1: 任务协同工作台 (Orchestrator Board) -->
     <section id="panel-orchestrator" class="space-y-6">
-      <!-- Agent Working Cards or Task Launcher Console -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="agent-cards-container">
+      <!-- 1. Permanent Static Task Launcher Console (shown when idle) -->
+      <div id="workbench-task-launcher" class="bg-darkcard border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6">
+        <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+              <span>🚀</span> 发起多 Agent 任务协同攻坚
+            </h3>
+            <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，自由选择本次要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
+          </div>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            ● 4 个本地 Agent 已就绪
+          </span>
+        </div>
+
+        <!-- Task Input -->
+        <div class="space-y-2">
+          <label for="inline-task-input" class="block text-xs font-bold text-slate-300">任务需求描述 (Task Prompt):</label>
+          <textarea id="inline-task-input" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition shadow-inner font-sans leading-relaxed" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
+        </div>
+
+        <!-- Agent Team Selector Grid (Only locally installed agents) -->
+        <div class="space-y-2.5">
+          <label class="block text-xs font-bold text-slate-300">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+              <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-emerald-500">
+              <div class="truncate">
+                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  Google Antigravity
+                </div>
+                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+              <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-emerald-500">
+              <div class="truncate">
+                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  OpenCode
+                </div>
+                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+              <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-emerald-500">
+              <div class="truncate">
+                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  OpenClaw
+                </div>
+                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+              </div>
+            </label>
+
+            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+              <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-emerald-500">
+              <div class="truncate">
+                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                  Reasonix
+                </div>
+                <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <button onclick="submitInlineTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-black text-slate-950 text-sm shadow-xl shadow-emerald-500/25 transition cursor-pointer flex items-center justify-center gap-2">
+          <span>🚀</span> 立即启动选定 Agent 团队协同攻坚
+        </button>
+      </div>
+
+      <!-- 2. Dynamic Agent Working Cards (shown when running) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden" id="agent-cards-container">
         <!-- Populated by renderActiveRun -->
       </div>
     </section>
@@ -458,10 +534,14 @@
       const active = data.activeRun;
       const dbRun = data.latestDbRun;
 
+      const launcher = document.getElementById('workbench-task-launcher');
       const container = document.getElementById('agent-cards-container');
       const keepButtons = document.getElementById('quick-keep-buttons');
 
       if (active) {
+        if (launcher) launcher.classList.add('hidden');
+        if (container) container.classList.remove('hidden');
+
         document.getElementById('run-id-badge').textContent = `Task ID: #${active.runId}`;
         document.getElementById('run-category-badge').textContent = active.taskCategory || 'feature';
         document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit} (${active.branchName})`;
@@ -555,88 +635,20 @@
           keepButtons.appendChild(btn);
         });
       } else {
-        // Idle State: Interactive In-place Launch Console
+        // Idle State: Show static Task Launch Console without touching textarea
+        const launcher = document.getElementById('workbench-task-launcher');
+        const container = document.getElementById('agent-cards-container');
+        if (launcher) launcher.classList.remove('hidden');
+        if (container) {
+          container.classList.add('hidden');
+          container.innerHTML = '';
+        }
+
         document.getElementById('run-id-badge').textContent = `状态: 空闲就绪`;
         document.getElementById('run-category-badge').textContent = 'Ready';
         document.getElementById('base-commit-badge').textContent = `主仓库就绪`;
         document.getElementById('current-task-text').textContent = '🎯 当前系统空闲就绪 — 在下方输入任务并勾选想要派出的本地 Agent 团队即可开始！';
 
-        container.innerHTML = `
-          <div class="col-span-full bg-darkcard border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6">
-            <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
-              <div>
-                <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-                  <span>🚀</span> 发起多 Agent 任务协同攻坚
-                </h3>
-                <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，自由选择本次要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
-              </div>
-              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                ● 4 个本地 Agent 已就绪
-              </span>
-            </div>
-
-            <!-- Task Input -->
-            <div class="space-y-2">
-              <label class="block text-xs font-bold text-slate-300">任务需求描述 (Task Prompt):</label>
-              <textarea id="inline-task-input" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 transition shadow-inner font-sans" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
-            </div>
-
-            <!-- Agent Team Selector Grid (Only locally installed agents) -->
-            <div class="space-y-2.5">
-              <label class="block text-xs font-bold text-slate-300">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-                  <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-emerald-500">
-                  <div class="truncate">
-                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                      Google Antigravity
-                    </div>
-                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
-                  </div>
-                </label>
-
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-                  <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-emerald-500">
-                  <div class="truncate">
-                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                      OpenCode
-                    </div>
-                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
-                  </div>
-                </label>
-
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-                  <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-emerald-500">
-                  <div class="truncate">
-                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                      OpenClaw
-                    </div>
-                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
-                  </div>
-                </label>
-
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-                  <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-emerald-500">
-                  <div class="truncate">
-                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                      Reasonix
-                    </div>
-                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
-                  </div>
-                </label>
-              </div>
-            </div>
-
-            <!-- Submit Button -->
-            <button onclick="submitInlineTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-black text-slate-950 text-sm shadow-xl shadow-emerald-500/25 transition cursor-pointer flex items-center justify-center gap-2">
-              <span>🚀</span> 立即启动选定 Agent 团队协同攻坚
-            </button>
-          </div>
-        `;
         keepButtons.innerHTML = `<div class="text-xs text-slate-500 p-4 text-center border border-dashed border-slate-700 rounded-xl">暂无正在协同的分支</div>`;
       }
     }
