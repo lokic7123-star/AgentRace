@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 import path from 'node:path';
 import { createAdapter } from './adapters/index.js';
 import { createWorktree, commitWorktreeChanges, getWorktreeDiff } from './git.js';
@@ -142,7 +142,14 @@ export class Supervisor {
   }
 
   /**
-   * Check for non-trivial assertions in the specific output test file of the subtask
+   * Heuristic check for non-trivial assertions in the specific output test file.
+   * 
+   * LIMITATIONS (documented explicitly):
+   * - This is a syntactic/regex-based check, NOT semantic verification.
+   * - It catches the most obvious failures: missing test file, zero assertions, assert.ok(true)-only files.
+   * - It CANNOT detect "syntactically valid but semantically empty" assertions like assert.equal(1,1).
+   * - For deeper semantic coverage analysis, a separate code review or mutation testing pass is needed.
+   * - Only runs for qa_engineer role or subtasks whose outputFile contains 'test'; skips all others.
    */
   validateAssertionDensity(worktreePath, subtask) {
     if (!subtask || (subtask.role !== 'qa_engineer' && !subtask.outputFile?.includes('test'))) {
@@ -373,6 +380,8 @@ export class Supervisor {
 
       if (finalVerify.test.passed && finalVerify.build.passed) {
         bisectionReport.status = 'REPAIRED_AND_PASSED';
+      } else {
+        bisectionReport.status = 'REPAIR_FAILED_NEEDS_HUMAN';
       }
     }
 

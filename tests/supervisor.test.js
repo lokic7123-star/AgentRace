@@ -1,4 +1,4 @@
-﻿import test from 'node:test';
+import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -115,4 +115,34 @@ test('runOrchestration executes cascading worktree pipeline and verifies depende
   // Final integrated branch cascades from subtask-3
   assert.ok(result.finalResult.branch.includes('integrated'));
   assert.equal(result.finalResult.gatePassed, true);
+});
+
+test('circuit breaker exhausts MAX_ATTEMPTS=3 when gate always fails', async () => {
+  // Use a test_cmd that always exits 1 — every gate check will fail
+  const supervisor = new Supervisor('antigravity', {
+    verify: { test_cmd: 'node -e "process.exit(1)"' }
+  });
+
+  const result = await supervisor.runOrchestration({
+    taskText: '戳气球区间 DP 优化',
+    rootDir: process.cwd(),
+    availableAgents: ['antigravity'],
+    onProgress: () => {}
+  });
+
+  // Every subtask should have exhausted all 3 attempts and been marked as failed
+  for (const sr of result.subtaskResults) {
+    assert.equal(sr.attempts, 3, `${sr.subtask.id} should have exhausted 3 attempts`);
+    assert.equal(sr.maxAttemptsExceeded, true, `${sr.subtask.id} should be marked maxAttemptsExceeded`);
+    assert.equal(sr.gatePassed, false, `${sr.subtask.id} gate should not have passed`);
+  }
+
+  // Final gate also fails (since subtask gates all failed, code is broken)
+  assert.equal(result.finalResult.gatePassed, false);
+
+  // Bisection report should exist and end in REPAIR_FAILED_NEEDS_HUMAN
+  assert.ok(result.bisectionReport, 'bisectionReport should be generated when final gate fails');
+  assert.equal(result.bisectionReport.status, 'REPAIR_FAILED_NEEDS_HUMAN');
+  assert.equal(result.bisectionReport.repairAttempted, true);
+  assert.ok(result.bisectionReport.suspectSubtasks.length > 0);
 });
