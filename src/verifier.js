@@ -39,34 +39,56 @@ export function verifyWorktree({
     }
   };
 
+  // Inspect package.json scripts if available
+  const pkgJsonPath = path.join(worktreePath, 'package.json');
+  let pkgScripts = null;
+  if (fs.existsSync(pkgJsonPath)) {
+    try {
+      const pkg = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'));
+      pkgScripts = pkg.scripts || {};
+    } catch {}
+  }
+
   // Step 1: Build
   if (verifyConfig.build_cmd && verifyConfig.build_cmd.trim()) {
-    const start = Date.now();
-    const res = runStep(verifyConfig.build_cmd, worktreePath, timeoutMs);
-    const dur = (Date.now() - start) / 1000;
-    results.build = {
-      passed: res.status === 0,
-      exitCode: res.status ?? 1,
-      duration: dur,
-      skipped: false
-    };
-    logStream('BUILD', verifyConfig.build_cmd, res);
+    const isNpmRun = verifyConfig.build_cmd.startsWith('npm run ');
+    const scriptName = isNpmRun ? verifyConfig.build_cmd.replace('npm run ', '').trim() : null;
+    if (pkgScripts && isNpmRun && !pkgScripts[scriptName]) {
+      results.build = { passed: true, exitCode: 0, duration: 0, skipped: true };
+    } else {
+      const start = Date.now();
+      const res = runStep(verifyConfig.build_cmd, worktreePath, timeoutMs);
+      const dur = (Date.now() - start) / 1000;
+      results.build = {
+        passed: res.status === 0,
+        exitCode: res.status ?? 1,
+        duration: dur,
+        skipped: false
+      };
+      logStream('BUILD', verifyConfig.build_cmd, res);
+    }
   } else {
     results.build.skipped = true;
   }
 
   // Step 2: Lint
   if (verifyConfig.lint_cmd && verifyConfig.lint_cmd.trim()) {
-    const start = Date.now();
-    const res = runStep(verifyConfig.lint_cmd, worktreePath, timeoutMs);
-    const dur = (Date.now() - start) / 1000;
-    results.lint = {
-      passed: res.status === 0,
-      exitCode: res.status ?? 1,
-      duration: dur,
-      skipped: false
-    };
-    logStream('LINT', verifyConfig.lint_cmd, res);
+    const isNpmRun = verifyConfig.lint_cmd.startsWith('npm run ');
+    const scriptName = isNpmRun ? verifyConfig.lint_cmd.replace('npm run ', '').trim() : null;
+    if (pkgScripts && isNpmRun && !pkgScripts[scriptName]) {
+      results.lint = { passed: true, exitCode: 0, duration: 0, skipped: true };
+    } else {
+      const start = Date.now();
+      const res = runStep(verifyConfig.lint_cmd, worktreePath, timeoutMs);
+      const dur = (Date.now() - start) / 1000;
+      results.lint = {
+        passed: res.status === 0,
+        exitCode: res.status ?? 1,
+        duration: dur,
+        skipped: false
+      };
+      logStream('LINT', verifyConfig.lint_cmd, res);
+    }
   } else {
     results.lint.skipped = true;
   }

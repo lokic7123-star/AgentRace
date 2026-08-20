@@ -12,11 +12,12 @@ export async function runCommand(args = []) {
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
-    if (arg === '--with' && args[i + 1]) {
+    if ((arg === '--with' || arg === '-w' || arg === '-a' || arg === '--agents') && args[i + 1]) {
       agents = args[i + 1].split(',').map(s => s.trim()).filter(Boolean);
       i++;
-    } else if (arg.startsWith('--with=')) {
-      agents = arg.slice(7).split(',').map(s => s.trim()).filter(Boolean);
+    } else if (arg.startsWith('--with=') || arg.startsWith('--agents=')) {
+      const val = arg.includes('--with=') ? arg.slice(7) : arg.slice(9);
+      agents = val.split(',').map(s => s.trim()).filter(Boolean);
     } else if (arg === '--timeout' && args[i + 1]) {
       timeoutStr = args[i + 1];
       i++;

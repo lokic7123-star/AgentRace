@@ -58,7 +58,7 @@ export const DEFAULT_CONFIG = {
     timeout_per_step: '180s'
   },
   defaults: {
-    agents: ['claude', 'codex'],
+    agents: ['antigravity', 'opencode'],
     timeout: '600s'
   }
 };
