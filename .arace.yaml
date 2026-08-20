@@ -1,0 +1,26 @@
+version: 1
+
+# 环境隔离与依赖配置
+workspace:
+  prepare_cmd: "npm test" # 依赖初始化或准备命令
+  test_paths:
+    - "test/**"
+    - "tests/**"
+    - "src/**/*.spec.ts"
+    - "src/**/*.test.ts"
+    - "src/**/*.spec.js"
+    - "src/**/*.test.js"
+
+# 验真流水线 (在各自 Git 工作树独占串行执行)
+verify:
+  build_cmd: ""
+  lint_cmd: ""
+  test_cmd: "npm test"
+  timeout_per_step: 180s
+
+# 默认运行参数
+defaults:
+  agents:
+    - claude
+    - codex
+  timeout: 600s

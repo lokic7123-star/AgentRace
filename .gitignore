@@ -1,0 +1,4 @@
+node_modules/
+.arace/worktrees/
+.arace/latest_run.json
+*.log

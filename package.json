@@ -1,0 +1,28 @@
+{
+  "name": "arace",
+  "version": "0.1.0",
+  "description": "AgentRace (arace) - Local multi-agent benchmark, isolated worktree racing, and objective verification tool",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "arace": "./bin/arace.js"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "doctor": "node ./bin/arace.js doctor",
+    "detect": "node ./bin/arace.js detect",
+    "stats": "node ./bin/arace.js stats"
+  },
+  "keywords": [
+    "agent",
+    "benchmark",
+    "git-worktree",
+    "ai-agent",
+    "verification",
+    "antigravity",
+    "claude",
+    "codex"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}
