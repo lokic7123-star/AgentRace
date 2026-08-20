@@ -36,7 +36,7 @@ export function createServer(repoRoot = process.cwd()) {
 
   // Periodic agent status detection with diff-based SSE broadcast
   let lastDetectedJson = '';
-  setInterval(() => {
+  const statusTimer = setInterval(() => {
     try {
       const detected = detectInstalledAgents(config.adapters);
       const json = JSON.stringify(detected);
@@ -46,6 +46,7 @@ export function createServer(repoRoot = process.cwd()) {
       }
     } catch {}
   }, 3000);
+  statusTimer.unref();
 
   const server = http.createServer(async (req, res) => {
     // Enable CORS
@@ -337,7 +338,13 @@ export function createServer(repoRoot = process.cwd()) {
     }
 
     if (pathname.startsWith('/api/logs/')) {
-      const agentName = pathname.slice('/api/logs/'.length);
+      const rawAgentName = pathname.slice('/api/logs/'.length);
+      const agentName = path.basename(rawAgentName).replace(/[^a-zA-Z0-9_\-\.]/g, '');
+      if (!agentName) {
+        res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('// 无效的 Agent 名称');
+        return;
+      }
       const latestRunFile = path.join(root, '.arace', 'latest_run.json');
       let foundLog = null;
 
@@ -570,6 +577,10 @@ export function createServer(repoRoot = process.cwd()) {
       res.writeHead(404);
       res.end('Not found');
     }
+  });
+
+  server.on('close', () => {
+    clearInterval(statusTimer);
   });
 
   return server;

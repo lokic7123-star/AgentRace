@@ -23,5 +23,13 @@ test('Web API server responds to /api/status and /api/stats', async () => {
   const html = await htmlRes.text();
   assert.ok(html.includes('AgentRace'));
 
+  const historyRes = await fetch(`http://localhost:${port}/api/history`);
+  assert.strictEqual(historyRes.status, 200);
+  const historyData = await historyRes.json();
+  assert.ok(Array.isArray(historyData.history));
+
+  const safeLogRes = await fetch(`http://localhost:${port}/api/logs/..%2F..%2Fpackage.json`);
+  assert.ok(safeLogRes.status === 200 || safeLogRes.status === 400);
+
   server.close();
 });

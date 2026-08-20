@@ -36,7 +36,7 @@ export const AGENT_STATUSES = {
 };
 
 export const DEFAULT_CONFIG = {
-  version: 1,
+  version: 2,
   workspace: {
     prepare_cmd: 'npm install',
     test_paths: [
@@ -58,7 +58,9 @@ export const DEFAULT_CONFIG = {
     timeout_per_step: '180s'
   },
   defaults: {
-    agents: ['antigravity', 'opencode'],
+    mode: 'orchestration',
+    supervisor: 'antigravity',
+    agents: ['antigravity', 'opencode', 'reasonix'],
     timeout: '600s'
   }
 };

@@ -1,6 +1,6 @@
-version: 1
+version: 2
 
-# 环境隔离与依赖配置
+# 工作树隔离与依赖配置
 workspace:
   prepare_cmd: "npm test" # 依赖初始化或准备命令
   test_paths:
@@ -11,17 +11,20 @@ workspace:
     - "src/**/*.spec.js"
     - "src/**/*.test.js"
 
-# 验真流水线 (在各自 Git 工作树独占串行执行)
+# 独占硬性门禁流水线
 verify:
   build_cmd: ""
   lint_cmd: ""
   test_cmd: "npm test"
   timeout_per_step: 180s
 
-# 默认运行参数
+# 默认协同参数
 defaults:
+  mode: orchestration
+  supervisor: antigravity
   agents:
-    - dsh
-    - claude
-    - codex
+    - antigravity
+    - opencode
+    - reasonix
   timeout: 600s
+

@@ -13,7 +13,7 @@ test('DSH adapter creation and command generation', () => {
 });
 
 test('market agents adapters create valid commands', () => {
-  const agents = ['dsh', 'claude', 'codex', 'aider', 'gemini', 'antigravity', 'cursor', 'windsurf', 'copilot', 'openhands', 'cody', 'goose', 'cline', 'plandex', 'mentat', 'opencode'];
+  const agents = ['dsh', 'claude', 'codex', 'aider', 'gemini', 'antigravity', 'cursor', 'windsurf', 'copilot', 'openhands', 'cody', 'goose', 'cline', 'plandex', 'mentat', 'opencode', 'tabnine', 'reasonix', 'openclaw'];
   for (const name of agents) {
     const adapter = createAdapter(name);
     assert.ok(adapter);

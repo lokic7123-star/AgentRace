@@ -245,16 +245,16 @@ export class Supervisor {
       });
 
       // 1. Setup cascading isolated worktree (branching off upstream dependency's branch)
-      let baseCommit = 'HEAD';
+      let subtaskBaseCommit = 'HEAD';
       if (subtask.deps && subtask.deps.length > 0) {
         const parentId = subtask.deps[subtask.deps.length - 1];
         if (completedBranches[parentId]) {
-          baseCommit = completedBranches[parentId];
+          subtaskBaseCommit = completedBranches[parentId];
         }
       }
 
       const agentIdentifier = `${subtask.id}-${subtask.agent}`;
-      const wt = createWorktree({ repoRoot: rootDir, runId, agentName: agentIdentifier, baseCommit });
+      const wt = createWorktree({ repoRoot: rootDir, runId, agentName: agentIdentifier, baseCommit: subtaskBaseCommit });
       worktrees.push(wt);
 
       // 2. Run specialist agent adapter with circuit breaker retry loop (max 3 total attempts)
@@ -324,7 +324,7 @@ export class Supervisor {
         agent: subtask.agent,
         worktreePath: wt.worktreePath,
         branchName: wt.branchName,
-        baseCommitUsed: baseCommit,
+        baseCommitUsed: subtaskBaseCommit,
         attempts: attempt,
         maxAttemptsExceeded: !gatePassed,
         exitCode: runRes?.exitCode || 0,

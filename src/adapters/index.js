@@ -281,6 +281,8 @@ test('executeTask runs and returns success status', () => {
       exitCode: 0,
       durationSeconds: durationSec,
       timedOut: false,
+      isSimulated: true,
+      engine: 'autonomous_fallback',
       tokens: {
         promptTokens: estInput,
         completionTokens: estOutput,
@@ -460,6 +462,14 @@ export class ReasonixAdapter extends BaseAdapter {
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'reasonix';
     return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class TabnineAdapter extends BaseAdapter {
+  constructor(config = {}) { super('tabnine', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'tabnine';
+    return { command: customCmd, args: ['chat', `"${taskText.replace(/"/g, '\\"')}"`] };
   }
 }
 
