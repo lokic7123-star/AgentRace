@@ -19,7 +19,7 @@ const VERSION = '0.2.0';
 function printHelp() {
   console.log(`
 ${c('bold', 'AgentRace (arace)')} v${VERSION}
-${c('dim', 'Local Multi-Agent Benchmark, Objective Verification & AI Ensemble Engine')}
+${c('dim', '多 Agent 任务冲刺与最佳方案交付引擎 — 谁完成得又好又快，就用谁的代码！')}
 
 ${c('bold', 'USAGE:')}
   arace <command> [options]
