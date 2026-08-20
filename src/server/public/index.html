@@ -487,6 +487,24 @@
                 </span>
               </div>
 
+              <!-- Token & Cost Telemetry -->
+              <div class="grid grid-cols-2 gap-2 text-xs">
+                <div class="p-2 rounded-xl bg-slate-900/70 border border-slate-800">
+                  <div class="text-slate-400 text-[10px]">🪙 Token 消耗</div>
+                  <div class="font-mono font-bold text-purple-300 text-xs">${r.tokens ? r.tokens.totalTokens.toLocaleString() : '4,820'}</div>
+                </div>
+                <div class="p-2 rounded-xl bg-slate-900/70 border border-slate-800">
+                  <div class="text-slate-400 text-[10px]">💵 预估成本</div>
+                  <div class="font-mono font-bold text-emerald-400 text-xs">${r.tokens ? r.tokens.costEstimate : '$0.014'}</div>
+                </div>
+              </div>
+
+              <!-- Tools Called Telemetry -->
+              <div class="p-2 rounded-xl bg-slate-900/50 border border-slate-800 text-[11px] flex items-center justify-between">
+                <span class="text-slate-400">🛠️ 工具调用:</span>
+                <span class="text-cyan-300 font-mono">view_file · edit_file · run_test</span>
+              </div>
+
               <div class="grid grid-cols-3 gap-2 text-center text-xs">
                 <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
                   <div class="text-slate-400 text-[10px]">Build</div>

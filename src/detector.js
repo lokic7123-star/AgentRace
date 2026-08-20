@@ -7,6 +7,7 @@ export const KNOWN_AGENTS = [
   {
     name: 'antigravity',
     displayName: 'Google Antigravity / Gemini',
+    type: 'autonomous_agent',
     binaries: ['Antigravity.exe', 'antigravity', 'gemini.cmd', 'gemini', 'agy.cmd', 'agy'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'antigravity', 'Antigravity.exe'),
@@ -14,11 +15,12 @@ export const KNOWN_AGENTS = [
       path.join(os.homedir(), '.gemini', 'bin', 'gemini.cmd')
     ],
     versionFlag: '--version',
-    description: 'Google Antigravity IDE & Gemini Agent'
+    description: 'Google Antigravity IDE & Gemini Autonomous Agent'
   },
   {
     name: 'opencode',
     displayName: 'OpenCode Assistant',
+    type: 'autonomous_agent',
     binaries: ['opencode.exe', 'opencode', 'opencode.cmd'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', '@opencode-aidesktop', 'OpenCode.exe'),
@@ -26,168 +28,143 @@ export const KNOWN_AGENTS = [
       path.join(os.homedir(), 'AppData', 'Local', 'Temp', 'opencode')
     ],
     versionFlag: '--version',
-    description: 'OpenCode local code intelligence CLI'
-  },
-  {
-    name: 'lmstudio',
-    displayName: 'LM Studio Local LLM (lms)',
-    binaries: ['lms.exe', 'lms', 'lms.cmd'],
-    extraPaths: [
-      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'LM Studio', 'resources', 'app', '.webpack', 'lms.exe'),
-      path.join(os.homedir(), '.cache', 'lm-studio', 'bin', 'lms.exe'),
-      path.join(os.homedir(), '.lmstudio', 'bin', 'lms')
-    ],
-    versionFlag: 'version',
-    description: 'LM Studio local model CLI & server'
+    description: 'OpenCode Local AI Coding Agent'
   },
   {
     name: 'dsh',
     displayName: 'DeepSeek Harness (DSH)',
+    type: 'autonomous_agent',
     binaries: ['dsh', 'dsh.cmd', 'dsh.exe'],
     extraPaths: [
       path.join(os.homedir(), '.dsh', 'bin', 'dsh.exe'),
       path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'dsh.cmd')
     ],
     versionFlag: '--version',
-    description: 'DeepSeek Harness multi-agent orchestrator & router'
+    description: 'DeepSeek Harness Multi-Agent Orchestrator'
   },
   {
     name: 'claude',
     displayName: 'Claude Code',
+    type: 'autonomous_agent',
     binaries: ['claude', 'claude.cmd', 'claude.exe'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'claude.cmd'),
       path.join(os.homedir(), '.npm-global', 'bin', 'claude')
     ],
     versionFlag: '--version',
-    description: 'Anthropic Claude Code CLI'
+    description: 'Anthropic Claude Code CLI Agent'
   },
   {
     name: 'codex',
     displayName: 'OpenAI Codex / CLI',
+    type: 'autonomous_agent',
     binaries: ['codex', 'codex.cmd', 'openai', 'openai.cmd'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'codex.cmd'),
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Python', 'Python311', 'Scripts', 'openai.exe')
     ],
     versionFlag: '--version',
-    description: 'OpenAI Codex / CLI Agent'
+    description: 'OpenAI Codex / CLI Coding Agent'
   },
   {
     name: 'aider',
     displayName: 'Aider AI Pair Programmer',
+    type: 'autonomous_agent',
     binaries: ['aider', 'aider.cmd', 'aider.exe'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Python', 'Python311', 'Scripts', 'aider.exe'),
       path.join(os.homedir(), '.local', 'bin', 'aider')
     ],
     versionFlag: '--version',
-    description: 'Aider AI multi-model pair programming CLI'
+    description: 'Aider Multi-Model Git Pair Programmer'
   },
   {
     name: 'cursor',
     displayName: 'Cursor Agent',
+    type: 'autonomous_agent',
     binaries: ['cursor-agent', 'cursor-agent.cmd', 'cursor', 'cursor.cmd'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'cursor', 'resources', 'app', 'bin', 'cursor.cmd'),
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'cursor', 'Cursor.exe')
     ],
     versionFlag: '--version',
-    description: 'Cursor IDE headless coding agent'
-  },
-  {
-    name: 'ollama',
-    displayName: 'Ollama Local LLM Agent',
-    binaries: ['ollama', 'ollama.cmd', 'ollama.exe'],
-    extraPaths: [
-      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Ollama', 'ollama.exe')
-    ],
-    versionFlag: '--version',
-    description: 'Ollama local models (DeepSeek, Llama, Qwen)'
-  },
-  {
-    name: 'windsurf',
-    displayName: 'Codeium Windsurf CLI',
-    binaries: ['windsurf', 'windsurf.cmd'],
-    extraPaths: [
-      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'windsurf', 'bin', 'windsurf.cmd')
-    ],
-    versionFlag: '--version',
-    description: 'Codeium Windsurf AI CLI'
-  },
-  {
-    name: 'copilot',
-    displayName: 'GitHub Copilot CLI',
-    binaries: ['copilot', 'copilot.cmd', 'gh-copilot'],
-    extraPaths: [],
-    versionFlag: '--version',
-    description: 'GitHub Copilot CLI tool'
+    description: 'Cursor IDE Headless Coding Agent'
   },
   {
     name: 'openhands',
     displayName: 'OpenHands (OpenDevin)',
+    type: 'autonomous_agent',
     binaries: ['openhands', 'openhands.cmd', 'opendevin'],
     extraPaths: [],
     versionFlag: '--version',
-    description: 'OpenHands autonomous software development agent'
-  },
-  {
-    name: 'cody',
-    displayName: 'Sourcegraph Cody CLI',
-    binaries: ['cody', 'cody.cmd'],
-    extraPaths: [],
-    versionFlag: '--version',
-    description: 'Sourcegraph Cody AI coding assistant'
+    description: 'OpenHands Autonomous Software Engineer'
   },
   {
     name: 'goose',
     displayName: 'Block Goose AI Agent',
+    type: 'autonomous_agent',
     binaries: ['goose', 'goose.cmd', 'goose.exe'],
     extraPaths: [
       path.join(os.homedir(), '.local', 'bin', 'goose.exe')
     ],
     versionFlag: '--version',
-    description: 'Block Goose open-source on-machine developer agent'
+    description: 'Block Goose On-Machine Developer Agent'
   },
   {
     name: 'cline',
     displayName: 'Roo Code / Cline CLI',
+    type: 'autonomous_agent',
     binaries: ['cline', 'cline.cmd', 'roo', 'roo.cmd'],
     extraPaths: [],
     versionFlag: '--version',
-    description: 'Cline / Roo Code autonomous CLI'
+    description: 'Cline / Roo Autonomous Coding CLI'
+  },
+  {
+    name: 'windsurf',
+    displayName: 'Codeium Windsurf CLI',
+    type: 'autonomous_agent',
+    binaries: ['windsurf', 'windsurf.cmd'],
+    extraPaths: [
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'windsurf', 'bin', 'windsurf.cmd')
+    ],
+    versionFlag: '--version',
+    description: 'Codeium Windsurf Agent CLI'
+  },
+  {
+    name: 'copilot',
+    displayName: 'GitHub Copilot CLI',
+    type: 'autonomous_agent',
+    binaries: ['copilot', 'copilot.cmd', 'gh-copilot'],
+    extraPaths: [],
+    versionFlag: '--version',
+    description: 'GitHub Copilot Workspace CLI'
+  },
+  {
+    name: 'cody',
+    displayName: 'Sourcegraph Cody CLI',
+    type: 'autonomous_agent',
+    binaries: ['cody', 'cody.cmd'],
+    extraPaths: [],
+    versionFlag: '--version',
+    description: 'Sourcegraph Cody AI Assistant'
   },
   {
     name: 'plandex',
     displayName: 'Plandex AI Agent',
+    type: 'autonomous_agent',
     binaries: ['plandex', 'plandex.cmd', 'plandex.exe'],
     extraPaths: [],
     versionFlag: '--version',
-    description: 'Plandex terminal-based multi-file coding agent'
+    description: 'Plandex Terminal Multi-File Agent'
   },
   {
     name: 'mentat',
     displayName: 'Mentat AI Assistant',
+    type: 'autonomous_agent',
     binaries: ['mentat', 'mentat.cmd', 'mentat.exe'],
     extraPaths: [],
     versionFlag: '--version',
-    description: 'Mentat interactive AI coding partner'
-  },
-  {
-    name: 'sgpt',
-    displayName: 'Shell-GPT (SGPT)',
-    binaries: ['sgpt', 'sgpt.cmd', 'sgpt.exe'],
-    extraPaths: [],
-    versionFlag: '--version',
-    description: 'Shell-GPT command-line AI assistant'
-  },
-  {
-    name: 'tabnine',
-    displayName: 'Tabnine CLI',
-    binaries: ['tabnine', 'tabnine.cmd'],
-    extraPaths: [],
-    versionFlag: '--version',
-    description: 'Tabnine enterprise AI code assistant'
+    description: 'Mentat Interactive Coding Agent'
   }
 ];
 
@@ -206,7 +183,6 @@ function getPathBinaryMap(forceRefresh = false) {
   const map = new Map();
   const pathDirs = (process.env.PATH || '').split(path.delimiter).filter(Boolean);
 
-  // Common user app directories on Windows / macOS / Linux
   const extraSearchDirs = [
     path.join(os.homedir(), 'AppData', 'Local', 'Programs'),
     path.join(os.homedir(), 'AppData', 'Roaming', 'npm'),
@@ -243,7 +219,6 @@ function getPathBinaryMap(forceRefresh = false) {
 }
 
 export function checkBinaryExists(binaryName, extraPaths = []) {
-  // 1. Check extra explicit paths
   if (extraPaths && extraPaths.length > 0) {
     for (const p of extraPaths) {
       if (fs.existsSync(p)) {
@@ -252,14 +227,12 @@ export function checkBinaryExists(binaryName, extraPaths = []) {
     }
   }
 
-  // 2. Check binary map
   const map = getPathBinaryMap();
   const lowerName = binaryName.toLowerCase();
   if (map.has(lowerName)) {
     return { found: true, path: map.get(lowerName) };
   }
 
-  // 3. Check with extensions on Windows
   const isWin = os.platform() === 'win32';
   if (isWin) {
     for (const ext of ['.exe', '.cmd', '.bat', '.ps1']) {
@@ -282,7 +255,6 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
     let binaryPath = null;
     let version = null;
 
-    // Check extra paths first
     if (agent.extraPaths) {
       for (const p of agent.extraPaths) {
         if (fs.existsSync(p)) {
@@ -294,7 +266,6 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
       }
     }
 
-    // Check binaries in PATH
     if (!installed) {
       for (const bin of agent.binaries) {
         const probe = checkBinaryExists(bin, agent.extraPaths);
@@ -310,6 +281,7 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
     results.push({
       name: agent.name,
       displayName: agent.displayName,
+      type: agent.type || 'autonomous_agent',
       available: installed,
       path: binaryPath,
       version: version || (installed ? 'installed' : 'not found'),
@@ -326,6 +298,7 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
       results.push({
         name,
         displayName: config.displayName || name,
+        type: 'custom_agent',
         available: probe.found || Boolean(config.mock),
         path: probe.path || (config.mock ? 'mock-builtin' : null),
         version: probe.found ? 'configured' : (config.mock ? 'mock-mode' : 'command not found'),

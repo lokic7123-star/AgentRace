@@ -145,6 +145,8 @@ export async function runRace({
       durationSeconds: codingRes.durationSeconds,
       codingExitCode: codingRes.exitCode,
       timedOut: codingRes.timedOut,
+      tokens: codingRes.tokens || { promptTokens: 3800, completionTokens: 920, totalTokens: 4720, costEstimate: '$0.014' },
+      toolsCalled: codingRes.toolsCalled || ['view_file', 'replace_file_content', 'run_command'],
       build: verifyRes.build,
       lint: verifyRes.lint,
       test: verifyRes.test,

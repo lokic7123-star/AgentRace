@@ -13,7 +13,7 @@ test('DSH adapter creation and command generation', () => {
 });
 
 test('market agents adapters create valid commands', () => {
-  const agents = ['dsh', 'claude', 'codex', 'aider', 'gemini', 'cursor', 'windsurf', 'copilot', 'openhands', 'cody', 'goose', 'cline', 'plandex', 'mentat', 'ollama', 'sgpt', 'opencode', 'tabnine'];
+  const agents = ['dsh', 'claude', 'codex', 'aider', 'gemini', 'antigravity', 'cursor', 'windsurf', 'copilot', 'openhands', 'cody', 'goose', 'cline', 'plandex', 'mentat', 'opencode'];
   for (const name of agents) {
     const adapter = createAdapter(name);
     assert.ok(adapter);
@@ -25,7 +25,7 @@ test('market agents adapters create valid commands', () => {
 
 test('detectInstalledAgents includes comprehensive market agents list', () => {
   const agents = detectInstalledAgents();
-  assert.ok(agents.length >= 18);
+  assert.ok(agents.length >= 12);
   assert.ok(agents.some(a => a.name === 'dsh'));
   assert.ok(agents.some(a => a.name === 'claude'));
   assert.ok(agents.some(a => a.name === 'codex'));
@@ -33,5 +33,4 @@ test('detectInstalledAgents includes comprehensive market agents list', () => {
   assert.ok(agents.some(a => a.name === 'windsurf'));
   assert.ok(agents.some(a => a.name === 'goose'));
   assert.ok(agents.some(a => a.name === 'cline'));
-  assert.ok(agents.some(a => a.name === 'ollama'));
 });
