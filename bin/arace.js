@@ -11,6 +11,7 @@ import { statsCommand } from '../src/commands/stats.js';
 import { blendCommand } from '../src/commands/blend.js';
 import { pickCommand } from '../src/commands/pick.js';
 import { uiCommand } from '../src/commands/ui.js';
+import { orchestrateCommand } from '../src/commands/orchestrate.js';
 import { c, symbols } from '../src/utils.js';
 import { EXIT_CODES } from '../src/types.js';
 
@@ -19,23 +20,26 @@ const VERSION = '0.2.0';
 function printHelp() {
   console.log(`
 ${c('bold', 'AgentRace (arace)')} v${VERSION}
-${c('dim', '多 Agent 任务冲刺与最佳方案交付引擎 — 谁完成得又好又快，就用谁的代码！')}
+${c('dim', '主 Agent 智能编排分工 + 专精子 Agent 协同 + 硬性客观质量门禁引擎')}
 
 ${c('bold', 'USAGE:')}
   arace <command> [options]
   arace "<task>" [options]               (Shortcut for \`arace run\`)
 
-${c('bold', 'CORE RACING COMMANDS:')}
-  ${c('cyan', 'run')} <task>              Start multi-agent race in isolated worktrees
-  ${c('cyan', 'detect')}                  Scan local machine for available Agent CLIs (DSH, Claude, Codex, Aider...)
-  ${c('cyan', 'doctor')}                  Environment self-check & diagnosis (use --fix to prune)
-  ${c('cyan', 'diff')} [agent]            Inspect unified diff vs base commit (--stat, --compare)
+${c('bold', 'SUPERVISOR ORCHESTRATION COMMANDS (DEFAULT):')}
+  ${c('magenta', 'orchestrate')} <task>    Decompose task into DAG, dispatch to specialist agents, verify with hard gates
+  ${c('cyan', 'ui')} [--port 3333]        Launch modern interactive Web Orchestrator & Multi-Agent Matrix
 
-${c('bold', 'AI ENSEMBLE & MERGE COMMANDS:')}
-  ${c('cyan', 'blend')} [--judge <agent>] Merge best architectural & test traits using AI Synthesizer
-  ${c('cyan', 'pick')} <file>:<agent>     Cherry-pick specific files from different agents
-  ${c('cyan', 'keep')} <agent>            Merge winning or ensemble agent's code and cleanup
-  ${c('cyan', 'discard')}                 Discard all temporary worktrees and race branches
+${c('bold', 'TOURNAMENT RACING & VERIFICATION:')}
+  ${c('cyan', 'run')} <task>              Start multi-agent race in isolated worktrees (benchmark mode)
+  ${c('cyan', 'detect')}                  Scan local machine for available Agent CLIs
+  ${c('cyan', 'doctor')}                  Environment self-check & diagnosis
+  ${c('cyan', 'diff')} [agent]            Inspect unified diff vs base commit
+
+${c('bold', 'SYNTHESIS & INTEGRATION COMMANDS:')}
+  ${c('cyan', 'blend')} [--judge <agent>] Merge best traits using AI Synthesizer
+  ${c('cyan', 'keep')} <agent>            Merge winning or supervisor-integrated solution and cleanup
+  ${c('cyan', 'discard')}                 Discard all temporary worktrees and branches
 
 ${c('bold', 'WEB DASHBOARD & ANALYTICS:')}
   ${c('cyan', 'ui')} [--port 3333]        Launch modern interactive Web Arena & Ensemble Studio
@@ -74,6 +78,10 @@ async function main() {
 
   try {
     switch (firstArg) {
+      case 'orchestrate':
+      case 'orch':
+        exitCode = await orchestrateCommand(rawArgs.slice(1));
+        break;
       case 'detect':
         exitCode = await detectCommand(rawArgs.slice(1));
         break;
