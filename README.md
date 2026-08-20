@@ -162,14 +162,14 @@ defaults:
 
 ## 🧪 自动化测试套件
 
-AgentRace 自带完备的自动化测试体系，包含 **28 个** 单元与集成测试用例：
+AgentRace 自带完备的自动化测试体系，包含 **30 个** 单元与集成测试用例：
 
 ```bash
 npm test
 ```
 
+- `supervisor.test.js`: DAG 动态拆解、黑盒 QA 契约盲测、目标断言密度检查与级联 Worktree 继承验证
 - `ast_guard.test.js`: AST 防作弊与 `test.skip` 侦测验证
-- `supervisor.test.js`: DAG 拓扑拆解、黑盒 QA Prompt 隔离与断言密度验证
 - `blend.test.js`: AI 裁判与方案融合验证
 - `diff_parser.test.js`: 业务代码与测试代码分流解析
 - `cli.test.js` & `ui.test.js`: 命令行与 Web 服务接口验证

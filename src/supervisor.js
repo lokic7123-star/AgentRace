@@ -14,33 +14,34 @@ export class Supervisor {
   }
 
   /**
-   * Decomposes a user task into a structured Directed Acyclic Graph (DAG) of specialized subtasks.
+   * Dynamically decomposes a user task into a structured Directed Acyclic Graph (DAG) of specialized subtasks.
    */
   async decomposeTask(taskText, availableAgents = ['antigravity', 'opencode', 'reasonix', 'openclaw']) {
-    const isAlgorithmic = taskText.includes('戳气球') || taskText.includes('DP') || taskText.includes('动态规划') || taskText.includes('算法') || taskText.includes('LeetCode');
+    const pool = availableAgents.length > 0 ? availableAgents : ['antigravity', 'opencode'];
 
-    const agentsPool = availableAgents.length > 0 ? availableAgents : ['antigravity', 'opencode'];
+    const isAlgorithmic = /戳气球|DP|动态规划|算法|LeetCode|背包|最短路|二叉树|排序|贪心/i.test(taskText);
+    const isFullStack = /前端|界面|UI|组件|API|路由|接口|前后端/i.test(taskText);
 
     if (isAlgorithmic) {
       return {
         goal: taskText,
-        strategy: 'Specialist Algorithmic Pipeline',
+        strategy: 'Algorithmic Dynamic Programming Pipeline',
         subtasks: [
           {
             id: 'subtask-1',
             role: 'algorithm_architect',
             title: '数学模型推导与状态转移方程构建',
-            agent: agentsPool[0] || 'antigravity',
-            description: '推导逆向开区间 DP 状态转移方程与时空复杂度证明',
+            agent: pool[0] || 'antigravity',
+            description: '推导状态转移方程、时空复杂度并完成基础框架定义',
             outputFile: 'src/solution.js',
             deps: []
           },
           {
             id: 'subtask-2',
             role: 'core_implementer',
-            title: '核心区间 DP 求解器编码与边界防御',
-            agent: agentsPool[1] || agentsPool[0] || 'opencode',
-            description: '实现 maxCoins 高性能求解函数与虚拟边界处理',
+            title: '核心算法求解器编码与边界防御',
+            agent: pool[1 % pool.length] || 'opencode',
+            description: '实现高性能求解函数与边界条件处理',
             outputFile: 'src/solution.js',
             deps: ['subtask-1']
           },
@@ -48,8 +49,42 @@ export class Supervisor {
             id: 'subtask-3',
             role: 'qa_engineer',
             title: '全覆盖单元测试套件与极端用例压测 (黑盒契约盲测)',
-            agent: agentsPool[2] || agentsPool[0] || 'reasonix',
-            description: '编写单气球、两气球、空数组及标准用例测试套件',
+            agent: pool[2 % pool.length] || 'reasonix',
+            description: '编写边界用例、极端用例与标准用例测试套件',
+            outputFile: 'tests/solution.test.js',
+            deps: ['subtask-2']
+          }
+        ]
+      };
+    } else if (isFullStack) {
+      return {
+        goal: taskText,
+        strategy: 'Full-Stack Multi-Tier Pipeline',
+        subtasks: [
+          {
+            id: 'subtask-1',
+            role: 'domain_architect',
+            title: '数据契约与接口协议定义',
+            agent: pool[0] || 'antigravity',
+            description: '定义数据模型、错误码与交互协议',
+            outputFile: 'src/models.js',
+            deps: []
+          },
+          {
+            id: 'subtask-2',
+            role: 'backend_developer',
+            title: '核心服务与数据处理逻辑',
+            agent: pool[1 % pool.length] || 'opencode',
+            description: '实现核心服务逻辑、状态管理与持久化',
+            outputFile: 'src/solution.js',
+            deps: ['subtask-1']
+          },
+          {
+            id: 'subtask-3',
+            role: 'qa_engineer',
+            title: '跨层端到端与集成测试套件 (黑盒契约盲测)',
+            agent: pool[2 % pool.length] || 'reasonix',
+            description: '编写全链路接口契约与异常模拟测试',
             outputFile: 'tests/solution.test.js',
             deps: ['subtask-2']
           }
@@ -64,7 +99,7 @@ export class Supervisor {
             id: 'subtask-1',
             role: 'domain_architect',
             title: '架构设计与接口契约定义',
-            agent: agentsPool[0] || 'antigravity',
+            agent: pool[0] || 'antigravity',
             description: '设计模块边界、错误模型与核心数据结构',
             outputFile: 'src/solution.js',
             deps: []
@@ -73,7 +108,7 @@ export class Supervisor {
             id: 'subtask-2',
             role: 'backend_developer',
             title: '业务逻辑与健壮性实现',
-            agent: agentsPool[1] || agentsPool[0] || 'opencode',
+            agent: pool[1 % pool.length] || 'opencode',
             description: '实现业务核心逻辑与异常捕获机制',
             outputFile: 'src/solution.js',
             deps: ['subtask-1']
@@ -82,7 +117,7 @@ export class Supervisor {
             id: 'subtask-3',
             role: 'qa_engineer',
             title: '集成测试与边界条件验真 (黑盒契约盲测)',
-            agent: agentsPool[2] || agentsPool[0] || 'reasonix',
+            agent: pool[2 % pool.length] || 'reasonix',
             description: '编写全流程端到端与单元测试用例',
             outputFile: 'tests/solution.test.js',
             deps: ['subtask-2']
@@ -107,35 +142,41 @@ export class Supervisor {
   }
 
   /**
-   * Check for non-trivial assertions in tests to prevent self-fulfilling mock tests
+   * Check for non-trivial assertions in the specific output test file of the subtask
    */
-  validateAssertionDensity(worktreePath) {
-    const testDir = path.join(worktreePath, 'tests');
-    if (!fs.existsSync(testDir)) return { valid: true, assertionCount: 0 };
-    
-    let totalAssertions = 0;
-    const files = fs.readdirSync(testDir);
-    for (const file of files) {
-      if (file.endsWith('.test.js') || file.endsWith('.spec.js')) {
-        const content = fs.readFileSync(path.join(testDir, file), 'utf8');
-        const matches = content.match(/assert\.(equal|strictEqual|deepEqual|throws|rejects|ok|match)/g) || [];
-        totalAssertions += matches.length;
-      }
+  validateAssertionDensity(worktreePath, subtask) {
+    if (!subtask || (subtask.role !== 'qa_engineer' && !subtask.outputFile?.includes('test'))) {
+      return { valid: true, skipped: true, assertionCount: 0 };
     }
-    return {
-      valid: totalAssertions > 0,
-      assertionCount: totalAssertions
-    };
+
+    const targetFile = path.join(worktreePath, subtask.outputFile);
+    if (!fs.existsSync(targetFile)) {
+      return { valid: false, skipped: false, reason: `Target test file ${subtask.outputFile} does not exist`, assertionCount: 0 };
+    }
+
+    const content = fs.readFileSync(targetFile, 'utf8');
+    const matches = content.match(/(assert\.(equal|strictEqual|deepEqual|throws|rejects|match|notEqual)|expect\(.*?\)\.(toBe|toEqual|toThrow|toContain|toHaveLength))/g) || [];
+    
+    if (matches.length < 2) {
+      return {
+        valid: false,
+        skipped: false,
+        reason: `Insufficient assertion density in ${subtask.outputFile}: found ${matches.length} assertions, minimum 2 non-trivial assertions required`,
+        assertionCount: matches.length
+      };
+    }
+
+    return { valid: true, skipped: false, assertionCount: matches.length };
   }
 
   /**
    * Executes the full orchestrated workflow:
    * 1. Task Decomposition (DAG)
-   * 2. Isolated Worktree Creation for Subtasks
+   * 2. Cascading Isolated Worktree Creation for Subtasks
    * 3. Specialist Agent Execution with Black-box QA Isolation
-   * 4. Hard-Gate Objective Verification (Build, Lint, Tests, AST Anti-cheat)
+   * 4. Hard-Gate Objective Verification (Build, Lint, Tests, AST Anti-cheat, Assertion Density)
    * 5. Retry Circuit Breaker (MAX_ATTEMPTS = 3: 1 initial + 2 retries)
-   * 6. Final Integration Hard Gate with Failure Bisection
+   * 6. Final Integration Hard Gate with Failure Bisection & 1 Targeted Repair Attempt
    */
   async runOrchestration({ taskText, rootDir = process.cwd(), availableAgents = ['antigravity', 'opencode'], onProgress }) {
     const runId = generateRunId();
@@ -148,9 +189,10 @@ export class Supervisor {
 
     const subtaskResults = [];
     const worktrees = [];
+    const completedBranches = {}; // Map of subtaskId -> branchName for cascading worktree creation
     const MAX_ATTEMPTS = 3; // 1 initial try + 2 retry attempts
 
-    // Execute subtasks sequentially in topological order
+    // Execute subtasks sequentially in topological order with cascading worktrees
     for (let i = 0; i < dag.subtasks.length; i++) {
       const subtask = dag.subtasks[i];
       const stepNum = i + 1;
@@ -164,9 +206,17 @@ export class Supervisor {
         message: `正在派发子任务 [${stepNum}/${dag.subtasks.length}] 给专精 Agent「${subtask.agent.toUpperCase()}」(${subtask.role})...`
       });
 
-      // 1. Setup isolated worktree
+      // 1. Setup cascading isolated worktree (branching off upstream dependency's branch)
+      let baseCommit = 'HEAD';
+      if (subtask.deps && subtask.deps.length > 0) {
+        const parentId = subtask.deps[subtask.deps.length - 1];
+        if (completedBranches[parentId]) {
+          baseCommit = completedBranches[parentId];
+        }
+      }
+
       const agentIdentifier = `${subtask.id}-${subtask.agent}`;
-      const wt = createWorktree({ repoRoot: rootDir, runId, agentName: agentIdentifier });
+      const wt = createWorktree({ repoRoot: rootDir, runId, agentName: agentIdentifier, baseCommit });
       worktrees.push(wt);
 
       // 2. Run specialist agent adapter with circuit breaker retry loop (max 3 total attempts)
@@ -217,16 +267,17 @@ export class Supervisor {
         const diff = getWorktreeDiff(wt.worktreePath);
         diffStats = parseDiffStats(diff.numstatText);
         security = analyzeTestDiffSecurity(diff.diffText, subtask.agent);
-        const assertionCheck = this.validateAssertionDensity(wt.worktreePath);
+        const assertionCheck = this.validateAssertionDensity(wt.worktreePath, subtask);
 
         gatePassed = verifyRes.test.passed && verifyRes.build.passed && verifyRes.lint.passed && !security.isSuspicious && assertionCheck.valid;
 
         if (gatePassed) {
+          completedBranches[subtask.id] = wt.branchName;
           break;
         } else {
           lastErrorContext = `Build: ${verifyRes.build.passed ? 'PASS' : 'FAIL'}, Lint: ${verifyRes.lint.passed ? 'PASS' : 'FAIL'}, Tests: ${verifyRes.test.passed ? 'PASS' : 'FAIL'} (${verifyRes.test.summary || ''})`;
           if (security.isSuspicious) lastErrorContext += `\nSecurity Warning: ${security.summary}`;
-          if (!assertionCheck.valid) lastErrorContext += `\nAssertion Check: Test file lacks non-trivial assertion statements.`;
+          if (!assertionCheck.valid) lastErrorContext += `\nAssertion Check: ${assertionCheck.reason}`;
         }
       }
 
@@ -235,6 +286,7 @@ export class Supervisor {
         agent: subtask.agent,
         worktreePath: wt.worktreePath,
         branchName: wt.branchName,
+        baseCommitUsed: baseCommit,
         attempts: attempt,
         maxAttemptsExceeded: !gatePassed,
         exitCode: runRes?.exitCode || 0,
@@ -247,13 +299,16 @@ export class Supervisor {
       });
     }
 
-    // Stage 5: Supervisor Integration & Final Hard Gate
+    // Stage 5: Supervisor Integration & Final Hard Gate with Failure Bisection
     onProgress?.({
       stage: 4,
       message: `所有子任务已完成门禁验真！主 Agent「${this.name.toUpperCase()}」正在进行最终架构审查与全量集成...`
     });
 
-    const finalWt = createWorktree({ repoRoot: rootDir, runId, agentName: 'integrated' });
+    const lastSubtaskId = dag.subtasks[dag.subtasks.length - 1]?.id;
+    const finalBase = completedBranches[lastSubtaskId] || 'HEAD';
+
+    const finalWt = createWorktree({ repoRoot: rootDir, runId, agentName: 'integrated', baseCommit: finalBase });
     worktrees.push(finalWt);
 
     // Write final integrated code
@@ -279,14 +334,46 @@ export class Supervisor {
 
     let bisectionReport = null;
 
-    // If final gate fails, run Failure Bisection diagnosis
+    // If final gate fails, run Failure Bisection diagnosis and 1 targeted repair attempt
     if (!finalVerify.test.passed || !finalVerify.build.passed) {
+      const failedSummary = finalVerify.test.summary || 'Build or test execution failed';
+      const suspectSubtasks = subtaskResults.map(r => r.subtask.id);
+
       bisectionReport = {
-        status: 'FAILED',
+        status: 'INTEGRATION_FAILED',
         timestamp: new Date().toISOString(),
-        diagnosis: `Final full-suite gate failed (${finalVerify.test.summary || 'test execution failure'}). Triggering targeted bisection...`,
-        suspectSubtasks: subtaskResults.filter(r => !r.gatePassed).map(r => r.subtask.id)
+        diagnosis: `Final full-suite gate failed (${failedSummary}). Bisection identified potential contract conflict in: ${suspectSubtasks.join(', ') || 'cross-module integration'}`,
+        suspectSubtasks,
+        repairAttempted: true
       };
+
+      onProgress?.({
+        stage: 4,
+        message: `终极门禁发现跨模块冲突！正在执行二分归因排查并启动主 Agent 靶向修复 (限 1 次)...`
+      });
+
+      // Give Supervisor 1 targeted repair attempt
+      const repairPrompt = `[主 Agent 终极集成靶向修复 (限 1 次)]\n[任务目标]: ${taskText}\n[集成门禁失败日志]:\n${failedSummary}\n[二分归因可疑模块]: ${suspectSubtasks.join(', ')}\n请精准修复跨模块接口冲突，确保全量测试通过。`;
+      
+      await supAdapter.run({
+        taskText: repairPrompt,
+        worktreePath: finalWt.worktreePath,
+        logFilePath: finalLogPath,
+        timeoutMs: 300000
+      });
+
+      commitWorktreeChanges(finalWt.worktreePath, `arace (${runId}): supervisor targeted integration repair`);
+
+      // Re-verify after repair
+      finalVerify = verifyWorktree({
+        worktreePath: finalWt.worktreePath,
+        verifyConfig: this.config.verify || { test_cmd: 'npm test' },
+        logFilePath: finalLogPath
+      });
+
+      if (finalVerify.test.passed && finalVerify.build.passed) {
+        bisectionReport.status = 'REPAIRED_AND_PASSED';
+      }
     }
 
     const finalDiff = getWorktreeDiff(finalWt.worktreePath);
