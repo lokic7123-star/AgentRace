@@ -267,6 +267,14 @@ export class OpenCodeAdapter extends BaseAdapter {
   }
 }
 
+export class LmStudioAdapter extends BaseAdapter {
+  constructor(config = {}) { super('lmstudio', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'lms';
+    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
 export class TabnineAdapter extends BaseAdapter {
   constructor(config = {}) { super('tabnine', config); }
   buildCommand(taskText) {
@@ -297,8 +305,11 @@ export function createAdapter(agentName, customAdapters = {}) {
     case 'claude': return new ClaudeAdapter(config);
     case 'codex': return new CodexAdapter(config);
     case 'aider': return new AiderAdapter(config);
+    case 'antigravity':
     case 'gemini':
     case 'agy': return new GeminiAdapter(config);
+    case 'lmstudio':
+    case 'lms': return new LmStudioAdapter(config);
     case 'cursor': return new CursorAdapter(config);
     case 'windsurf': return new WindsurfAdapter(config);
     case 'copilot': return new CopilotAdapter(config);
