@@ -418,29 +418,34 @@
 
     function renderDetection(agents) {
       const available = agents.filter(a => a.available);
+      const running = agents.filter(a => a.isRunning);
       const countBadge = document.getElementById('detected-count-text');
-      countBadge.textContent = `${available.length} 个 Agent 本地已就绪`;
+      countBadge.textContent = `${running.length} 个运行中 · ${available.length} 个已就绪`;
 
       const grid = document.getElementById('detector-agent-grid');
       grid.innerHTML = '';
 
       agents.forEach(a => {
         const card = document.createElement('div');
-        card.className = `p-4 rounded-xl border ${a.available ? 'bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10' : 'bg-slate-900/30 border-slate-800 opacity-60'} flex flex-col justify-between space-y-3`;
+        const borderClass = a.isRunning 
+          ? 'bg-slate-900/95 border-emerald-500/80 shadow-lg shadow-emerald-500/10'
+          : (a.available ? 'bg-slate-900/80 border-blue-500/50 shadow-md' : 'bg-slate-900/30 border-slate-800 opacity-50');
+
+        card.className = `p-4 rounded-xl border ${borderClass} flex flex-col justify-between space-y-3`;
         card.innerHTML = `
           <div>
-            <div class="flex items-center justify-between mb-1">
+            <div class="flex items-center justify-between mb-1.5">
               <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full ${a.available ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
+                <span class="w-2.5 h-2.5 rounded-full ${a.isRunning ? 'bg-emerald-400 animate-pulse' : (a.available ? 'bg-blue-400' : 'bg-slate-600')}"></span>
                 ${a.displayName}
               </h4>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.available ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'}">
-                ${a.available ? '✓ 本地就绪' : '未检测到'}
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.isRunning ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : (a.available ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-800 text-slate-500')}">
+                ${a.statusLabel || (a.available ? '✓ 本地就绪' : '未检测到')}
               </span>
             </div>
             <p class="text-xs text-slate-400 leading-relaxed">${a.description}</p>
           </div>
-          <div class="text-[11px] font-mono ${a.available ? 'text-emerald-400' : 'text-slate-500'} truncate" title="${a.path || '未安装'}">
+          <div class="text-[11px] font-mono ${a.isRunning ? 'text-emerald-400' : (a.available ? 'text-blue-300' : 'text-slate-500')} truncate" title="${a.path || '未安装'}">
             路径: ${a.path || '未在 PATH 或 AppData 中找到'}
           </div>
         `;
@@ -461,14 +466,17 @@
       const listToUse = readyList.length > 0 ? readyList : agents;
 
       listToUse.forEach(a => {
+        const prefix = a.isRunning ? '🟢' : '🔵';
+        const suffix = a.isRunning ? '(进程运行中)' : '(按需拉起)';
+
         const opt1 = document.createElement('option');
         opt1.value = a.name;
-        opt1.textContent = `🟢 ${a.displayName} (已就绪)`;
+        opt1.textContent = `${prefix} ${a.displayName} ${suffix}`;
         quickSelect.appendChild(opt1);
 
         const opt2 = document.createElement('option');
         opt2.value = a.name;
-        opt2.textContent = `🟢 ${a.displayName} (已就绪)`;
+        opt2.textContent = `${prefix} ${a.displayName} ${suffix}`;
         studioSelect.appendChild(opt2);
 
         const opt3 = document.createElement('option');
@@ -486,16 +494,19 @@
       const readyAgents = agents.filter(a => a.available);
 
       readyAgents.forEach(a => {
+        const isRun = a.isRunning;
         const label = document.createElement('label');
-        label.className = `flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition`;
+        label.className = `flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${isRun ? 'bg-slate-900/95 border-emerald-500/60 shadow-md hover:border-emerald-400' : 'bg-slate-900/80 border-blue-500/40 hover:border-blue-400'}`;
         label.innerHTML = `
-          <input type="checkbox" value="${a.name}" checked class="w-4 h-4 rounded accent-emerald-500">
+          <input type="checkbox" value="${a.name}" checked class="w-4 h-4 rounded ${isRun ? 'accent-emerald-500' : 'accent-blue-500'}">
           <div class="truncate">
             <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              <span class="w-2.5 h-2.5 rounded-full ${isRun ? 'bg-emerald-400 animate-pulse' : 'bg-blue-400'}"></span>
               ${a.displayName}
             </div>
-            <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪 (${a.path ? a.path.split('\\').slice(-2).join('\\') : '可直接调用'})</div>
+            <div class="text-[10px] ${isRun ? 'text-emerald-400 font-semibold' : 'text-blue-300 font-medium'} truncate">
+              ${isRun ? '🟢 进程在后台运行中' : '🔵 本地已安装 (发起时自动拉起)'}
+            </div>
           </div>
         `;
         grid.appendChild(label);

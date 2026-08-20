@@ -274,8 +274,30 @@ export function checkBinaryExists(binaryName, extraPaths = []) {
   return { found: false, path: null };
 }
 
+let _processCache = null;
+let _lastProcessScan = 0;
+
+function getRunningProcesses(forceRefresh = false) {
+  const now = Date.now();
+  if (_processCache && !forceRefresh && (now - _lastProcessScan < 5000)) {
+    return _processCache;
+  }
+  let runningText = '';
+  try {
+    if (os.platform() === 'win32') {
+      runningText = execSync('tasklist /FO CSV /NH', { encoding: 'utf8', timeout: 3000, stdio: ['pipe', 'pipe', 'ignore'] }).toLowerCase();
+    } else {
+      runningText = execSync('ps -A -o comm=', { encoding: 'utf8', timeout: 3000, stdio: ['pipe', 'pipe', 'ignore'] }).toLowerCase();
+    }
+  } catch {}
+  _processCache = runningText;
+  _lastProcessScan = now;
+  return runningText;
+}
+
 export function detectInstalledAgents(customAdapters = {}, forceRefresh = false) {
   const binaryMap = getPathBinaryMap(forceRefresh);
+  const runningProcesses = getRunningProcesses(forceRefresh);
   const results = [];
 
   for (const agent of KNOWN_AGENTS) {
@@ -306,11 +328,25 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
       }
     }
 
+    const isRunning = installed && (
+      agent.binaries.some(b => runningProcesses.includes(b.toLowerCase().replace('.exe', ''))) ||
+      runningProcesses.includes(agent.name.toLowerCase())
+    );
+
+    let statusLabel = '⚪ 未安装';
+    if (isRunning) {
+      statusLabel = '🟢 进程运行中 (Active)';
+    } else if (installed) {
+      statusLabel = '🔵 本地已安装 (发起时按需启动)';
+    }
+
     results.push({
       name: agent.name,
       displayName: agent.displayName,
       type: agent.type || 'autonomous_agent',
       available: installed,
+      isRunning,
+      statusLabel,
       path: binaryPath,
       version: version || (installed ? 'installed' : 'not found'),
       description: agent.description
@@ -323,11 +359,14 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
       const cmdParts = (config.cmd || name).split(' ');
       const bin = cmdParts[0];
       const probe = checkBinaryExists(bin);
+      const isRunning = probe.found && runningProcesses.includes(bin.toLowerCase().replace('.exe', ''));
       results.push({
         name,
         displayName: config.displayName || name,
         type: 'custom_agent',
         available: probe.found || Boolean(config.mock),
+        isRunning,
+        statusLabel: isRunning ? '🟢 进程运行中' : (probe.found ? '🔵 本地已安装 (按需拉起)' : '⚪ 未安装'),
         path: probe.path || (config.mock ? 'mock-builtin' : null),
         version: probe.found ? 'configured' : (config.mock ? 'mock-mode' : 'command not found'),
         description: config.description || 'Custom configured agent'
