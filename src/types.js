@@ -19,6 +19,22 @@ export const TASK_CATEGORIES = {
   OTHER: 'other'
 };
 
+export const COLLABORATION_MODES = {
+  PARALLEL_SYNTHESIS: 'parallel_synthesis', // 多路并行探索 + 主 Agent 优点融合
+  PIPELINE_DIVISION: 'pipeline_division'    // 架构/实现/测试流水线分工
+};
+
+export const AGENT_STATUSES = {
+  IDLE: 'idle',
+  PLANNING: 'planning',       // 正在分析需求与规划架构
+  CODING: 'coding',           // 正在编写业务逻辑
+  TESTING: 'testing',         // 正在补充测试用例
+  VERIFYING: 'verifying',     // 正在执行独立门禁验真
+  SYNTHESIZING: 'synthesizing', // 主 Agent 正在融合提炼方案
+  COMPLETED: 'completed',     // 方案已就绪并通过验证
+  ERROR: 'error'              // 执行异常
+};
+
 export const DEFAULT_CONFIG = {
   version: 1,
   workspace: {
