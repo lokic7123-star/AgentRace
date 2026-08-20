@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
+import fs from 'node:fs';
 
 const binPath = path.resolve('bin/arace.js');
 
@@ -22,10 +23,9 @@ test('CLI --help outputs usage information', () => {
 
 test('CLI detect scans for agents and returns valid status', () => {
   const res = runCLI(['detect']);
-  // Exit code 0 (if any agent found) or 2 (if no agent found)
   assert.ok(res.status === 0 || res.status === 2);
   assert.ok(res.stdout.includes('AgentRace Agent Detection:'));
-  assert.ok(res.stdout.includes('Claude Code'));
+  assert.ok(res.stdout.includes('Google Antigravity') || res.stdout.includes('OpenCode'));
 });
 
 test('CLI doctor performs environment diagnosis', () => {
@@ -46,14 +46,19 @@ test('CLI stats returns json data', () => {
 });
 
 test('CLI run in mock mode executes full race, dashboard, and persistence', () => {
-  const res = runCLI(['run', 'Fix concurrency lock timeout in connection pool', '--with', 'claude,codex', '--allow-dirty'], {
+  const res = runCLI(['run', 'Fix concurrency lock timeout in connection pool', '--with', 'antigravity,opencode', '--allow-dirty'], {
     ARACE_MOCK: '1'
   });
 
   assert.ok(res.status === 0 || res.status === 3);
   assert.ok(res.stdout.includes('RACE RESULTS'));
-  assert.ok(res.stdout.includes('claude'));
-  assert.ok(res.stdout.includes('codex'));
+  assert.ok(res.stdout.includes('antigravity') || res.stdout.includes('opencode'));
   assert.ok(res.stdout.includes('Source Diff'));
   assert.ok(res.stdout.includes('Test Diff'));
+
+  // Clean up test run file so it does not pollute production workbench
+  const latestRunFile = path.resolve('.arace/latest_run.json');
+  if (fs.existsSync(latestRunFile)) {
+    fs.unlinkSync(latestRunFile);
+  }
 });

@@ -63,7 +63,7 @@
         🔀 优点融合与交付
       </button>
       <button onclick="switchTab('detector')" id="tab-detector" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        🤖 Agent 探测大厅 (19+)
+        🤖 Agent 探测大厅
       </button>
       <button onclick="switchTab('stats')" id="tab-stats" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
         📈 效率分析
@@ -72,12 +72,9 @@
 
     <!-- Quick Actions & Detected Badge -->
     <div class="flex items-center gap-3">
-      <button onclick="showNewRaceModal()" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/25 transition flex items-center gap-1.5 cursor-pointer">
-        <span>+</span> 发起新任务
-      </button>
       <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-emerald-500/30 transition cursor-pointer">
         <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="detected-count-text">2 个 Agent 本地就绪</span>
+        <span id="detected-count-text">4 个 Agent 本地已就绪</span>
       </button>
     </div>
   </header>
@@ -89,11 +86,11 @@
     <div id="active-task-banner" class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-700/80 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xl">
       <div class="space-y-2 flex-1">
         <div class="flex items-center gap-3" id="banner-tags-container">
-          <span id="run-id-badge" class="px-2.5 py-0.5 rounded-md text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">状态: 空闲</span>
+          <span id="run-id-badge" class="px-2.5 py-0.5 rounded-md text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">状态: 空闲就绪</span>
           <span id="run-category-badge" class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Ready</span>
           <span id="base-commit-badge" class="text-xs text-slate-400 font-mono">主仓库就绪</span>
         </div>
-        <h2 id="current-task-text" class="text-base lg:text-lg font-bold text-slate-100">🎯 当前系统空闲就绪 — 点击右上方「+ 发起新任务」让主 Agent 带领团队协同冲刺！</h2>
+        <h2 id="current-task-text" class="text-base lg:text-lg font-bold text-slate-100">🎯 当前系统空闲就绪 — 在下方输入任务并选择 Agent 团队即可开始协同！</h2>
       </div>
 
       <!-- Action Panel: Large Selectable Lead / Judge Box -->
@@ -103,12 +100,10 @@
             <span>👑</span> 主协调 Agent:
           </label>
           <select id="quick-judge-select" class="bg-slate-800 text-slate-100 text-sm font-semibold border border-purple-500/60 rounded-xl px-4 py-2 min-w-[240px] focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer shadow-md">
-            <option value="antigravity">Google Antigravity / Gemini</option>
-            <option value="opencode">OpenCode Assistant</option>
-            <option value="lmstudio">LM Studio (Local LLM)</option>
-            <option value="dsh">DeepSeek Harness (DSH)</option>
-            <option value="claude">Claude Code</option>
-            <option value="codex">OpenAI Codex</option>
+            <option value="antigravity">🟢 Google Antigravity / Gemini (已就绪)</option>
+            <option value="opencode">🟢 OpenCode Assistant (已就绪)</option>
+            <option value="openclaw">🟢 OpenClaw Agent (已就绪)</option>
+            <option value="clawhub">🟢 ClawHub CLI (已就绪)</option>
           </select>
         </div>
         <button onclick="triggerQuickBlend()" id="btn-quick-blend" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5 cursor-pointer">
@@ -122,9 +117,9 @@
 
     <!-- TAB 1: 任务协同工作台 (Orchestrator Board) -->
     <section id="panel-orchestrator" class="space-y-6">
-      <!-- Agent Working Cards -->
+      <!-- Agent Working Cards or Task Launcher Console -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="agent-cards-container">
-        <!-- Dynamic Agent Cards -->
+        <!-- Populated by renderActiveRun -->
       </div>
     </section>
 
@@ -141,17 +136,18 @@
           <div class="flex items-center gap-2">
             <span class="text-xs text-slate-400">选择 Agent:</span>
             <select id="activity-agent-select" onchange="renderActivityLog()" class="bg-slate-800 border border-slate-700 text-xs rounded-lg px-3 py-1.5 text-slate-200">
-              <!-- Dynamically populated -->
+              <option value="antigravity">Google Antigravity / Gemini</option>
+              <option value="opencode">OpenCode Assistant</option>
+              <option value="openclaw">OpenClaw Agent</option>
+              <option value="clawhub">ClawHub CLI</option>
             </select>
           </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          <!-- Left: Collaboration Status -->
           <div class="lg:col-span-1 space-y-3" id="activity-agent-timeline">
             <!-- Timeline steps -->
           </div>
-          <!-- Right: Live Output -->
           <div class="lg:col-span-3">
             <pre class="bg-slate-950 p-5 rounded-2xl text-xs overflow-x-auto text-slate-300 font-mono max-h-[500px] border border-slate-800 leading-relaxed" id="activity-log-view">// 请在上方选择 Agent 查看实时工作动态...</pre>
           </div>
@@ -193,14 +189,8 @@
               <select id="studio-judge-select" class="bg-slate-800 border border-purple-500/60 text-slate-100 text-sm font-semibold rounded-xl px-4 py-2 min-w-[240px] focus:outline-none cursor-pointer shadow-md">
                 <option value="antigravity">🟢 Google Antigravity / Gemini (已就绪)</option>
                 <option value="opencode">🟢 OpenCode Assistant (已就绪)</option>
-                <option value="dsh">DeepSeek Harness (DSH)</option>
-                <option value="claude">Claude Code</option>
-                <option value="codex">OpenAI Codex</option>
-                <option value="aider">Aider AI</option>
-                <option value="openhands">OpenHands</option>
-                <option value="cursor">Cursor Agent</option>
-                <option value="goose">Block Goose</option>
-                <option value="cline">Roo Code / Cline</option>
+                <option value="openclaw">🟢 OpenClaw Agent (已就绪)</option>
+                <option value="clawhub">🟢 ClawHub CLI (已就绪)</option>
               </select>
             </div>
           </div>
@@ -260,6 +250,7 @@
             </div>
             <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Local\Programs\antigravity\Antigravity.exe</div>
           </div>
+
           <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
@@ -273,18 +264,33 @@
             </div>
             <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Local\Programs\@opencode-aidesktop\OpenCode.exe</div>
           </div>
-          <div class="p-4 rounded-xl border bg-slate-900/30 border-slate-800 opacity-60 flex flex-col justify-between space-y-3">
+
+          <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
                 <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
-                  DeepSeek Harness (DSH)
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  OpenClaw Agent
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-slate-500">可配置安装</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ 本地就绪</span>
               </div>
-              <p class="text-xs text-slate-400 leading-relaxed">DeepSeek Harness Multi-Agent Orchestrator</p>
+              <p class="text-xs text-slate-400 leading-relaxed">OpenClaw Autonomous Developer Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-slate-500 truncate">路径: 未在 PATH 中找到</div>
+            <div class="text-[11px] font-mono text-emerald-400 truncate">路径: .local\bin\openclaw.cmd</div>
+          </div>
+
+          <div class="p-4 rounded-xl border bg-slate-900/90 border-emerald-500/60 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
+                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                  ClawHub CLI
+                </h4>
+                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">✓ 本地就绪</span>
+              </div>
+              <p class="text-xs text-slate-400 leading-relaxed">ClawHub / ClawdHub Coding Agent</p>
+            </div>
+            <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Roaming\npm\clawhub.cmd</div>
           </div>
         </div>
       </div>
@@ -322,31 +328,6 @@
     </div>
   </div>
 
-  <!-- New Race Modal -->
-  <div id="new-race-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base text-slate-100">发起新任务协同</h3>
-        <button onclick="closeNewRaceModal()" class="text-slate-400 hover:text-slate-200 cursor-pointer">✕</button>
-      </div>
-      <div class="space-y-4 text-xs">
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1">任务需求描述 (Task Description)</label>
-          <textarea id="modal-task-input" rows="3" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-slate-100 focus:outline-none focus:border-emerald-500" placeholder="例如：优化 Redis 连接池超时重试逻辑，并补充高并发边界测试用例"></textarea>
-        </div>
-        <div>
-          <label class="block font-semibold text-slate-300 mb-1.5">参与协同的 Agent 团队 (已标明本地就绪状态)</label>
-          <div class="grid grid-cols-2 gap-2 text-slate-300 max-h-48 overflow-y-auto pr-1" id="modal-agents-checkbox-grid">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
-      </div>
-      <button onclick="submitNewRace()" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 font-bold text-slate-950 text-xs shadow-lg shadow-emerald-500/20 transition cursor-pointer">
-        🚀 立即启动多 Agent 任务协同
-      </button>
-    </div>
-  </div>
-
   <script>
     let currentData = null;
     let currentDiffs = [];
@@ -359,7 +340,6 @@
         detectedAgents = data.agents || [];
         renderDetection(detectedAgents);
         populateJudgeSelectors(detectedAgents);
-        populateModalAgentCheckboxes(detectedAgents);
         populateInlineAgentCheckboxes(detectedAgents);
         if (showToast) {
           const readyCount = detectedAgents.filter(a => a.available).length;
@@ -370,36 +350,10 @@
       }
     }
 
-    function populateInlineAgentCheckboxes(agents) {
-      const grid = document.getElementById('inline-agent-selector-grid');
-      if (!grid) return;
-      grid.innerHTML = '';
-
-      const sorted = [...agents].sort((a, b) => (b.available ? 1 : 0) - (a.available ? 1 : 0));
-
-      sorted.forEach(a => {
-        const label = document.createElement('label');
-        label.className = `flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${a.available ? 'bg-slate-900/90 border-emerald-500/60 shadow-md hover:border-emerald-400' : 'bg-slate-900/40 border-slate-800 text-slate-400 hover:border-slate-700'}`;
-        label.innerHTML = `
-          <input type="checkbox" value="${a.name}" ${a.available ? 'checked' : ''} class="w-4 h-4 rounded accent-emerald-500">
-          <div class="truncate">
-            <div class="font-bold text-xs ${a.available ? 'text-slate-100' : 'text-slate-300'} flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full ${a.available ? 'bg-emerald-400' : 'bg-slate-600'}"></span>
-              ${a.displayName}
-            </div>
-            <div class="text-[10px] ${a.available ? 'text-emerald-400 font-semibold' : 'text-slate-500'}">
-              ${a.available ? '✓ 本地已就绪 (可直接调用)' : '未检测到本地客户端'}
-            </div>
-          </div>
-        `;
-        grid.appendChild(label);
-      });
-    }
-
     function renderDetection(agents) {
       const available = agents.filter(a => a.available);
       const countBadge = document.getElementById('detected-count-text');
-      countBadge.textContent = `${available.length} 个 Agent 本地就绪`;
+      countBadge.textContent = `${available.length} 个 Agent 本地已就绪`;
 
       const grid = document.getElementById('detector-agent-grid');
       grid.innerHTML = '';
@@ -438,9 +392,9 @@
       activitySelect.innerHTML = '';
 
       const readyList = agents.filter(a => a.available);
-      const otherList = agents.filter(a => !a.available);
+      const listToUse = readyList.length > 0 ? readyList : agents;
 
-      readyList.forEach(a => {
+      listToUse.forEach(a => {
         const opt1 = document.createElement('option');
         opt1.value = a.name;
         opt1.textContent = `🟢 ${a.displayName} (已就绪)`;
@@ -456,40 +410,26 @@
         opt3.textContent = a.displayName;
         activitySelect.appendChild(opt3);
       });
-
-      otherList.forEach(a => {
-        const opt1 = document.createElement('option');
-        opt1.value = a.name;
-        opt1.textContent = `⚪ ${a.displayName}`;
-        quickSelect.appendChild(opt1);
-
-        const opt2 = document.createElement('option');
-        opt2.value = a.name;
-        opt2.textContent = `⚪ ${a.displayName}`;
-        studioSelect.appendChild(opt2);
-
-        const opt3 = document.createElement('option');
-        opt3.value = a.name;
-        opt3.textContent = a.displayName;
-        activitySelect.appendChild(opt3);
-      });
     }
 
-    function populateModalAgentCheckboxes(agents) {
-      const grid = document.getElementById('modal-agents-checkbox-grid');
+    function populateInlineAgentCheckboxes(agents) {
+      const grid = document.getElementById('inline-agent-selector-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
-      // Put available ones first
-      const sorted = [...agents].sort((a, b) => (b.available ? 1 : 0) - (a.available ? 1 : 0));
+      const readyAgents = agents.filter(a => a.available);
 
-      sorted.forEach(a => {
+      readyAgents.forEach(a => {
         const label = document.createElement('label');
-        label.className = `flex items-center gap-2 p-2.5 rounded-xl border cursor-pointer transition ${a.available ? 'bg-slate-800/90 border-emerald-500/50 text-slate-100 hover:bg-slate-750' : 'bg-slate-900/30 border-slate-800 text-slate-500 opacity-60'}`;
+        label.className = `flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition`;
         label.innerHTML = `
-          <input type="checkbox" value="${a.name}" ${a.available ? 'checked' : ''} class="rounded accent-emerald-500">
+          <input type="checkbox" value="${a.name}" checked class="w-4 h-4 rounded accent-emerald-500">
           <div class="truncate">
-            <div class="font-medium text-xs truncate">${a.displayName}</div>
-            <div class="text-[10px] ${a.available ? 'text-emerald-400 font-semibold' : 'text-slate-500'}">${a.available ? '✓ 本地已就绪，可直接调用' : '未检测到客户端'}</div>
+            <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              ${a.displayName}
+            </div>
+            <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪 (${a.path ? a.path.split('\\').slice(-2).join('\\') : '可直接调用'})</div>
           </div>
         `;
         grid.appendChild(label);
@@ -625,11 +565,11 @@
           keepButtons.appendChild(btn);
         });
       } else {
-        // Idle State
-        document.getElementById('run-id-badge').textContent = `状态: 空闲`;
+        // Idle State: Interactive In-place Launch Console
+        document.getElementById('run-id-badge').textContent = `状态: 空闲就绪`;
         document.getElementById('run-category-badge').textContent = 'Ready';
         document.getElementById('base-commit-badge').textContent = `主仓库就绪`;
-        document.getElementById('current-task-text').textContent = '🎯 当前系统空闲就绪 — 点击右上方「+ 发起新任务」让主 Agent 带领团队协同冲刺！';
+        document.getElementById('current-task-text').textContent = '🎯 当前系统空闲就绪 — 在下方输入任务并勾选想要派出的本地 Agent 团队即可开始！';
 
         container.innerHTML = `
           <div class="col-span-full bg-darkcard border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6">
@@ -638,10 +578,10 @@
                 <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
                   <span>🚀</span> 发起多 Agent 任务协同攻坚
                 </h3>
-                <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，并选择参与攻坚的 Agent 团队。主 Agent 统筹协调，各 Agent 在独立物理沙盒中分工实现并严谨验真。</p>
+                <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，自由选择本次要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
               </div>
               <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                ● 2 个本地 Agent 已就绪
+                ● 4 个本地 Agent 已就绪
               </span>
             </div>
 
@@ -651,18 +591,18 @@
               <textarea id="inline-task-input" rows="3" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 transition shadow-inner font-sans" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
             </div>
 
-            <!-- Agent Team Selector Grid -->
+            <!-- Agent Team Selector Grid (Only locally installed agents) -->
             <div class="space-y-2.5">
-              <label class="block text-xs font-bold text-slate-300">选择参与攻坚的 Agent 团队 (可多选):</label>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" id="inline-agent-selector-grid">
+              <label class="block text-xs font-bold text-slate-300">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
                 <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
                   <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-emerald-500">
                   <div class="truncate">
                     <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
                       <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                      Google Antigravity / Gemini
+                      Google Antigravity
                     </div>
-                    <div class="text-[10px] text-emerald-400 font-semibold">✓ 本地已就绪 (可以直接调用)</div>
+                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
                   </div>
                 </label>
 
@@ -671,41 +611,31 @@
                   <div class="truncate">
                     <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
                       <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                      OpenCode Assistant
+                      OpenCode
                     </div>
-                    <div class="text-[10px] text-emerald-400 font-semibold">✓ 本地已就绪 (可以直接调用)</div>
+                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
-                  <input type="checkbox" value="dsh" class="w-4 h-4 rounded accent-emerald-500">
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+                  <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-emerald-500">
                   <div class="truncate">
-                    <div class="font-bold text-xs text-slate-300">DeepSeek Harness (DSH)</div>
-                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
+                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      OpenClaw
+                    </div>
+                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
                   </div>
                 </label>
 
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
-                  <input type="checkbox" value="claude" class="w-4 h-4 rounded accent-emerald-500">
+                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/90 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
+                  <input type="checkbox" value="clawhub" checked class="w-4 h-4 rounded accent-emerald-500">
                   <div class="truncate">
-                    <div class="font-bold text-xs text-slate-300">Claude Code</div>
-                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
-                  </div>
-                </label>
-
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
-                  <input type="checkbox" value="codex" class="w-4 h-4 rounded accent-emerald-500">
-                  <div class="truncate">
-                    <div class="font-bold text-xs text-slate-300">OpenAI Codex / CLI</div>
-                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
-                  </div>
-                </label>
-
-                <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/40 border-slate-800 text-slate-400 cursor-pointer hover:border-slate-700 transition">
-                  <input type="checkbox" value="aider" class="w-4 h-4 rounded accent-emerald-500">
-                  <div class="truncate">
-                    <div class="font-bold text-xs text-slate-300">Aider AI</div>
-                    <div class="text-[10px] text-slate-500">未检测到本地客户端</div>
+                    <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
+                      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                      ClawHub
+                    </div>
+                    <div class="text-[10px] text-emerald-400 font-semibold truncate">✓ 本地已就绪</div>
                   </div>
                 </label>
               </div>
@@ -713,7 +643,7 @@
 
             <!-- Submit Button -->
             <button onclick="submitInlineTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-black text-slate-950 text-sm shadow-xl shadow-emerald-500/25 transition cursor-pointer flex items-center justify-center gap-2">
-              <span>🚀</span> 立即启动多 Agent 协同攻坚任务
+              <span>🚀</span> 立即启动选定 Agent 团队协同攻坚
             </button>
           </div>
         `;
@@ -841,14 +771,6 @@
       document.getElementById('log-modal').classList.add('hidden');
     }
 
-    function showNewRaceModal() {
-      document.getElementById('new-race-modal').classList.remove('hidden');
-    }
-
-    function closeNewRaceModal() {
-      document.getElementById('new-race-modal').classList.add('hidden');
-    }
-
     async function submitInlineTask() {
       const task = document.getElementById('inline-task-input')?.value || '';
       if (!task.trim()) return alert('请输入任务需求描述');
@@ -861,21 +783,6 @@
         body: JSON.stringify({ task, agents: checkedAgents })
       });
       alert('已启动多 Agent 任务协同！各个 Agent 正在隔离环境中分工实现与独立验真...');
-      loadStatus();
-    }
-
-    async function submitNewRace() {
-      const task = document.getElementById('modal-task-input').value;
-      if (!task.trim()) return alert('请输入任务需求描述');
-      const checkedAgents = Array.from(document.querySelectorAll('#new-race-modal input[type="checkbox"]:checked')).map(cb => cb.value);
-      
-      closeNewRaceModal();
-      await fetch('/api/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task, agents: checkedAgents })
-      });
-      alert('已启动多 Agent 任务协同！各个 Agent 正在隔离环境中并行分析与编码...');
       loadStatus();
     }
 

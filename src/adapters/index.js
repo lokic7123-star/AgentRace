@@ -314,11 +314,27 @@ export class LmStudioAdapter extends BaseAdapter {
   }
 }
 
-export class TabnineAdapter extends BaseAdapter {
-  constructor(config = {}) { super('tabnine', config); }
+export class OpenClawAdapter extends BaseAdapter {
+  constructor(config = {}) { super('openclaw', config); }
   buildCommand(taskText) {
-    const customCmd = this.config.cmd || 'tabnine';
-    return { command: customCmd, args: ['--prompt', `"${taskText.replace(/"/g, '\\"')}"`] };
+    const customCmd = this.config.cmd || 'openclaw';
+    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class ReasonixAdapter extends BaseAdapter {
+  constructor(config = {}) { super('reasonix', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'reasonix';
+    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+  }
+}
+
+export class ClawHubAdapter extends BaseAdapter {
+  constructor(config = {}) { super('clawhub', config); }
+  buildCommand(taskText) {
+    const customCmd = this.config.cmd || 'clawhub';
+    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
   }
 }
 
@@ -347,6 +363,11 @@ export function createAdapter(agentName, customAdapters = {}) {
     case 'antigravity': return new AntigravityAdapter(config);
     case 'gemini':
     case 'agy': return new GeminiAdapter(config);
+    case 'opencode': return new OpenCodeAdapter(config);
+    case 'openclaw': return new OpenClawAdapter(config);
+    case 'reasonix': return new ReasonixAdapter(config);
+    case 'clawhub':
+    case 'clawdhub': return new ClawHubAdapter(config);
     case 'lmstudio':
     case 'lms': return new LmStudioAdapter(config);
     case 'cursor': return new CursorAdapter(config);
@@ -362,7 +383,6 @@ export function createAdapter(agentName, customAdapters = {}) {
     case 'mentat': return new MentatAdapter(config);
     case 'ollama': return new OllamaAdapter(config);
     case 'sgpt': return new SgptAdapter(config);
-    case 'opencode': return new OpenCodeAdapter(config);
     case 'tabnine': return new TabnineAdapter(config);
     default:
       return new CustomAdapter(agentName, config);

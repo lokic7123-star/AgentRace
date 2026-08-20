@@ -31,6 +31,42 @@ export const KNOWN_AGENTS = [
     description: 'OpenCode Local AI Coding Agent'
   },
   {
+    name: 'openclaw',
+    displayName: 'OpenClaw Agent',
+    type: 'autonomous_agent',
+    binaries: ['openclaw.cmd', 'openclaw', 'openclaw.exe'],
+    extraPaths: [
+      path.join(os.homedir(), '.local', 'bin', 'openclaw.cmd'),
+      path.join(os.homedir(), '.local', 'bin', 'openclaw')
+    ],
+    versionFlag: '--version',
+    description: 'OpenClaw Autonomous Developer Agent'
+  },
+  {
+    name: 'reasonix',
+    displayName: 'Reasonix AI Agent',
+    type: 'autonomous_agent',
+    binaries: ['reasonix.cmd', 'reasonix', 'Reasonix.exe'],
+    extraPaths: [
+      path.join(os.homedir(), 'AppData', 'Local', 'Reasonix', 'Reasonix.exe'),
+      path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Reasonix', 'Reasonix.exe')
+    ],
+    versionFlag: '--version',
+    description: 'Reasonix AI Autonomous Reasoning & Coding Agent'
+  },
+  {
+    name: 'clawhub',
+    displayName: 'ClawHub CLI',
+    type: 'autonomous_agent',
+    binaries: ['clawhub.cmd', 'clawhub', 'clawhub.ps1', 'clawdhub.cmd', 'clawdhub'],
+    extraPaths: [
+      path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'clawhub.cmd'),
+      path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'clawdhub.cmd')
+    ],
+    versionFlag: '--version',
+    description: 'ClawHub / ClawdHub Coding Agent'
+  },
+  {
     name: 'dsh',
     displayName: 'DeepSeek Harness (DSH)',
     type: 'autonomous_agent',
@@ -185,6 +221,7 @@ function getPathBinaryMap(forceRefresh = false) {
 
   const extraSearchDirs = [
     path.join(os.homedir(), 'AppData', 'Local', 'Programs'),
+    path.join(os.homedir(), 'AppData', 'Local', 'Reasonix'),
     path.join(os.homedir(), 'AppData', 'Roaming', 'npm'),
     path.join(os.homedir(), '.cargo', 'bin'),
     path.join(os.homedir(), '.local', 'bin'),
