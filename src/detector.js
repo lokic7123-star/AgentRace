@@ -34,8 +34,10 @@ export const KNOWN_AGENTS = [
     name: 'openclaw',
     displayName: 'OpenClaw Agent',
     type: 'autonomous_agent',
-    binaries: ['openclaw.cmd', 'openclaw', 'openclaw.exe'],
+    binaries: ['openclaw.cmd', 'openclaw', 'openclaw.exe', 'OpenClaw.Tray.WinUI.exe'],
     extraPaths: [
+      'D:\\OpenClawTray\\OpenClaw.Tray.WinUI.exe',
+      'D:\\OpenClawTray\\SetupEngine\\OpenClaw.SetupEngine.exe',
       path.join(os.homedir(), '.local', 'bin', 'openclaw.cmd'),
       path.join(os.homedir(), '.local', 'bin', 'openclaw')
     ],
@@ -49,22 +51,11 @@ export const KNOWN_AGENTS = [
     binaries: ['reasonix.cmd', 'reasonix', 'Reasonix.exe'],
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Local', 'Reasonix', 'Reasonix.exe'),
+      path.join(os.homedir(), 'AppData', 'Local', 'Reasonix', 'updates', 'Reasonix-windows-amd64-installer.exe'),
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Reasonix', 'Reasonix.exe')
     ],
     versionFlag: '--version',
     description: 'Reasonix AI Autonomous Reasoning & Coding Agent'
-  },
-  {
-    name: 'clawhub',
-    displayName: 'ClawHub CLI',
-    type: 'autonomous_agent',
-    binaries: ['clawhub.cmd', 'clawhub', 'clawhub.ps1', 'clawdhub.cmd', 'clawdhub'],
-    extraPaths: [
-      path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'clawhub.cmd'),
-      path.join(os.homedir(), 'AppData', 'Roaming', 'npm', 'clawdhub.cmd')
-    ],
-    versionFlag: '--version',
-    description: 'ClawHub / ClawdHub Coding Agent'
   },
   {
     name: 'dsh',

@@ -330,14 +330,6 @@ export class ReasonixAdapter extends BaseAdapter {
   }
 }
 
-export class ClawHubAdapter extends BaseAdapter {
-  constructor(config = {}) { super('clawhub', config); }
-  buildCommand(taskText) {
-    const customCmd = this.config.cmd || 'clawhub';
-    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
-  }
-}
-
 export class CustomAdapter extends BaseAdapter {
   constructor(name, config = {}) {
     super(name, config);
@@ -366,8 +358,6 @@ export function createAdapter(agentName, customAdapters = {}) {
     case 'opencode': return new OpenCodeAdapter(config);
     case 'openclaw': return new OpenClawAdapter(config);
     case 'reasonix': return new ReasonixAdapter(config);
-    case 'clawhub':
-    case 'clawdhub': return new ClawHubAdapter(config);
     case 'lmstudio':
     case 'lms': return new LmStudioAdapter(config);
     case 'cursor': return new CursorAdapter(config);
