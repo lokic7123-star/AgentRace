@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AgentRace (arace) - 多 Agent 任务协同与最优方案交付平台</title>
+  <title>AgentRace (arace) - 多 Agent 协同与方案交付平台</title>
   <script src="/vendor/tailwind.js"></script>
   <script>
     tailwind.config = {
@@ -19,6 +19,7 @@
             info:  '#5B7A99'
           },
           fontFamily: {
+            serif: ['Source Serif 4', 'Georgia', 'Cambria', 'serif'],
             mono: ['Cascadia Code', 'JetBrains Mono', 'ui-monospace', 'Consolas', 'monospace'],
             sans: ['Segoe UI', 'system-ui', 'sans-serif']
           }
@@ -33,269 +34,137 @@
     select option { background-color: #FAF9F5; color: #1F1E1D; padding: 6px 12px; }
   </style>
 </head>
-<body class="bg-paper text-ink min-h-screen flex flex-col antialiased selection:bg-crail-soft selection:text-crail">
+<body class="bg-paper text-ink min-h-screen flex antialiased selection:bg-crail-soft selection:text-crail">
 
-  <!-- Top Navbar -->
-  <header class="border-b border-line bg-paper-panel sticky top-0 z-30 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
-    <div class="flex items-center gap-3">
-      <div class="w-8 h-8 rounded-md bg-paper-sunken border border-line flex items-center justify-center font-black text-crail text-base">
-        ▪
-      </div>
-      <div>
-        <h1 class="font-bold text-base tracking-tight text-ink flex items-center gap-1.5">
-          AgentRace <span class="text-xs text-ink-faint font-mono font-normal">arace 2.0</span>
-        </h1>
-        <p class="text-[11px] text-ink-soft">多 Agent 任务协同攻坚与客观验真门禁平台</p>
-      </div>
-    </div>
-
-    <!-- Navigation Tabs (Underline Style) -->
-    <nav class="flex items-center gap-5 text-sm flex-wrap pt-1">
-      <button onclick="switchTab('orchestrator')" id="tab-orchestrator" class="pb-2 font-semibold text-ink border-b-2 border-crail transition cursor-pointer">
-        任务协同工作台
-      </button>
-      <button onclick="switchTab('activity')" id="tab-activity" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
-        Agent 实时动态
-      </button>
-      <button onclick="switchTab('diff')" id="tab-diff" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
-        方案代码对比
-      </button>
-      <button onclick="switchTab('studio')" id="tab-studio" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
-        优点融合与交付
-      </button>
-      <button onclick="switchTab('history')" id="tab-history" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
-        历史任务
-      </button>
-      <button onclick="switchTab('detector')" id="tab-detector" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
-        Agent 探测大厅
-      </button>
-      <button onclick="switchTab('stats')" id="tab-stats" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
-        效率分析
-      </button>
-    </nav>
-
-    <!-- Quick Actions & Detected Badge (Single Status Header) -->
-    <div class="flex items-center gap-3">
-      <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-paper-sunken hover:bg-line text-xs font-medium text-ink border border-line transition cursor-pointer">
-        <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
-        <span id="detected-count-text">1 个运行中 · 3 个按需拉起</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- Main Container -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
-
-    <!-- Active Task Banner -->
-    <div id="active-task-banner" class="bg-paper-panel border border-line rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-      <div class="space-y-2 flex-1">
-        <div class="flex items-center gap-2.5 flex-wrap" id="banner-tags-container">
-          <span id="run-id-badge" class="px-2 py-0.5 rounded text-xs font-mono bg-paper-sunken text-ink border border-line">状态: 空闲就绪</span>
-          <span id="run-category-badge" class="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-crail-soft text-crail border border-crail/30">Ready</span>
-          <span id="base-commit-badge" class="text-xs text-ink-soft font-mono">主仓库就绪</span>
-        </div>
-        <h2 id="current-task-text" class="text-base font-bold text-ink">当前系统空闲就绪 — 在下方输入任务并选择 Agent 团队即可开始协同</h2>
-        <div class="flex items-center gap-2 pt-1">
-          <button onclick="openEditTaskModal()" id="btn-edit-task" class="px-3 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition flex items-center gap-1 cursor-pointer">
-            修改当前任务需求
-          </button>
-          <button onclick="newOrchestrationTask()" id="btn-new-task" class="px-3 py-1 rounded-md bg-crail-soft hover:bg-crail/20 text-xs text-crail font-semibold border border-crail/30 transition flex items-center gap-1 cursor-pointer">
-            发起新任务
-          </button>
-        </div>
-      </div>
-
-      <!-- Action Panel: Lead / Judge Select -->
-      <div id="banner-action-controls" class="flex flex-wrap items-center gap-2.5 bg-paper-sunken p-2.5 rounded-lg border border-line">
+  <!-- Left Fixed Sidebar (Claude.ai style, 240px) -->
+  <aside class="w-60 shrink-0 bg-paper border-r border-line flex flex-col justify-between p-4 h-screen sticky top-0 overflow-y-auto">
+    <div class="space-y-6">
+      <!-- Wordmark -->
+      <div class="px-2 pt-1">
         <div class="flex items-center gap-2">
-          <label for="quick-judge-select" class="text-xs font-bold text-ink pl-1">
-            主协调 Agent:
-          </label>
-          <select id="quick-judge-select" class="bg-paper-panel text-ink text-xs font-medium border border-line-strong rounded-md px-3 py-1.5 min-w-[220px] focus:border-crail focus:outline-none cursor-pointer">
-            <option value="antigravity">Google Antigravity / Gemini (进程运行中)</option>
-            <option value="opencode">OpenCode Assistant (按需拉起)</option>
-            <option value="openclaw">OpenClaw Agent (按需拉起)</option>
-            <option value="reasonix">Reasonix AI Agent (按需拉起)</option>
-          </select>
+          <span class="w-2.5 h-2.5 rounded-sm bg-crail"></span>
+          <span class="font-serif text-lg font-bold tracking-tight text-ink">AgentRace</span>
+          <span class="text-[10px] font-mono text-ink-soft ml-auto">2.0</span>
         </div>
-        <button onclick="triggerQuickBlend()" id="btn-quick-blend" class="px-3.5 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-white text-xs font-semibold transition cursor-pointer">
-          主 Agent 统筹融合
-        </button>
-        <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件（历史统计与战绩数据保留在本地数据库）" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken hover:text-bad hover:border-bad text-ink-soft text-xs border border-line-strong transition cursor-pointer">
-          清理临时工作区
-        </button>
+        <p class="text-[11px] text-ink-soft mt-1">多 Agent 协同与质量门禁平台</p>
       </div>
+
+      <!-- Navigation Groups -->
+      <nav class="space-y-4 text-xs">
+        <!-- Group 1: 协同 -->
+        <div class="space-y-1">
+          <div class="px-2.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-soft">协同</div>
+          <button onclick="switchTab('orchestrator')" id="tab-orchestrator" class="w-full text-left px-3 py-2 rounded-lg font-semibold bg-paper-sunken text-ink border-l-2 border-crail transition cursor-pointer flex items-center gap-2">
+            <span>工作台</span>
+          </button>
+          <button onclick="switchTab('activity')" id="tab-activity" class="w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2">
+            <span>实时动态</span>
+          </button>
+        </div>
+
+        <!-- Group 2: 交付 -->
+        <div class="space-y-1">
+          <div class="px-2.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-soft">交付</div>
+          <button onclick="switchTab('diff')" id="tab-diff" class="w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2">
+            <span>方案对比</span>
+          </button>
+          <button onclick="switchTab('studio')" id="tab-studio" class="w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2">
+            <span>融合交付</span>
+          </button>
+        </div>
+
+        <!-- Group 3: 记录 -->
+        <div class="space-y-1">
+          <div class="px-2.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-soft">记录</div>
+          <button onclick="switchTab('history')" id="tab-history" class="w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2">
+            <span>历史任务</span>
+          </button>
+          <button onclick="switchTab('stats')" id="tab-stats" class="w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2">
+            <span>效率分析</span>
+          </button>
+        </div>
+
+        <!-- Group 4: 配置 -->
+        <div class="space-y-1">
+          <div class="px-2.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-ink-soft">配置</div>
+          <button onclick="switchTab('detector')" id="tab-detector" class="w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2">
+            <span>探测大厅</span>
+          </button>
+        </div>
+      </nav>
     </div>
 
-    <!-- TAB 1: 任务协同工作台 (Orchestrator Board) -->
-    <section id="panel-orchestrator" class="space-y-6">
-      <!-- 1. Permanent Static Task Launcher Console (shown when idle) -->
-      <div id="workbench-task-launcher" class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
-        <div class="border-b border-line pb-3 flex items-center justify-between">
-          <div>
-            <h3 class="text-base font-bold text-ink">
-              发起多 Agent 任务协同攻坚
-            </h3>
-            <p class="text-xs text-ink-soft mt-1">输入业务编码任务，选择要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
+    <!-- Bottom Status Badge -->
+    <div class="border-t border-line pt-3">
+      <button onclick="switchTab('detector')" id="detected-agents-badge" class="w-full px-3 py-2 rounded-lg bg-paper-sunken hover:bg-line text-left text-xs font-medium text-ink border border-line transition cursor-pointer flex items-center gap-2">
+        <span class="w-2 h-2 rounded-full bg-ok shrink-0"></span>
+        <span id="detected-count-text" class="truncate">1 个运行中 · 3 个就绪</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Right Content Area -->
+  <div class="flex-1 flex flex-col min-w-0 min-h-screen overflow-y-auto">
+    <main class="flex-1 max-w-5xl w-full mx-auto p-6 md:p-8 space-y-6">
+
+      <!-- Active Task Banner (Read-only clean metadata) -->
+      <div id="active-task-banner" class="bg-paper-panel border border-line rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="space-y-1.5 flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap" id="banner-tags-container">
+            <span id="run-id-badge" class="px-2 py-0.5 rounded text-xs font-mono bg-paper-sunken text-ink border border-line">空闲就绪</span>
+            <span id="run-category-badge" class="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-crail-soft text-crail border border-crail/30">Ready</span>
+            <span id="base-commit-badge" class="text-xs text-ink-soft font-mono">主仓库就绪</span>
+          </div>
+          <h2 id="current-task-text" class="text-base font-serif font-bold text-ink leading-snug">当前系统空闲就绪，请在下方输入需求并发起任务</h2>
+          <div class="flex items-center gap-2 pt-1">
+            <button onclick="openEditTaskModal()" id="btn-edit-task" class="px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+              修改需求
+            </button>
+            <button onclick="newOrchestrationTask()" id="btn-new-task" class="px-3 py-1 rounded-full bg-crail-soft hover:bg-crail/20 text-xs text-crail font-semibold border border-crail/30 transition cursor-pointer">
+              发起新任务
+            </button>
+            <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件" class="px-3 py-1 rounded-full text-bad hover:bg-bad/10 text-xs transition cursor-pointer">
+              清理工作区
+            </button>
           </div>
         </div>
-
-        <!-- Task Input -->
-        <div class="space-y-1.5">
-          <label for="inline-task-input" class="block text-xs font-bold text-ink">任务需求描述 (Task Prompt):</label>
-          <textarea id="inline-task-input" rows="4" class="w-full bg-paper-panel border border-line-strong rounded-lg p-3.5 text-sm text-ink focus:outline-none focus:border-crail focus:ring-1 focus:ring-crail font-sans leading-relaxed" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
-        </div>
-
-        <!-- Mode Selector -->
-        <div class="flex items-center gap-3 bg-paper-sunken p-3 rounded-lg border border-line flex-wrap">
-          <span class="text-xs font-bold text-ink shrink-0">协同模式:</span>
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-crail bg-crail-soft border border-crail/40 px-3 py-1.5 rounded-md transition">
-            <input type="radio" name="arace-mode" value="orchestration" checked class="accent-crail">
-            主 Agent 智能编排分工 (Supervisor 拆解 + 专精执行 + 硬性门禁) [推荐]
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-ink-soft hover:text-ink px-3 py-1.5 rounded-md transition">
-            <input type="radio" name="arace-mode" value="race" class="accent-crail">
-            多 Agent 锦标赛竞速 (同题打擂)
-          </label>
-        </div>
-
-        <!-- Agent Team Selector Grid (Only locally installed agents) -->
-        <div class="space-y-2.5">
-          <div class="flex items-center justify-between flex-wrap gap-2">
-            <label class="block text-xs font-bold text-ink">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
-            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
-              <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-crail">
-              <div class="truncate">
-                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
-                  Google Antigravity
-                </div>
-                <div class="text-[10px] text-ok font-semibold truncate">进程在后台运行中</div>
-              </div>
-            </label>
-
-            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
-              <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-crail">
-              <div class="truncate">
-                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-info"></span>
-                  OpenCode
-                </div>
-                <div class="text-[10px] text-ink-soft font-medium truncate">本地已安装 (按需拉起)</div>
-              </div>
-            </label>
-
-            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
-              <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-crail">
-              <div class="truncate">
-                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-info"></span>
-                  OpenClaw
-                </div>
-                <div class="text-[10px] text-ink-soft font-medium truncate">本地已安装 (按需拉起)</div>
-              </div>
-            </label>
-
-            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
-              <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-crail">
-              <div class="truncate">
-                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-info"></span>
-                  Reasonix
-                </div>
-                <div class="text-[10px] text-ink-soft font-medium truncate">本地已安装 (按需拉起)</div>
-              </div>
-            </label>
-          </div>
-        </div>
-
-        <!-- Submit Button -->
-        <button onclick="submitInlineTask()" class="w-full py-3 rounded-md bg-crail hover:bg-crail-hover font-bold text-white text-sm transition cursor-pointer">
-          立即启动选定 Agent 团队协同攻坚
-        </button>
       </div>
 
-      <!-- 2. Dynamic Agent Working Cards (shown when running) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden items-stretch" id="agent-cards-container">
-        <!-- Populated by renderActiveRun -->
-      </div>
-    </section>
-
-    <!-- TAB 2: 各 Agent 实时工作动态与执行详情 (Live Activity Matrix) -->
-    <section id="panel-activity" class="hidden space-y-6">
-      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
-        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
-          <div>
-            <h3 class="font-bold text-base text-ink">
-              各 Agent 实时工作动态与思维链路
-            </h3>
-            <p class="text-xs text-ink-soft mt-1">全景监控各个 Agent 当前正在执行的动作：环境准备、代码编写、自动化测试验真与 Token 消耗。</p>
+      <!-- TAB 1: 任务协同工作台 (Orchestrator Board) -->
+      <section id="panel-orchestrator" class="space-y-6">
+        <!-- 1. Permanent Static Task Launcher Console (shown when idle) -->
+        <div id="workbench-task-launcher" class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+          <div class="border-b border-line pb-3">
+            <h3 class="font-serif text-base font-bold text-ink">发起协同任务</h3>
+            <p class="text-xs text-ink-soft mt-0.5">输入业务编码需求并选择参与的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
           </div>
-          <button onclick="renderActivityLog()" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink border border-line-strong hover:border-crail transition cursor-pointer">
-            刷新实时状态
-          </button>
-        </div>
 
-        <!-- Multi-Agent Live Activity Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" id="activity-cards-grid">
-          <!-- Populated by renderActivityLog() -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 3: 方案代码对比与源码查看 (Diff & Solution Viewer) -->
-    <section id="panel-diff" class="hidden space-y-6">
-      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
-          <div>
-            <h3 class="font-bold text-base text-ink">各 Agent 成果方案代码与测试用例对比</h3>
-            <p class="text-xs text-ink-soft mt-0.5">查看各 Agent 编写的完整源码、单元测试用例及 Git 变更补丁</p>
+          <!-- Task Input -->
+          <div class="space-y-1.5">
+            <label for="inline-task-input" class="block text-xs font-semibold text-ink">任务需求描述:</label>
+            <textarea id="inline-task-input" rows="4" class="w-full bg-paper-panel border border-line-strong rounded-lg p-3.5 text-sm text-ink focus:outline-none focus:border-crail focus:ring-1 focus:ring-crail font-sans leading-relaxed" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界测试用例"></textarea>
           </div>
-          <div class="flex items-center gap-2.5">
-            <span class="text-xs text-ink-soft">选择 Agent:</span>
-            <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-paper-panel border border-line-strong text-xs rounded-md px-3 py-1.5 text-ink min-w-[200px] cursor-pointer focus:border-crail focus:outline-none">
-              <!-- Options populated dynamically -->
-            </select>
-          </div>
-        </div>
 
-        <!-- File View Switcher Tabs -->
-        <div class="flex items-center gap-2 border-b border-line pb-2" id="diff-file-tabs">
-          <button onclick="switchDiffFileView('solution')" id="diff-tab-solution" class="px-3 py-1 rounded-md text-xs font-semibold bg-crail text-white border border-crail transition cursor-pointer">
-            核心实现 (src/solution.js)
-          </button>
-          <button onclick="switchDiffFileView('test')" id="diff-tab-test" class="px-3 py-1 rounded-md text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer">
-            单元测试 (tests/solution.test.js)
-          </button>
-          <button onclick="switchDiffFileView('diff')" id="diff-tab-diff" class="px-3 py-1 rounded-md text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer">
-            Git Diff 补丁
-          </button>
-        </div>
-
-        <div id="diff-security-badge" class="hidden p-3 rounded-md text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
-        <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap" id="diff-content-area">// 正在加载方案代码...</pre>
-      </div>
-    </section>
-
-    <!-- TAB 4: 优点融合与交付工作台 (Studio) -->
-    <section id="panel-studio" class="hidden space-y-6">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- AI Blend Panel -->
-        <div class="lg:col-span-2 bg-paper-panel border border-line rounded-lg p-6 space-y-5">
-          <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
-            <div>
-              <h3 class="font-bold text-base text-ink">
-                主 Agent 统筹协同融合 (Ensemble Synthesis)
-              </h3>
-              <p class="text-xs text-ink-soft mt-1">由主 Agent 统筹提炼各协同子 Agent 的最佳解法，合成 100% 跑通测试的终版代码。</p>
+          <!-- Mode Selector & Lead Selector Combined -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-paper-sunken p-3.5 rounded-lg border border-line">
+            <div class="space-y-1.5">
+              <label class="block text-[11px] font-mono font-semibold uppercase tracking-wider text-ink-soft">协同模式</label>
+              <div class="flex items-center gap-2">
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-crail bg-crail-soft border border-crail/40 px-3 py-1.5 rounded-full transition">
+                  <input type="radio" name="arace-mode" value="orchestration" checked class="accent-crail">
+                  智能编排分工
+                </label>
+                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-ink-soft hover:text-ink px-3 py-1.5 rounded-full transition">
+                  <input type="radio" name="arace-mode" value="race" class="accent-crail">
+                  竞速打擂
+                </label>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <label for="studio-judge-select" class="text-xs font-semibold text-ink">主统筹 Agent:</label>
-              <select id="studio-judge-select" class="bg-paper-panel border border-line-strong text-ink text-xs font-medium rounded-md px-3 py-1.5 min-w-[220px] focus:border-crail focus:outline-none cursor-pointer">
-                <option value="antigravity">Google Antigravity / Gemini (进程运行中)</option>
+
+            <div class="space-y-1.5">
+              <label for="quick-judge-select" class="block text-[11px] font-mono font-semibold uppercase tracking-wider text-ink-soft">主协调 Agent</label>
+              <select id="quick-judge-select" class="w-full bg-paper-panel text-ink text-xs font-medium border border-line-strong rounded-lg px-3 py-1.5 focus:border-crail focus:outline-none cursor-pointer">
+                <option value="antigravity">Google Antigravity / Gemini (运行中)</option>
                 <option value="opencode">OpenCode Assistant (按需拉起)</option>
                 <option value="openclaw">OpenClaw Agent (按需拉起)</option>
                 <option value="reasonix">Reasonix AI Agent (按需拉起)</option>
@@ -303,148 +172,238 @@
             </div>
           </div>
 
-          <div class="p-4 rounded-md bg-paper-sunken border border-line text-xs text-ink space-y-2">
-            <p class="font-bold text-xs text-ink">协同融合机制：</p>
-            <ul class="list-disc list-inside space-y-1 text-ink-soft">
-              <li>收集参与协同的各 Agent 提交的完整实现与测试用例</li>
-              <li>在独立的 <code class="text-crail font-mono px-1 py-0.5 bg-paper rounded border border-line">arace/ensemble</code> 工作区中由主 Agent 执行代码精炼与集成</li>
-              <li>自动触发 Build、Lint 与全量单元测试门禁二次验真</li>
-            </ul>
+          <!-- Agent Team Selector Grid -->
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-ink">参与团队 (自由选择):</label>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
+              <!-- Dynamically populated by populateInlineAgentCheckboxes -->
+            </div>
           </div>
 
-          <button onclick="triggerStudioBlend()" class="w-full py-3 rounded-md bg-crail hover:bg-crail-hover text-white font-bold text-sm transition cursor-pointer">
-            执行多 Agent 协同融合与方案生成
+          <!-- Submit Button -->
+          <button onclick="submitInlineTask()" class="w-full py-2.5 rounded-full bg-crail hover:bg-crail-hover font-semibold text-white text-sm transition cursor-pointer">
+            启动协同任务
           </button>
         </div>
 
-        <!-- Single Keep Panel -->
+        <!-- 2. Dynamic Agent Working Cards (shown when running) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden items-stretch" id="agent-cards-container">
+          <!-- Populated by renderActiveRun -->
+        </div>
+      </section>
+
+      <!-- TAB 2: Agent 实时动态 (Live Activity Matrix) -->
+      <section id="panel-activity" class="hidden space-y-6">
         <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
-          <h3 class="font-bold text-base text-ink">直接采用单方方案</h3>
-          <p class="text-xs text-ink-soft">若某个 Agent 的方案已达到预期，可直接一键合并回主分支：</p>
-          <div id="quick-keep-buttons" class="space-y-2.5 pt-2">
-            <div class="text-xs text-ink-faint p-4 text-center border border-dashed border-line rounded-md">暂无正在比拼的分支</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 5: Agent 探测诊断大厅 (Detector) -->
-    <section id="panel-detector" class="hidden space-y-6">
-      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
-        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
-          <div>
-            <h3 class="font-bold text-base text-ink">
-              本地 AI 编程 Agent 工具链探测大厅
-            </h3>
-            <p class="text-xs text-ink-soft mt-1">系统自动扫描 PATH 与用户 AppData 目录中的 AI 编程命令行工具与应用，就绪的 Agent 均可参与协同。</p>
-          </div>
-          <button onclick="loadDetection(true)" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink border border-line-strong hover:border-crail transition cursor-pointer">
-            立即重新扫描
-          </button>
-        </div>
-
-        <!-- Status Legend Bar in Detector -->
-        <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs bg-paper-sunken p-3 rounded-md border border-line text-ink-soft">
-          <span class="font-bold text-ink shrink-0">状态说明:</span>
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
-            <b class="text-ok font-medium">绿色 (运行中)</b>：常驻服务已在内存中运行，可直接通信
-          </span>
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-info"></span>
-            <b class="text-info font-medium">蓝色 (按需启动)</b>：本地已安装 CLI，任务发起时由系统在独立沙盒拉起
-          </span>
-          <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-ink-faint"></span>
-            <b class="text-ink-faint font-medium">灰色 (未检测到)</b>：本地未安装
-          </span>
-        </div>
-
-        <!-- Available Agents Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detector-agent-grid">
-          <!-- Pre-rendered default cards -->
-        </div>
-
-        <!-- Unavailable / Not Installed Agents Folded Accordion -->
-        <div id="detector-unavailable-container" class="hidden">
-          <!-- Dynamically populated details list -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 6: 历史任务 (History) -->
-    <section id="panel-history" class="hidden space-y-6">
-      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
-        <div class="border-b border-line pb-3 flex items-center justify-between flex-wrap gap-3">
-          <div>
-            <h3 class="text-base font-bold text-ink">
-              历史任务记录与复盘回溯
-            </h3>
-            <p class="text-xs text-ink-soft mt-1">数据永久保存在本地 SQLite 数据库中，可随时查看历史任务交付方案与门禁战绩。</p>
-          </div>
-          <div class="flex items-center gap-3">
-            <button onclick="loadHistory(true)" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition flex items-center gap-1.5 cursor-pointer">
-              刷新历史
+          <div class="flex items-center justify-between flex-wrap gap-3 border-b border-line pb-3">
+            <div>
+              <h3 class="font-serif text-base font-bold text-ink">Agent 实时动态</h3>
+              <p class="text-xs text-ink-soft mt-0.5">监控各 Agent 当前执行动作、测试门禁与 Token 消耗。</p>
+            </div>
+            <button onclick="renderActivityLog()" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+              刷新状态
             </button>
-            <span id="history-total-count" class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-paper-sunken text-ink-soft border border-line">
-              共 0 条历史记录
+          </div>
+
+          <!-- Multi-Agent Live Activity Cards Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" id="activity-cards-grid">
+            <!-- Populated by renderActivityLog() -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: 方案代码对比 (Diff Viewer) -->
+      <section id="panel-diff" class="hidden space-y-6">
+        <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-3 border-b border-line pb-3">
+            <div>
+              <h3 class="font-serif text-base font-bold text-ink">方案代码与测试对比</h3>
+              <p class="text-xs text-ink-soft mt-0.5">查看各 Agent 产出的核心实现、测试用例与 Git 变更补丁。</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs text-ink-soft">Agent:</span>
+              <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-paper-panel border border-line-strong text-xs rounded-lg px-3 py-1.5 text-ink min-w-[180px] cursor-pointer focus:border-crail focus:outline-none">
+                <!-- Options populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <!-- File View Switcher Tabs -->
+          <div class="flex items-center gap-2 border-b border-line pb-2" id="diff-file-tabs">
+            <button onclick="switchDiffFileView('solution')" id="diff-tab-solution" class="px-3.5 py-1 rounded-full text-xs font-semibold bg-crail text-white transition cursor-pointer">
+              核心实现 (src/solution.js)
+            </button>
+            <button onclick="switchDiffFileView('test')" id="diff-tab-test" class="px-3.5 py-1 rounded-full text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer">
+              单元测试 (tests/solution.test.js)
+            </button>
+            <button onclick="switchDiffFileView('diff')" id="diff-tab-diff" class="px-3.5 py-1 rounded-full text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer">
+              Git Diff 补丁
+            </button>
+          </div>
+
+          <div id="diff-security-badge" class="hidden p-3 rounded-lg text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
+          <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap" id="diff-content-area">// 正在加载方案代码...</pre>
+        </div>
+      </section>
+
+      <!-- TAB 4: 优点融合与交付 (Studio) -->
+      <section id="panel-studio" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- AI Blend Panel -->
+          <div class="lg:col-span-2 bg-paper-panel border border-line rounded-lg p-6 space-y-4">
+            <div class="flex items-center justify-between flex-wrap gap-3 border-b border-line pb-3">
+              <div>
+                <h3 class="font-serif text-base font-bold text-ink">主 Agent 统筹融合</h3>
+                <p class="text-xs text-ink-soft mt-0.5">由主 Agent 提炼各方案优势，合成全量跑通测试的交付代码。</p>
+              </div>
+              <div class="flex items-center gap-2">
+                <label for="studio-judge-select" class="text-xs font-medium text-ink-soft">主协调:</label>
+                <select id="studio-judge-select" class="bg-paper-panel border border-line-strong text-ink text-xs font-medium rounded-lg px-3 py-1.5 min-w-[200px] focus:border-crail focus:outline-none cursor-pointer">
+                  <option value="antigravity">Google Antigravity / Gemini (运行中)</option>
+                  <option value="opencode">OpenCode Assistant (按需拉起)</option>
+                  <option value="openclaw">OpenClaw Agent (按需拉起)</option>
+                  <option value="reasonix">Reasonix AI Agent (按需拉起)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="p-3.5 rounded-lg bg-paper-sunken border border-line text-xs text-ink space-y-1.5">
+              <p class="font-semibold text-ink">融合机制：</p>
+              <ul class="list-disc list-inside space-y-1 text-ink-soft">
+                <li>收集参与协同的各 Agent 提交的完整实现与测试</li>
+                <li>在独立的 <code class="text-crail font-mono px-1 py-0.5 bg-paper rounded border border-line">arace/ensemble</code> 分支执行代码集成</li>
+                <li>自动触发 Build、Lint 与全量单元测试门禁二次验真</li>
+              </ul>
+            </div>
+
+            <button onclick="triggerStudioBlend()" class="w-full py-2.5 rounded-full bg-crail hover:bg-crail-hover text-white font-semibold text-sm transition cursor-pointer">
+              执行协同融合
+            </button>
+          </div>
+
+          <!-- Single Keep Panel -->
+          <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-3">
+            <h3 class="font-serif text-base font-bold text-ink">直接采用单方方案</h3>
+            <p class="text-xs text-ink-soft">若某个方案已达到预期，可直接一键合并回主分支：</p>
+            <div id="quick-keep-buttons" class="space-y-2 pt-1">
+              <div class="text-xs text-ink-faint p-4 text-center border border-dashed border-line rounded-lg">暂无正在比拼的分支</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: 历史任务 (History) -->
+      <section id="panel-history" class="hidden space-y-6">
+        <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
+          <div class="border-b border-line pb-3 flex items-center justify-between flex-wrap gap-3">
+            <div>
+              <h3 class="font-serif text-base font-bold text-ink">历史任务记录</h3>
+              <p class="text-xs text-ink-soft mt-0.5">保存在本地 SQLite 数据库中，随时查看历史交付方案与门禁战绩。</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button onclick="loadHistory(true)" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+                刷新历史
+              </button>
+              <span id="history-total-count" class="px-2.5 py-0.5 rounded text-xs font-mono font-medium bg-paper-sunken text-ink-soft border border-line">
+                共 0 条记录
+              </span>
+            </div>
+          </div>
+
+          <!-- Compact History List View (C8: divide-y divide-line) -->
+          <div id="history-tasks-container" class="bg-paper-panel border border-line rounded-lg divide-y divide-line overflow-hidden">
+            <!-- Dynamically populated compact history rows -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: 效率分析 (Stats) -->
+      <section id="panel-stats" class="hidden space-y-6">
+        <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+          <div class="flex items-center justify-between border-b border-line pb-3">
+            <div>
+              <h3 class="font-serif text-base font-bold text-ink">任务执行与协同效率分析</h3>
+              <p class="text-xs text-ink-soft mt-0.5">基于本地 SQLite 历史数据聚合计算</p>
+            </div>
+            <span class="text-xs text-ink-soft font-mono">统计窗口: 最近 30 天</span>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="stats-summary-cards">
+            <!-- Summary cards -->
+          </div>
+          <div class="border-t border-line pt-4" id="stats-category-breakdown">
+            <!-- Category breakdown -->
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 7: Agent 探测大厅 (Detector) -->
+      <section id="panel-detector" class="hidden space-y-6">
+        <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-3 border-b border-line pb-3">
+            <div>
+              <h3 class="font-serif text-base font-bold text-ink">本地 AI 工具链探测大厅</h3>
+              <p class="text-xs text-ink-soft mt-0.5">扫描 PATH 与 AppData 目录中的 AI 命令行工具与应用。</p>
+            </div>
+            <button onclick="loadDetection(true)" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+              重新扫描
+            </button>
+          </div>
+
+          <!-- Status Legend Bar in Detector -->
+          <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs bg-paper-sunken p-3 rounded-lg border border-line text-ink-soft">
+            <span class="font-semibold text-ink shrink-0">状态说明:</span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-ok"></span>
+              <b class="text-ok font-medium">运行中</b>：常驻服务已在内存中运行
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-info"></span>
+              <b class="text-info font-medium">按需启动</b>：本地已安装 CLI，任务发起时在独立沙盒拉起
+            </span>
+            <span class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-ink-faint"></span>
+              <b class="text-ink-soft font-medium">未安装</b>：本地未检测到
             </span>
           </div>
-        </div>
 
-        <!-- Compact History List View -->
-        <div id="history-tasks-container" class="bg-paper-panel border border-line rounded-lg divide-y divide-line overflow-hidden">
-          <!-- Dynamically populated compact history rows -->
-        </div>
-      </div>
-    </section>
-
-    <!-- TAB 7: 效率分析 (Stats) -->
-    <section id="panel-stats" class="hidden space-y-6">
-      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
-        <div class="flex items-center justify-between border-b border-line pb-3">
-          <div>
-            <h3 class="font-bold text-base text-ink">任务执行与协同效率分析</h3>
-            <p class="text-xs text-ink-soft mt-0.5">基于本地 SQLite 历史数据聚合计算</p>
+          <!-- Available Agents Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detector-agent-grid">
+            <!-- Populated by renderDetection -->
           </div>
-          <span class="text-xs text-ink-soft font-mono">统计窗口: 最近 30 天</span>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="stats-summary-cards">
-          <!-- Summary cards -->
-        </div>
-        <div class="border-t border-line pt-4" id="stats-category-breakdown">
-          <!-- Category breakdown -->
-        </div>
-      </div>
-    </section>
 
-  </main>
+          <!-- Unavailable / Not Installed Agents Folded Accordion (C7) -->
+          <div id="detector-unavailable-container" class="hidden">
+            <!-- Dynamically populated details list -->
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
 
   <!-- Edit Task Modal -->
-  <div id="edit-task-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+  <div id="edit-task-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6" onclick="if(event.target===this)closeEditTaskModal()">
     <div class="bg-paper-panel border border-line rounded-lg max-w-2xl w-full flex flex-col p-6 space-y-4 shadow-xl">
       <div class="flex items-center justify-between border-b border-line pb-3">
-        <h3 class="font-bold text-base text-ink">
-          修改/编辑当前任务需求
-        </h3>
+        <h3 class="font-serif text-base font-bold text-ink">修改任务需求</h3>
         <button onclick="closeEditTaskModal()" class="text-ink-soft hover:text-ink text-lg cursor-pointer">✕</button>
       </div>
       <div class="space-y-1.5">
-        <label class="block text-xs font-bold text-ink">任务需求描述 (Task Prompt):</label>
+        <label class="block text-xs font-semibold text-ink">任务需求描述:</label>
         <textarea id="edit-task-textarea" rows="5" class="w-full bg-paper-panel border border-line-strong rounded-lg p-3.5 text-sm text-ink focus:outline-none focus:border-crail focus:ring-1 focus:ring-crail font-sans leading-relaxed"></textarea>
       </div>
       <div class="flex items-center justify-between gap-3 pt-2 flex-wrap">
         <div class="text-[11px] text-ink-soft">
-          说明：修改后可仅保存记录，或以新需求一键重新派发协同攻坚。
+          修改后可仅保存记录，或以新需求重新派发协同。
         </div>
-        <div class="flex items-center gap-2.5">
-          <button onclick="closeEditTaskModal()" class="px-3.5 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink-soft border border-line-strong transition cursor-pointer">
+        <div class="flex items-center gap-2">
+          <button onclick="closeEditTaskModal()" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink-soft border border-line-strong transition cursor-pointer">
             取消
           </button>
-          <button onclick="saveEditedTask()" class="px-3.5 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-bold text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+          <button onclick="saveEditedTask()" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink border border-line-strong hover:border-crail transition cursor-pointer">
             仅保存修改
           </button>
-          <button onclick="rerunEditedTask()" class="px-3.5 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-xs font-bold text-white transition cursor-pointer">
+          <button onclick="rerunEditedTask()" class="px-4 py-1.5 rounded-full bg-crail hover:bg-crail-hover text-xs font-semibold text-white transition cursor-pointer">
             保存并立即重跑
           </button>
         </div>
@@ -452,11 +411,71 @@
     </div>
   </div>
 
+  <!-- Replay Modal (C11: Real Replay Modal) -->
+  <div id="replay-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6" onclick="if(event.target===this)closeReplayModal()">
+    <div class="bg-paper-panel border border-line rounded-lg max-w-3xl w-full max-h-[85vh] flex flex-col p-6 space-y-4 shadow-xl">
+      <div class="flex items-center justify-between border-b border-line pb-3">
+        <div class="flex items-center gap-2">
+          <h3 class="font-serif text-base font-bold text-ink">历史任务复盘</h3>
+          <span id="replay-modal-id" class="px-2 py-0.5 rounded text-xs font-mono bg-paper-sunken text-ink border border-line">#runId</span>
+          <span id="replay-modal-cat" class="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-crail-soft text-crail border border-crail/30">feature</span>
+        </div>
+        <button onclick="closeReplayModal()" class="text-ink-soft hover:text-ink text-lg cursor-pointer">✕</button>
+      </div>
+
+      <div class="space-y-4 overflow-y-auto flex-1 pr-1">
+        <!-- Task Prompt -->
+        <div class="p-3.5 rounded-lg bg-paper-sunken border border-line text-xs">
+          <div class="text-[10px] font-mono uppercase tracking-wider text-ink-soft font-semibold mb-1">任务需求</div>
+          <p id="replay-modal-task" class="text-ink font-medium leading-relaxed whitespace-pre-wrap"></p>
+        </div>
+
+        <!-- Meta info -->
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs font-mono text-ink-soft">
+          <div class="p-2.5 rounded-lg bg-paper-panel border border-line">
+            <div class="text-[10px] text-ink-soft font-sans">创建时间</div>
+            <div id="replay-modal-time" class="font-bold text-ink mt-0.5"></div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-paper-panel border border-line">
+            <div class="text-[10px] text-ink-soft font-sans">Base Commit</div>
+            <div id="replay-modal-base" class="font-bold text-ink mt-0.5"></div>
+          </div>
+          <div class="p-2.5 rounded-lg bg-paper-panel border border-line">
+            <div class="text-[10px] text-ink-soft font-sans">门禁全量状态</div>
+            <div id="replay-modal-status" class="font-bold mt-0.5"></div>
+          </div>
+        </div>
+
+        <!-- Agent Results Breakdown -->
+        <div class="space-y-2">
+          <div class="text-xs font-semibold text-ink">各 Agent 交付与门禁明细</div>
+          <div id="replay-modal-agents" class="space-y-2">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 pt-3 border-t border-line">
+        <button onclick="closeReplayModal()" class="px-4 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink-soft border border-line-strong transition cursor-pointer">
+          关闭
+        </button>
+        <div class="flex items-center gap-2">
+          <button id="replay-modal-btn-diff" class="px-4 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+            查看方案代码
+          </button>
+          <button id="replay-modal-btn-switch" class="px-4 py-1.5 rounded-full bg-crail hover:bg-crail-hover text-xs font-semibold text-white transition cursor-pointer">
+            设为当前任务
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Log Modal -->
-  <div id="log-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+  <div id="log-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6" onclick="if(event.target===this)closeLogModal()">
     <div class="bg-paper-panel border border-line rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col shadow-xl">
       <div class="px-5 py-3.5 border-b border-line flex items-center justify-between">
-        <h3 id="log-modal-title" class="font-bold text-sm text-ink">Agent 实时运行日志</h3>
+        <h3 id="log-modal-title" class="font-serif text-sm font-bold text-ink">Agent 实时运行日志</h3>
         <button onclick="closeLogModal()" class="text-ink-soft hover:text-ink text-lg cursor-pointer">✕</button>
       </div>
       <pre id="log-modal-content" class="flex-1 p-5 text-xs font-mono text-[#E8E4DA] bg-[#1F1E1D] overflow-y-auto leading-relaxed whitespace-pre-wrap"></pre>
@@ -467,6 +486,18 @@
     let currentData = null;
     let currentDiffs = [];
     let detectedAgents = [];
+    window._historyRunsMap = new Map();
+
+    // C5: Global ESC key closes modals
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLogModal();
+        closeEditTaskModal();
+        closeReplayModal();
+        const confirmModal = document.getElementById('_confirm_overlay');
+        if (confirmModal) confirmModal.remove();
+      }
+    });
 
     // B6: Infrastructure toast & confirmDialog
     function toast(msg, type = 'info') {
@@ -478,7 +509,7 @@
         document.body.appendChild(box);
       }
       const t = document.createElement('div');
-      t.className = 'px-4 py-2.5 rounded-md text-xs border shadow-sm bg-paper-panel max-w-sm pointer-events-auto transition-opacity duration-300 ' +
+      t.className = 'px-4 py-2.5 rounded-full text-xs border shadow-sm bg-paper-panel max-w-sm pointer-events-auto transition-opacity duration-300 ' +
         (type === 'success' ? 'border-ok text-ok font-medium' : type === 'error' ? 'border-bad text-bad font-medium' : 'border-line-strong text-ink font-medium');
       t.textContent = msg;
       box.appendChild(t);
@@ -492,14 +523,16 @@
     function confirmDialog(title, body) {
       return new Promise(resolve => {
         const overlay = document.createElement('div');
+        overlay.id = '_confirm_overlay';
         overlay.className = 'fixed inset-0 bg-ink/40 backdrop-blur-sm z-[80] flex items-center justify-center p-6';
+        overlay.onclick = (e) => { if (e.target === overlay) { cleanup(); resolve(false); } };
         overlay.innerHTML = `
           <div class="bg-paper-panel border border-line rounded-lg max-w-md w-full p-5 space-y-3.5 shadow-xl">
-            <h3 class="font-semibold text-base text-ink">${escapeHtml(title)}</h3>
+            <h3 class="font-serif font-bold text-base text-ink">${escapeHtml(title)}</h3>
             <p class="text-xs text-ink-soft whitespace-pre-line leading-relaxed">${escapeHtml(body)}</p>
             <div class="flex items-center justify-end gap-2.5 pt-2">
-              <button id="_dlg_cancel" class="px-3.5 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink-soft border border-line-strong transition cursor-pointer">取消</button>
-              <button id="_dlg_ok" class="px-3.5 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-xs font-bold text-white transition cursor-pointer">确认</button>
+              <button id="_dlg_cancel" class="px-4 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs font-medium text-ink-soft border border-line-strong transition cursor-pointer">取消</button>
+              <button id="_dlg_ok" class="px-4 py-1.5 rounded-full bg-crail hover:bg-crail-hover text-xs font-semibold text-white transition cursor-pointer">确认</button>
             </div>
           </div>
         `;
@@ -522,7 +555,7 @@
         populateInlineAgentCheckboxes(detectedAgents);
         if (showToastMsg) {
           const readyCount = detectedAgents.filter(a => a.available).length;
-          toast(`深度扫描完成！探测到 ${readyCount} 个本机就绪的 AI 工具。`, 'success');
+          toast(`探测完成，共有 ${readyCount} 个就绪的 AI 工具。`, 'success');
         }
       } catch (err) {
         console.error('Failed to detect agents:', err);
@@ -536,7 +569,7 @@
       const running = agents.filter(a => a.isRunning);
       const countBadge = document.getElementById('detected-count-text');
       if (countBadge) {
-        countBadge.textContent = `${running.length} 个运行中 · ${available.length} 个已就绪`;
+        countBadge.textContent = `${running.length} 个运行中 · ${available.length} 个就绪`;
       }
 
       const grid = document.getElementById('detector-agent-grid');
@@ -544,7 +577,6 @@
       if (!grid) return;
       grid.innerHTML = '';
 
-      // Render Available Agents
       available.forEach(a => {
         const card = document.createElement('div');
         const borderClass = a.isRunning 
@@ -556,23 +588,22 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${a.isRunning ? 'bg-ok animate-pulse' : 'bg-info'}"></span>
+                <span class="w-2 h-2 rounded-full ${a.isRunning ? 'bg-ok' : 'bg-info'}"></span>
                 ${escapeHtml(a.displayName)}
               </h4>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${a.isRunning ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-info/10 text-info border border-info/30'}">
-                ${escapeHtml(a.statusLabel || (a.isRunning ? '进程运行中' : '本地已就绪'))}
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${a.isRunning ? 'bg-ok/10 text-ok' : 'bg-info/10 text-info'}">
+                ${escapeHtml(a.statusLabel || (a.isRunning ? '运行中' : '已就绪'))}
               </span>
             </div>
             <p class="text-xs text-ink-soft leading-relaxed">${escapeHtml(a.description)}</p>
           </div>
-          <div class="text-[11px] font-mono ${a.isRunning ? 'text-ink' : 'text-ink-soft'} truncate" title="${escapeHtml(a.path || '')}">
-            路径: ${escapeHtml(a.path || '已在系统环境变量中识别')}
+          <div class="text-[11px] font-mono text-ink-soft truncate" title="${escapeHtml(a.path || '')}">
+            路径: ${escapeHtml(a.path || '环境变量中已识别')}
           </div>
         `;
         grid.appendChild(card);
       });
 
-      // B7: Folded accordion for unavailable agents
       if (unavailContainer) {
         if (unavailable.length === 0) {
           unavailContainer.classList.add('hidden');
@@ -580,8 +611,8 @@
         } else {
           unavailContainer.classList.remove('hidden');
           const unavailItems = unavailable.map(a => `
-            <div class="p-2.5 rounded-md bg-paper border border-line text-xs flex flex-col justify-between">
-              <div class="flex items-center justify-between mb-1">
+            <div class="p-2.5 rounded-lg bg-paper border border-line text-xs flex flex-col justify-between">
+              <div class="flex items-center justify-between mb-0.5">
                 <span class="font-semibold text-ink truncate">${escapeHtml(a.displayName)}</span>
                 <span class="text-[10px] font-mono text-ink-faint">未检测到</span>
               </div>
@@ -603,11 +634,14 @@
       }
     }
 
+    // C2: Populate judge selectors with user selection preservation
     function populateJudgeSelectors(agents) {
       const quickSelect = document.getElementById('quick-judge-select');
       const studioSelect = document.getElementById('studio-judge-select');
-      const activitySelect = document.getElementById('activity-agent-select');
       if (!quickSelect) return;
+
+      const currentQuickVal = quickSelect.value;
+      const currentStudioVal = studioSelect ? studioSelect.value : '';
 
       const defaultAgents = [
         { name: 'antigravity', displayName: 'Google Antigravity / Gemini', isRunning: true, available: true },
@@ -621,35 +655,35 @@
 
       quickSelect.innerHTML = '';
       if (studioSelect) studioSelect.innerHTML = '';
-      if (activitySelect) activitySelect.innerHTML = '';
 
       listToUse.forEach(a => {
-        const suffix = a.isRunning ? '(进程运行中)' : '(按需拉起)';
+        const suffix = a.isRunning ? '(运行中)' : '(按需拉起)';
 
         const opt1 = document.createElement('option');
         opt1.value = a.name;
         opt1.textContent = `${a.displayName} ${suffix}`;
+        if (a.name === currentQuickVal) opt1.selected = true;
         quickSelect.appendChild(opt1);
 
         if (studioSelect) {
           const opt2 = document.createElement('option');
           opt2.value = a.name;
           opt2.textContent = `${a.displayName} ${suffix}`;
+          if (a.name === currentStudioVal) opt2.selected = true;
           studioSelect.appendChild(opt2);
-        }
-
-        if (activitySelect) {
-          const opt3 = document.createElement('option');
-          opt3.value = a.name;
-          opt3.textContent = a.displayName;
-          activitySelect.appendChild(opt3);
         }
       });
     }
 
+    // C2: Populate inline checkboxes with user checked state preservation
     function populateInlineAgentCheckboxes(agents) {
       const grid = document.getElementById('inline-agent-selector-grid');
       if (!grid) return;
+
+      const currentlyChecked = new Set(
+        Array.from(grid.querySelectorAll('input[type="checkbox"]:checked')).map(cb => cb.value)
+      );
+      const hasPreviousState = grid.querySelectorAll('input[type="checkbox"]').length > 0;
 
       const defaultAgents = [
         { name: 'antigravity', displayName: 'Google Antigravity', isRunning: true, available: true },
@@ -664,13 +698,14 @@
 
       listToUse.forEach(a => {
         const isRun = a.isRunning;
+        const isChecked = hasPreviousState ? currentlyChecked.has(a.name) : true;
         const label = document.createElement('label');
         label.className = 'flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition';
         label.innerHTML = `
-          <input type="checkbox" value="${escapeHtml(a.name)}" checked class="w-4 h-4 rounded accent-crail">
+          <input type="checkbox" value="${escapeHtml(a.name)}" ${isChecked ? 'checked' : ''} class="w-4 h-4 rounded accent-crail">
           <div class="truncate">
             <div class="font-bold text-xs text-ink flex items-center gap-1.5">
-              <span class="w-2 h-2 rounded-full ${isRun ? 'bg-ok animate-pulse' : 'bg-info'}"></span>
+              <span class="w-2 h-2 rounded-full ${isRun ? 'bg-ok' : 'bg-info'}"></span>
               ${escapeHtml(a.displayName)}
             </div>
             <div class="text-[10px] ${isRun ? 'text-ok font-semibold' : 'text-ink-soft font-medium'} truncate">
@@ -682,14 +717,13 @@
       });
     }
 
+    // C1: loadStatus updates status without triggering diffs/activities storm
     async function loadStatus() {
       try {
         const res = await fetch('/api/status');
         const data = await res.json();
         currentData = data;
         renderActiveRun(data);
-        renderActivityLog();
-        loadDiffs();
       } catch (err) {
         console.error('Failed to load status:', err);
       }
@@ -714,7 +748,7 @@
       } catch (err) {}
     }
 
-    // B1, B2, B3, B9, B10, B5: Render Active Run
+    // B1, B2, B3, B9, B10, B5, C12: Render Active Run
     function renderActiveRun(data) {
       const active = data.activeRun;
       const dbRun = data.latestDbRun;
@@ -727,7 +761,7 @@
         if (launcher) launcher.classList.add('hidden');
         if (container) container.classList.remove('hidden');
 
-        document.getElementById('run-id-badge').textContent = `Task ID: #${active.runId}`;
+        document.getElementById('run-id-badge').textContent = `Task #${active.runId}`;
         document.getElementById('run-category-badge').textContent = active.taskCategory || 'feature';
         document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit || 'main'} (${active.branchName || 'main'})`;
         document.getElementById('current-task-text').textContent = active.taskText;
@@ -762,11 +796,11 @@
             supervisor_integration: '架构总监 (全量集成)'
           };
 
-          const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '主协调 Agent' : '协同 Agent');
-          const roleBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-crail text-crail bg-crail-soft/30">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>`;
-          const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '(主 Agent 融合版)' : ''}`;
+          const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '主协调' : '协同');
+          const roleBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-paper-sunken text-ink-soft border border-line">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>`;
+          const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '(融合版)' : ''}`;
           const agentSubtitle = agent.title 
-            ? `执行引擎: <b class="text-ink font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span>`
+            ? `执行: <b class="text-ink font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span>`
             : '';
 
           const buildPassed = agent.verify?.build?.passed ?? (r.build_passed ?? true);
@@ -776,7 +810,7 @@
           const sourceRemoved = agent.diffStats?.sourceRemoved ?? (r.source_lines_removed || 0);
           const testAdded = agent.diffStats?.testAdded ?? (r.test_lines_added || 0);
 
-          // B2: Telemetry consistent source
+          // B2: Telemetry
           const tel = (r.tokens?.totalTokens != null)
             ? `Tokens ${r.tokens.totalTokens.toLocaleString()} · ${r.tokens.costEstimate ?? '—'}`
             : '—';
@@ -784,15 +818,23 @@
           const tools = (r.tools_called || agent.toolsCalled || []);
           const toolsText = tools.length ? tools.slice(0, 3).join(' · ') + (tools.length > 3 ? ` +${tools.length - 3}` : '') : '';
 
-          // B3: Clean diff string without +0 / -0 noise
-          const diffTxt = (sourceAdded === 0 && sourceRemoved === 0)
-            ? '<span class="text-ink-faint">无改动</span>'
-            : `<b class="text-ok">+${sourceAdded}</b> / <b class="text-bad">-${sourceRemoved}</b>`;
+          // C12: Noise-free single side diff check
+          let diffTxt = '';
+          if (sourceAdded === 0 && sourceRemoved === 0) {
+            diffTxt = '<span class="text-ink-soft">无改动</span>';
+          } else if (sourceAdded > 0 && sourceRemoved === 0) {
+            diffTxt = `<b class="text-ok">+${sourceAdded}</b>`;
+          } else if (sourceAdded === 0 && sourceRemoved > 0) {
+            diffTxt = `<b class="text-bad">-${sourceRemoved}</b>`;
+          } else {
+            diffTxt = `<b class="text-ok">+${sourceAdded}</b> / <b class="text-bad">-${sourceRemoved}</b>`;
+          }
+
           const testDiffTxt = (testAdded === 0)
-            ? '<span class="text-ink-faint">无新增</span>'
+            ? '<span class="text-ink-soft">无新增</span>'
             : `<b class="text-ink">+${testAdded}</b>`;
 
-          // B10: Keep button styling
+          // B10: Keep button
           const keepBtnClass = isPassed 
             ? 'bg-crail hover:bg-crail-hover text-white cursor-pointer'
             : (isFailed 
@@ -816,37 +858,37 @@
                       <span class="w-2 h-2 rounded-full ${statusDotClass} shrink-0"></span>
                       ${roleBadge}
                     </div>
-                    <h4 class="font-bold text-sm text-ink leading-snug line-clamp-2 min-h-[2.5em] mt-1">${escapeHtml(cardTitle)}</h4>
+                    <h4 class="font-serif font-bold text-sm text-ink leading-snug line-clamp-2 min-h-[2.5em] mt-1">${escapeHtml(cardTitle)}</h4>
                     <div class="text-[11px] text-ink-soft min-h-[1.25rem] truncate">${agentSubtitle}</div>
                   </div>
                   <span class="text-xs font-mono text-ink-soft shrink-0">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : (agent.durationSeconds ? agent.durationSeconds.toFixed(1) + 's' : '0.0s')}</span>
                 </div>
 
-                <!-- Real-time Activity Status -->
-                <div class="p-2.5 rounded-md bg-paper-sunken border border-line flex items-center justify-between text-xs mt-3">
+                <!-- Status -->
+                <div class="p-2.5 rounded-lg bg-paper-sunken border border-line flex items-center justify-between text-xs mt-3">
                   <span class="text-ink-soft">门禁状态:</span>
                   <span class="font-semibold font-mono ${statusTextClass}">
                     ${statusText}
                   </span>
                 </div>
 
-                <!-- Combined Single-Line Telemetry -->
-                <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
+                <!-- Telemetry -->
+                <div class="p-2 rounded-lg bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
                   <span>${tel}</span>
                   ${toolsText ? `<span class="text-[11px] truncate text-ink-soft" title="${escapeHtml(tools.join(' · '))}">工具: ${escapeHtml(toolsText)}</span>` : ''}
                 </div>
 
                 <!-- Gate 3 Boxes -->
-                <div class="grid grid-cols-3 gap-2 text-center text-xs mt-2">
-                  <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                <div class="grid grid-cols-3 gap-2 text-center text-xs mt-2 font-mono">
+                  <div class="p-2 rounded-lg bg-paper-sunken border border-line">
                     <div class="text-ink-soft text-[10px]">Build</div>
                     <div class="font-bold ${buildPassed ? 'text-ok' : 'text-bad'}">${buildPassed ? '[PASS]' : '[FAIL]'}</div>
                   </div>
-                  <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                  <div class="p-2 rounded-lg bg-paper-sunken border border-line">
                     <div class="text-ink-soft text-[10px]">Lint</div>
                     <div class="font-bold ${lintPassed ? 'text-ok' : 'text-bad'}">${lintPassed ? '[PASS]' : '[FAIL]'}</div>
                   </div>
-                  <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                  <div class="p-2 rounded-lg bg-paper-sunken border border-line">
                     <div class="text-ink-soft text-[10px]">Tests</div>
                     <div class="font-bold ${testPassed ? 'text-ok' : 'text-bad'}">${testPassed ? '[PASS]' : '[FAIL]'}</div>
                   </div>
@@ -860,10 +902,10 @@
             </div>
 
             <div class="flex items-center gap-2 pt-2 border-t border-line" data-agent-actions="${escapeHtml(agent.name)}">
-              <button class="action-view-log flex-1 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-semibold border border-line-strong hover:border-crail transition cursor-pointer">
-                执行日志
+              <button class="action-view-log flex-1 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition cursor-pointer">
+                日志
               </button>
-              <button class="action-keep flex-1 py-1.5 rounded-md text-xs font-bold transition ${keepBtnClass}" ${keepBtnDisabled} title="${keepBtnTitle}">
+              <button class="action-keep flex-1 py-1.5 rounded-full text-xs font-semibold transition ${keepBtnClass}" ${keepBtnDisabled} title="${keepBtnTitle}">
                 ${keepBtnText}
               </button>
             </div>
@@ -872,21 +914,20 @@
           card.querySelector('.action-keep').onclick = () => keepAgent(agent.name);
           container.appendChild(card);
 
-          // B5 & B10: Studio Right Side Keep Buttons (Muted styling for failed runs without disabling)
+          // B5 & B10: Studio Right Side Keep Buttons
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
           const studioBtnBorder = isPassed 
             ? 'border-line-strong hover:border-crail text-ink' 
             : (isFailed ? 'border-line text-ink-soft opacity-75 hover:border-line-strong' : 'border-line-strong hover:border-crail text-ink');
-          btn.className = `w-full py-2.5 px-3 rounded-md text-xs flex items-center justify-between gap-2 transition cursor-pointer bg-paper-panel hover:bg-paper-sunken border ${studioBtnBorder} text-left overflow-hidden`;
+          btn.className = `w-full py-2 px-3 rounded-lg text-xs flex items-center justify-between gap-2 transition cursor-pointer bg-paper-panel hover:bg-paper-sunken border ${studioBtnBorder} text-left overflow-hidden`;
           btn.innerHTML = `<div class="min-w-0 flex-1 text-left">
               <div class="truncate text-xs font-semibold ${isFailed ? 'text-ink-soft' : 'text-ink'}">${escapeHtml(cardTitle)}</div>
-              <div class="truncate text-[10px] text-ink-faint font-mono">${escapeHtml(agent.branch)}</div>
-            </div><span class="ml-2 shrink-0 text-xs ${isPassed ? 'text-crail font-medium' : 'text-ink-faint'}">采用 ›</span>`;
+              <div class="truncate text-[10px] text-ink-soft font-mono">${escapeHtml(agent.branch)}</div>
+            </div><span class="ml-2 shrink-0 text-xs ${isPassed ? 'text-crail font-medium' : 'text-ink-soft'}">采用 ›</span>`;
           keepButtons.appendChild(btn);
         });
       } else {
-        // Idle State
         const launcher = document.getElementById('workbench-task-launcher');
         const container = document.getElementById('agent-cards-container');
         if (launcher) launcher.classList.remove('hidden');
@@ -895,12 +936,12 @@
           container.innerHTML = '';
         }
 
-        document.getElementById('run-id-badge').textContent = '状态: 空闲就绪';
+        document.getElementById('run-id-badge').textContent = '空闲就绪';
         document.getElementById('run-category-badge').textContent = 'Ready';
         document.getElementById('base-commit-badge').textContent = '主仓库就绪';
-        document.getElementById('current-task-text').textContent = '当前系统空闲就绪 — 在下方输入任务并勾选想要派出的本地 Agent 团队即可开始';
+        document.getElementById('current-task-text').textContent = '当前系统空闲就绪，请在下方输入需求并发起任务';
 
-        keepButtons.innerHTML = '<div class="text-xs text-ink-faint p-4 text-center border border-dashed border-line rounded-md">暂无正在协同的分支</div>';
+        keepButtons.innerHTML = '<div class="text-xs text-ink-soft p-4 text-center border border-dashed border-line rounded-lg">暂无正在协同的分支</div>';
       }
     }
 
@@ -912,9 +953,9 @@
         const btn = document.getElementById(`diff-tab-${t}`);
         if (btn) {
           if (t === type) {
-            btn.className = 'px-3 py-1 rounded-md text-xs font-semibold bg-crail text-white border border-crail transition cursor-pointer';
+            btn.className = 'px-3.5 py-1 rounded-full text-xs font-semibold bg-crail text-white transition cursor-pointer';
           } else {
-            btn.className = 'px-3 py-1 rounded-md text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer';
+            btn.className = 'px-3.5 py-1 rounded-full text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer';
           }
         }
       });
@@ -946,6 +987,7 @@
       renderSelectedDiff();
     }
 
+    // C4: Security score without hardcoded 100/100
     function renderSelectedDiff() {
       const select = document.getElementById('diff-agent-selector');
       const selected = select ? select.value : '';
@@ -954,7 +996,7 @@
       const badge = document.getElementById('diff-security-badge');
 
       if (!target) {
-        if (pre) pre.textContent = '// 暂无方案数据，请在「任务协同工作台」输入任务并启动协同';
+        if (pre) pre.textContent = '// 暂无方案数据，请在工作台输入任务并启动协同';
         if (badge) badge.className = 'hidden';
         return;
       }
@@ -972,20 +1014,20 @@
       }
 
       if (badge) {
-        if (target.security) {
-          badge.className = 'p-3 rounded-md text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink';
+        if (target.security && target.security.score != null) {
+          badge.className = 'p-3 rounded-lg text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink';
           badge.innerHTML = `
-            <span><b>测试完备度与安全性：</b> ${escapeHtml(target.security.summary)}</span>
+            <span><b>测试完备度与安全性:</b> ${escapeHtml(target.security.summary)}</span>
             <span class="font-mono">安全评分: <b>${target.security.score}/100</b></span>
           `;
         } else {
-          badge.className = 'p-3 rounded-md text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink';
-          badge.innerHTML = `<span><b>测试完备度：</b> 独立单元测试全量验证通过</span> <span class="font-mono">安全评分: <b>100/100</b></span>`;
+          badge.className = 'p-3 rounded-lg text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink';
+          badge.innerHTML = `<span><b>测试完备度:</b> 独立单元测试已验证</span> <span class="font-mono text-ink-soft">安全评分: 未评估</span>`;
         }
       }
     }
 
-    // B4, B11: Render Activity Log
+    // B4, B11, C10, C12: Render Activity Log without details expander
     async function renderActivityLog() {
       const grid = document.getElementById('activity-cards-grid');
       if (!grid) return;
@@ -999,8 +1041,8 @@
         if (activities.length === 0) {
           grid.innerHTML = `
             <div class="col-span-full py-12 text-center bg-paper-sunken/40 border border-dashed border-line rounded-lg space-y-2">
-              <h4 class="font-bold text-sm text-ink">当前无正在执行的协同任务</h4>
-              <p class="text-xs text-ink-soft">请在「任务协同工作台」发起新任务，这里将实时展示每个 Agent 的思维链路与执行动作</p>
+              <h4 class="font-serif font-bold text-sm text-ink">当前无正在执行的协同任务</h4>
+              <p class="text-xs text-ink-soft">请在工作台发起新任务，这里将实时展示每个 Agent 的执行动作与门禁状态。</p>
             </div>
           `;
           return;
@@ -1023,7 +1065,7 @@
                   <div class="font-semibold text-ink">${escapeHtml(step.title)}</div>
                   <div class="text-[11px] text-ink-soft truncate">${escapeHtml(step.detail)}</div>
                 </div>
-                <span class="text-[10px] text-ink-faint font-mono shrink-0">${escapeHtml(step.time)}</span>
+                <span class="text-[10px] text-ink-soft font-mono shrink-0">${escapeHtml(step.time)}</span>
               </div>
             `;
           });
@@ -1036,27 +1078,34 @@
           const tools = (act.toolsCalled || []);
           const toolsText = tools.length ? tools.slice(0, 3).join(' · ') + (tools.length > 3 ? ` +${tools.length - 3}` : '') : '';
 
-          // B3: Clean diff string
+          // C12: Noise-free diff string
           const actSourceAdded = act.sourceDiff?.added || 0;
           const actSourceRemoved = act.sourceDiff?.removed || 0;
-          const diffTxt = (actSourceAdded === 0 && actSourceRemoved === 0)
-            ? '<span class="text-ink-faint">无改动</span>'
-            : `<b class="text-ok">+${actSourceAdded}</b> / <b class="text-bad">-${actSourceRemoved}</b>`;
+          let diffTxt = '';
+          if (actSourceAdded === 0 && actSourceRemoved === 0) {
+            diffTxt = '<span class="text-ink-soft">无改动</span>';
+          } else if (actSourceAdded > 0 && actSourceRemoved === 0) {
+            diffTxt = `<b class="text-ok">+${actSourceAdded}</b>`;
+          } else if (actSourceAdded === 0 && actSourceRemoved > 0) {
+            diffTxt = `<b class="text-bad">-${actSourceRemoved}</b>`;
+          } else {
+            diffTxt = `<b class="text-ok">+${actSourceAdded}</b> / <b class="text-bad">-${actSourceRemoved}</b>`;
+          }
 
           card.innerHTML = `
             <div class="space-y-3 flex-1 flex flex-col justify-between">
               <div>
-                <!-- B11: Header with integrated currentAction, B4: whitespace-nowrap and 日志 -->
+                <!-- Header with integrated currentAction, B4: whitespace-nowrap and 日志 -->
                 <div class="flex items-start justify-between border-b border-line pb-2.5 gap-2">
                   <div class="flex items-center gap-2 min-w-0 flex-1">
                     <span class="w-2 h-2 rounded-full ${dotClass} shrink-0 mt-0.5"></span>
                     <div class="min-w-0">
-                      <h4 class="font-bold text-sm text-ink line-clamp-2">${escapeHtml(act.displayName)}</h4>
-                      <div class="text-[11px] text-info truncate mt-0.5">${escapeHtml(act.currentAction)}</div>
+                      <h4 class="font-serif font-bold text-sm text-ink line-clamp-2">${escapeHtml(act.displayName)}</h4>
+                      <div class="text-[11px] text-info truncate mt-0.5 font-medium">${escapeHtml(act.currentAction)}</div>
                     </div>
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
-                    <button onclick="viewAgentLog('${escapeJsAttr(act.agent)}')" class="whitespace-nowrap shrink-0 px-2.5 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+                    <button onclick="openLogDirectly('${escapeJsAttr(act.agent)}', '${escapeJsAttr(act.rawLog || '')}')" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer">
                       日志
                     </button>
                     <span class="text-xs font-mono text-ink-soft">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃'}</span>
@@ -1064,13 +1113,13 @@
                 </div>
 
                 <!-- Timeline of Steps -->
-                <div class="space-y-1 p-3 rounded-md bg-paper-sunken border border-line mt-2.5">
-                  <div class="text-[10px] text-ink-soft font-bold uppercase tracking-wider mb-1">执行步骤与思维链路</div>
+                <div class="space-y-1 p-3 rounded-lg bg-paper-sunken border border-line mt-2.5">
+                  <div class="text-[10px] text-ink-soft font-mono uppercase tracking-wider font-semibold mb-1">执行步骤</div>
                   ${timelineHtml}
                 </div>
 
                 <!-- Telemetry Metrics -->
-                <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
+                <div class="p-2 rounded-lg bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
                   <span>${tel}</span>
                   ${toolsText ? `<span class="text-[11px] truncate text-ink-soft" title="${escapeHtml(tools.join(' · '))}">工具: ${escapeHtml(toolsText)}</span>` : ''}
                 </div>
@@ -1082,14 +1131,6 @@
                 <span>测试门禁: <b class="${act.testPassed ? 'text-ok font-mono' : 'text-bad font-mono'}">${act.testsPassedCount || 0}/${act.testsTotalCount || 0} PASS</b></span>
               </div>
             </div>
-
-            <!-- Terminal Log Viewer -->
-            <details class="pt-2 border-t border-line">
-              <summary class="text-xs text-ink-soft hover:text-ink cursor-pointer font-semibold py-1 select-none">
-                查看终端日志与模型输出
-              </summary>
-              <pre class="mt-2 bg-[#1F1E1D] p-3 rounded-md text-[11px] font-mono text-[#E8E4DA] max-h-48 overflow-y-auto border border-line leading-relaxed whitespace-pre-wrap">${escapeHtml(act.rawLog || '// 暂无日志输出')}</pre>
-            </details>
           `;
 
           grid.appendChild(card);
@@ -1097,6 +1138,13 @@
       } catch (err) {
         console.error('Failed to render activity log:', err);
       }
+    }
+
+    // C10: Direct log modal opening from memory or fetch fallback
+    function openLogDirectly(agent, rawLog) {
+      document.getElementById('log-modal-title').textContent = `${agent.toUpperCase()} 运行日志`;
+      document.getElementById('log-modal-content').textContent = rawLog || '// 暂无日志输出';
+      document.getElementById('log-modal').classList.remove('hidden');
     }
 
     function escapeHtml(str) {
@@ -1140,15 +1188,15 @@
         summaryContainer.innerHTML = `
           <div class="p-5 rounded-lg bg-paper-panel border border-line">
             <div class="text-xs text-ink-soft">已完成任务总数</div>
-            <div class="text-2xl font-bold font-mono text-ink mt-1">${stats.totalRuns || 0}</div>
+            <div class="text-3xl font-serif font-bold text-ink mt-1">${stats.totalRuns || 0}</div>
           </div>
           <div class="p-5 rounded-lg bg-paper-panel border border-line">
             <div class="text-xs text-ink-soft">最高分协同 Agent</div>
-            <div class="text-2xl font-bold font-mono text-crail mt-1">${escapeHtml(bestAgent.toUpperCase())}</div>
+            <div class="text-3xl font-serif font-bold text-crail mt-1">${escapeHtml(bestAgent.toUpperCase())}</div>
           </div>
           <div class="p-5 rounded-lg bg-paper-panel border border-line">
             <div class="text-xs text-ink-soft">平均任务耗时</div>
-            <div class="text-2xl font-bold font-mono text-info mt-1">${avgDuration}</div>
+            <div class="text-3xl font-serif font-bold text-info mt-1">${avgDuration}</div>
           </div>
         `;
       }
@@ -1158,16 +1206,16 @@
         const catEntries = Object.entries(categories);
         if (catEntries.length === 0) {
           breakdownContainer.innerHTML = `
-            <div class="text-xs text-ink-faint py-3">暂无分类统计数据</div>
+            <div class="text-xs text-ink-soft py-3">暂无分类统计数据</div>
           `;
         } else {
           const totalCatRuns = catEntries.reduce((sum, [, c]) => sum + (c.total || 0), 0) || 1;
           const itemsHtml = catEntries.map(([catName, catData]) => {
             const pct = Math.round(((catData.total || 0) / totalCatRuns) * 100);
             return `
-              <div class="space-y-1.5 p-3 rounded-md bg-paper-sunken border border-line">
+              <div class="space-y-1.5 p-3 rounded-lg bg-paper-sunken border border-line">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-bold text-ink">${escapeHtml(catName)}</span>
+                  <span class="font-semibold text-ink">${escapeHtml(catName)}</span>
                   <span class="text-ink-soft font-mono">${catData.total || 0} 次 (${pct}%)</span>
                 </div>
                 <div class="w-full h-2 bg-paper rounded-full overflow-hidden border border-line">
@@ -1178,7 +1226,7 @@
           }).join('');
 
           breakdownContainer.innerHTML = `
-            <h4 class="text-xs font-bold text-ink mb-3">
+            <h4 class="text-xs font-semibold text-ink mb-3 font-serif">
               任务分类分布与采纳比例
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -1233,7 +1281,7 @@
           body: JSON.stringify({ agent })
         });
         if (res.ok) {
-          toast(`已成功采用 ${agent} 方案并更新主分支！`, 'success');
+          toast(`已成功采用 ${agent} 方案并更新主分支。`, 'success');
           loadStatus();
         } else {
           const err = await res.json().catch(() => ({ error: res.statusText }));
@@ -1267,7 +1315,7 @@
       try {
         const res = await fetch(`/api/logs/${encodeURIComponent(agent)}`);
         const text = await res.text();
-        document.getElementById('log-modal-title').textContent = `${agent.toUpperCase()} 运行与思维日志`;
+        document.getElementById('log-modal-title').textContent = `${agent.toUpperCase()} 运行日志`;
         document.getElementById('log-modal-content').textContent = text;
         document.getElementById('log-modal').classList.remove('hidden');
       } catch (err) {
@@ -1299,7 +1347,7 @@
           toast(`启动任务编排失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        toast(`已启动「主 Agent 智能编排分工」！主 Agent「${supervisor.toUpperCase()}」正在拆解执行。`, 'success');
+        toast(`已启动智能编排，主 Agent「${supervisor.toUpperCase()}」正在拆解执行。`, 'success');
       } else {
         const res = await fetch('/api/run', {
           method: 'POST',
@@ -1311,7 +1359,7 @@
           toast(`启动竞速失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        toast('已启动「多 Agent 锦标赛竞速」！', 'success');
+        toast('已启动竞速打擂。', 'success');
       }
       loadStatus();
     }
@@ -1360,7 +1408,7 @@
             document.getElementById('inline-task-input').value = taskText;
           }
           closeEditTaskModal();
-          toast('任务需求已成功更新！', 'success');
+          toast('任务需求已更新。', 'success');
           loadStatus();
           loadHistory();
         } else {
@@ -1385,7 +1433,7 @@
       await submitInlineTask();
     }
 
-    // B8: Compact History Rows (grid-cols-[auto_1fr_auto])
+    // B8: Compact History Rows
     async function loadHistory(showToastMsg = false) {
       const container = document.getElementById('history-tasks-container');
       const countBadge = document.getElementById('history-total-count');
@@ -1397,29 +1445,28 @@
         const data = await res.json();
         const history = data.history || [];
 
-        if (countBadge) countBadge.textContent = `共 ${history.length} 条历史记录`;
+        if (countBadge) countBadge.textContent = `共 ${history.length} 条记录`;
 
         if (history.length === 0) {
           container.innerHTML = `
             <div class="py-12 text-center bg-paper-sunken/40 border border-dashed border-line rounded-lg space-y-2">
-              <h4 class="font-bold text-sm text-ink">暂无历史任务记录</h4>
-              <p class="text-xs text-ink-soft">在工作台发起并完成协同任务后，所有战绩与代码方案都将自动保存在这里</p>
+              <h4 class="font-serif font-bold text-sm text-ink">暂无历史任务记录</h4>
+              <p class="text-xs text-ink-soft">在工作台发起并完成协同任务后，所有战绩与代码方案都将自动保存在这里。</p>
             </div>
           `;
           return;
         }
 
         container.innerHTML = '';
-        const historyTaskMap = new Map();
-        window._historyTaskMap = historyTaskMap;
+        window._historyRunsMap.clear();
 
         history.forEach((run, idx) => {
-          historyTaskMap.set(run.id, run.task_text || '');
+          window._historyRunsMap.set(run.id, run);
           const results = run.results || [];
           const dateStr = new Date(run.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
           const agentBadges = results.map(r => `
-            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${r.test_passed ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-bad/10 text-bad border border-bad/30'}">
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${r.test_passed ? 'bg-ok/10 text-ok' : 'bg-bad/10 text-bad'}">
               ${r.test_passed ? '✓' : '✗'}${escapeHtml(r.agent)}
             </span>
           `).join('');
@@ -1435,15 +1482,15 @@
             </div>
             <div class="min-w-0 pr-2">
               <div class="truncate text-sm font-medium text-ink" title="${escapeHtml(run.task_text || '')}">${escapeHtml(run.task_text || '未命名任务')}</div>
-              <div class="flex gap-1.5 mt-0.5 flex-wrap">${agentBadges || '<span class="text-ink-faint font-mono text-[10px]">无结果</span>'}</div>
+              <div class="flex gap-1.5 mt-0.5 flex-wrap">${agentBadges || '<span class="text-ink-soft font-mono text-[10px]">无结果</span>'}</div>
             </div>
             <div class="flex items-center gap-2.5 shrink-0">
               <span class="text-ink-soft font-mono text-[11px]">${dateStr}</span>
-              <button onclick="switchHistoricalTask('${escapeJsAttr(run.id)}')" class="px-2.5 py-1 rounded-md bg-crail hover:bg-crail-hover text-white text-[11px] font-semibold transition cursor-pointer">
-                查看复盘
+              <button onclick="openReplayModal('${escapeJsAttr(run.id)}')" class="px-3 py-1 rounded-full bg-crail hover:bg-crail-hover text-white text-[11px] font-semibold transition cursor-pointer">
+                复盘
               </button>
-              <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-2.5 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-[11px] font-medium border border-line-strong hover:border-crail transition cursor-pointer">
-                修改并复用
+              <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-ink text-[11px] font-medium border border-line-strong hover:border-crail transition cursor-pointer">
+                复用
               </button>
             </div>
           `;
@@ -1459,6 +1506,71 @@
       }
     }
 
+    // C11: Open Replay Modal
+    function openReplayModal(runId) {
+      const run = window._historyRunsMap.get(runId);
+      if (!run) return;
+
+      document.getElementById('replay-modal-id').textContent = `#${run.id}`;
+      document.getElementById('replay-modal-cat').textContent = run.task_category || 'feature';
+      document.getElementById('replay-modal-task').textContent = run.task_text || '未命名任务需求';
+      document.getElementById('replay-modal-time').textContent = new Date(run.created_at).toLocaleString('zh-CN');
+      document.getElementById('replay-modal-base').textContent = run.base_commit?.slice(0, 7) || 'main';
+
+      const results = run.results || [];
+      const passedCount = results.filter(r => r.test_passed && r.build_passed && r.lint_passed).length;
+      const isAllPassed = results.length > 0 && passedCount === results.length;
+      const statusEl = document.getElementById('replay-modal-status');
+      statusEl.className = `font-bold mt-0.5 ${isAllPassed ? 'text-ok' : 'text-bad'}`;
+      statusEl.textContent = isAllPassed ? '全量通过 (100%)' : `通过率 ${passedCount}/${results.length}`;
+
+      const agentsContainer = document.getElementById('replay-modal-agents');
+      agentsContainer.innerHTML = '';
+
+      results.forEach(r => {
+        const isPass = r.test_passed && r.build_passed && r.lint_passed;
+        const sAdded = r.source_lines_added || 0;
+        const sRemoved = r.source_lines_removed || 0;
+        let diffStr = '';
+        if (sAdded === 0 && sRemoved === 0) diffStr = '无改动';
+        else if (sAdded > 0 && sRemoved === 0) diffStr = `+${sAdded}`;
+        else if (sAdded === 0 && sRemoved > 0) diffStr = `-${sRemoved}`;
+        else diffStr = `+${sAdded} / -${sRemoved}`;
+
+        const div = document.createElement('div');
+        div.className = 'p-3 rounded-lg bg-paper border border-line text-xs flex flex-col md:flex-row md:items-center justify-between gap-2';
+        div.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full ${isPass ? 'bg-ok' : 'bg-bad'}"></span>
+            <span class="font-bold text-ink">${escapeHtml(r.agent.toUpperCase())}</span>
+            <span class="font-mono text-ink-soft text-[11px]">(${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '-'})</span>
+          </div>
+          <div class="flex items-center gap-3 font-mono text-[11px] text-ink-soft">
+            <span>代码: <b class="text-ink">${diffStr}</b></span>
+            <span>门禁: <b class="${isPass ? 'text-ok' : 'text-bad'}">${isPass ? '[PASS]' : '[FAIL]'}</b></span>
+            <span>Tokens: <b class="text-ink">${r.tokens?.totalTokens != null ? r.tokens.totalTokens.toLocaleString() : '—'}</b></span>
+          </div>
+        `;
+        agentsContainer.appendChild(div);
+      });
+
+      document.getElementById('replay-modal-btn-diff').onclick = () => {
+        closeReplayModal();
+        switchTab('diff');
+      };
+
+      document.getElementById('replay-modal-btn-switch').onclick = async () => {
+        closeReplayModal();
+        await switchHistoricalTask(run.id);
+      };
+
+      document.getElementById('replay-modal').classList.remove('hidden');
+    }
+
+    function closeReplayModal() {
+      document.getElementById('replay-modal')?.classList.add('hidden');
+    }
+
     async function switchHistoricalTask(runId) {
       try {
         const res = await fetch('/api/task/switch', {
@@ -1470,7 +1582,7 @@
           switchTab('orchestrator');
           loadStatus();
           loadDiffs();
-          toast(`已切换至历史任务 #${runId}`, 'info');
+          toast(`已切换至任务 #${runId}`, 'info');
         } else {
           const err = await res.json().catch(() => ({ error: res.statusText }));
           toast(`切换任务失败: ${err.error || res.statusText}`, 'error');
@@ -1481,7 +1593,8 @@
     }
 
     function reuseHistoricalTask(runId) {
-      const taskText = window._historyTaskMap?.get(runId) || '';
+      const run = window._historyRunsMap.get(runId);
+      const taskText = run?.task_text || '';
       const input = document.getElementById('inline-task-input');
       if (input) input.value = taskText;
       switchTab('orchestrator');
@@ -1489,6 +1602,7 @@
       openEditTaskModal();
     }
 
+    // Sidebar tab switcher
     function switchTab(tab) {
       ['orchestrator', 'activity', 'diff', 'studio', 'history', 'detector', 'stats'].forEach(t => {
         const panel = document.getElementById(`panel-${t}`);
@@ -1496,9 +1610,9 @@
         const btn = document.getElementById(`tab-${t}`);
         if (btn) {
           if (t === tab) {
-            btn.className = 'pb-2 font-semibold text-ink border-b-2 border-crail transition cursor-pointer';
+            btn.className = 'w-full text-left px-3 py-2 rounded-lg font-semibold bg-paper-sunken text-ink border-l-2 border-crail transition cursor-pointer flex items-center gap-2';
           } else {
-            btn.className = 'pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer';
+            btn.className = 'w-full text-left px-3 py-2 rounded-lg font-medium text-ink-soft hover:text-ink hover:bg-paper-sunken/60 border-l-2 border-transparent transition cursor-pointer flex items-center gap-2';
           }
         }
       });
@@ -1509,7 +1623,7 @@
       if (tab === 'activity') renderActivityLog();
     }
 
-    // SSE Connection for live updates with auto-reconnect
+    // SSE Connection with auto-reconnect
     let evtSource = null;
     let sseReconnectTimer = null;
     let sseRetryDelay = 1000;
@@ -1547,6 +1661,10 @@
 
       evtSource.addEventListener('orchestration_progress', (e) => {
         loadStatus();
+        const actPanel = document.getElementById('panel-activity');
+        if (actPanel && !actPanel.classList.contains('hidden')) {
+          renderActivityLog();
+        }
       });
 
       evtSource.addEventListener('race_complete', (e) => {
@@ -1581,7 +1699,7 @@
       };
     }
 
-    // Initial load
+    // Initial load and C1 30s interval fallback
     setupSSE();
     loadDetection();
     loadStatus();
@@ -1589,7 +1707,7 @@
     setInterval(() => {
       loadStatus();
       loadDetection();
-    }, 5000);
+    }, 30000);
   </script>
 </body>
 </html>
