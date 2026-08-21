@@ -33,7 +33,7 @@
     select option { background-color: #FAF9F5; color: #1F1E1D; padding: 6px 12px; }
   </style>
 </head>
-<body class="bg-paper text-ink min-h-screen flex flex-col antialiased">
+<body class="bg-paper text-ink min-h-screen flex flex-col antialiased selection:bg-crail-soft selection:text-crail">
 
   <!-- Top Navbar -->
   <header class="border-b border-line bg-paper-panel sticky top-0 z-30 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
@@ -51,25 +51,25 @@
 
     <!-- Navigation Tabs (Underline Style) -->
     <nav class="flex items-center gap-5 text-sm flex-wrap pt-1">
-      <button onclick="switchTab('orchestrator')" id="tab-orchestrator" class="pb-2 font-semibold text-ink border-b-2 border-crail transition">
+      <button onclick="switchTab('orchestrator')" id="tab-orchestrator" class="pb-2 font-semibold text-ink border-b-2 border-crail transition cursor-pointer">
         任务协同工作台
       </button>
-      <button onclick="switchTab('activity')" id="tab-activity" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+      <button onclick="switchTab('activity')" id="tab-activity" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
         Agent 实时动态
       </button>
-      <button onclick="switchTab('diff')" id="tab-diff" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+      <button onclick="switchTab('diff')" id="tab-diff" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
         方案代码对比
       </button>
-      <button onclick="switchTab('studio')" id="tab-studio" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+      <button onclick="switchTab('studio')" id="tab-studio" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
         优点融合与交付
       </button>
-      <button onclick="switchTab('history')" id="tab-history" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+      <button onclick="switchTab('history')" id="tab-history" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
         历史任务
       </button>
-      <button onclick="switchTab('detector')" id="tab-detector" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+      <button onclick="switchTab('detector')" id="tab-detector" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
         Agent 探测大厅
       </button>
-      <button onclick="switchTab('stats')" id="tab-stats" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+      <button onclick="switchTab('stats')" id="tab-stats" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer">
         效率分析
       </button>
     </nav>
@@ -219,7 +219,7 @@
       </div>
 
       <!-- 2. Dynamic Agent Working Cards (shown when running) -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden" id="agent-cards-container">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 hidden items-stretch" id="agent-cards-container">
         <!-- Populated by renderActiveRun -->
       </div>
     </section>
@@ -240,7 +240,7 @@
         </div>
 
         <!-- Multi-Agent Live Activity Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="activity-cards-grid">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch" id="activity-cards-grid">
           <!-- Populated by renderActivityLog() -->
         </div>
       </div>
@@ -360,63 +360,14 @@
           </span>
         </div>
 
+        <!-- Available Agents Grid -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detector-agent-grid">
           <!-- Pre-rendered default cards -->
-          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
-                  Google Antigravity / Gemini
-                </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-ok/10 text-ok border border-ok/30">进程运行中</span>
-              </div>
-              <p class="text-xs text-ink-soft leading-relaxed">Google Antigravity IDE & Gemini Autonomous Agent</p>
-            </div>
-            <div class="text-[11px] font-mono text-ink-soft truncate">路径: AppData\Local\Programs\antigravity\Antigravity.exe</div>
-          </div>
+        </div>
 
-          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-info"></span>
-                  OpenCode Assistant
-                </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-info/10 text-info border border-info/30">本地已安装 (按需拉起)</span>
-              </div>
-              <p class="text-xs text-ink-soft leading-relaxed">OpenCode Local AI Coding Agent</p>
-            </div>
-            <div class="text-[11px] font-mono text-ink-soft truncate">路径: AppData\Local\Programs\@opencode-aidesktop\OpenCode.exe</div>
-          </div>
-
-          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-info"></span>
-                  OpenClaw Agent
-                </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-info/10 text-info border border-info/30">本地已安装 (按需拉起)</span>
-              </div>
-              <p class="text-xs text-ink-soft leading-relaxed">OpenClaw Autonomous Developer Agent</p>
-            </div>
-            <div class="text-[11px] font-mono text-ink-soft truncate">路径: D:\OpenClawTray\OpenClaw.Tray.WinUI.exe</div>
-          </div>
-
-          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-info"></span>
-                  Reasonix AI Agent
-                </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-info/10 text-info border border-info/30">本地已安装 (按需拉起)</span>
-              </div>
-              <p class="text-xs text-ink-soft leading-relaxed">Reasonix AI Autonomous Reasoning & Coding Agent</p>
-            </div>
-            <div class="text-[11px] font-mono text-ink-soft truncate">路径: AppData\Local\Reasonix</div>
-          </div>
+        <!-- Unavailable / Not Installed Agents Folded Accordion -->
+        <div id="detector-unavailable-container" class="hidden">
+          <!-- Dynamically populated details list -->
         </div>
       </div>
     </section>
@@ -441,8 +392,9 @@
           </div>
         </div>
 
-        <div id="history-tasks-container" class="space-y-3">
-          <!-- Dynamically populated history cards -->
+        <!-- Compact History List View -->
+        <div id="history-tasks-container" class="space-y-2">
+          <!-- Dynamically populated compact history rows -->
         </div>
       </div>
     </section>
@@ -470,7 +422,7 @@
 
   <!-- Edit Task Modal -->
   <div id="edit-task-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-    <div class="bg-paper-panel border border-line rounded-lg max-w-2xl w-full flex flex-col p-6 space-y-4">
+    <div class="bg-paper-panel border border-line rounded-lg max-w-2xl w-full flex flex-col p-6 space-y-4 shadow-xl">
       <div class="flex items-center justify-between border-b border-line pb-3">
         <h3 class="font-bold text-base text-ink">
           修改/编辑当前任务需求
@@ -500,9 +452,25 @@
     </div>
   </div>
 
+  <!-- App Confirm Modal (Replaces native confirm()) -->
+  <div id="app-confirm-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+    <div class="bg-paper-panel border border-line rounded-lg max-w-md w-full p-5 space-y-4 shadow-xl">
+      <h3 id="app-confirm-title" class="font-bold text-base text-ink">确认操作</h3>
+      <p id="app-confirm-message" class="text-xs text-ink-soft whitespace-pre-wrap leading-relaxed"></p>
+      <div class="flex items-center justify-end gap-2.5 pt-2">
+        <button id="app-confirm-cancel" class="px-3.5 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink-soft border border-line-strong transition cursor-pointer">
+          取消
+        </button>
+        <button id="app-confirm-ok" class="px-3.5 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-xs font-bold text-white transition cursor-pointer">
+          确认
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Log Modal -->
   <div id="log-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-    <div class="bg-paper-panel border border-line rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col">
+    <div class="bg-paper-panel border border-line rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col shadow-xl">
       <div class="px-5 py-3.5 border-b border-line flex items-center justify-between">
         <h3 id="log-modal-title" class="font-bold text-sm text-ink">Agent 实时运行日志</h3>
         <button onclick="closeLogModal()" class="text-ink-soft hover:text-ink text-lg cursor-pointer">✕</button>
@@ -511,12 +479,60 @@
     </div>
   </div>
 
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
   <script>
     let currentData = null;
     let currentDiffs = [];
     let detectedAgents = [];
 
-    async function loadDetection(showToast = false) {
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      if (!container) return;
+      const toast = document.createElement('div');
+      const borderClass = type === 'error'
+        ? 'border-bad bg-paper-panel text-bad'
+        : (type === 'success' ? 'border-ok bg-paper-panel text-ok' : 'border-line-strong bg-paper-panel text-ink');
+      
+      toast.className = `px-4 py-2.5 rounded-lg border ${borderClass} text-xs font-medium shadow-lg pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 flex items-center gap-2 max-w-md`;
+      toast.textContent = message;
+      container.appendChild(toast);
+      
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+      
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function showAppConfirm(message, title = '确认操作') {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('app-confirm-modal');
+        const titleEl = document.getElementById('app-confirm-title');
+        const msgEl = document.getElementById('app-confirm-message');
+        const btnCancel = document.getElementById('app-confirm-cancel');
+        const btnOk = document.getElementById('app-confirm-ok');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        modal.classList.remove('hidden');
+
+        const cleanup = () => {
+          modal.classList.add('hidden');
+          btnCancel.onclick = null;
+          btnOk.onclick = null;
+        };
+
+        btnCancel.onclick = () => { cleanup(); resolve(false); };
+        btnOk.onclick = () => { cleanup(); resolve(true); };
+      });
+    }
+
+    async function loadDetection(showToastMsg = false) {
       try {
         const res = await fetch('/api/detect');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -525,9 +541,9 @@
         renderDetection(detectedAgents);
         populateJudgeSelectors(detectedAgents);
         populateInlineAgentCheckboxes(detectedAgents);
-        if (showToast) {
+        if (showToastMsg) {
           const readyCount = detectedAgents.filter(a => a.available).length;
-          alert(`深度扫描完成！共探测到 ${readyCount} 个本机就绪的 AI Agent 工具。`);
+          showToast(`深度扫描完成！探测到 ${readyCount} 个本机就绪的 AI 工具。`, 'success');
         }
       } catch (err) {
         console.error('Failed to detect agents:', err);
@@ -536,6 +552,7 @@
 
     function renderDetection(agents) {
       const available = agents.filter(a => a.available);
+      const unavailable = agents.filter(a => !a.available);
       const running = agents.filter(a => a.isRunning);
       const countBadge = document.getElementById('detected-count-text');
       if (countBadge) {
@@ -543,35 +560,67 @@
       }
 
       const grid = document.getElementById('detector-agent-grid');
+      const unavailContainer = document.getElementById('detector-unavailable-container');
       if (!grid) return;
       grid.innerHTML = '';
 
-      agents.forEach(a => {
+      // Render Available Agents
+      available.forEach(a => {
         const card = document.createElement('div');
         const borderClass = a.isRunning 
           ? 'bg-paper-panel border-line hover:border-crail'
-          : (a.available ? 'bg-paper-panel border-line hover:border-line-strong' : 'bg-paper-sunken/60 border-line opacity-60');
+          : 'bg-paper-panel border-line hover:border-line-strong';
 
         card.className = `p-4 rounded-lg border ${borderClass} flex flex-col justify-between space-y-3`;
         card.innerHTML = `
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
-                <span class="w-2 h-2 rounded-full ${a.isRunning ? 'bg-ok animate-pulse' : (a.available ? 'bg-info' : 'bg-ink-faint')}"></span>
+                <span class="w-2 h-2 rounded-full ${a.isRunning ? 'bg-ok animate-pulse' : 'bg-info'}"></span>
                 ${escapeHtml(a.displayName)}
               </h4>
-              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${a.isRunning ? 'bg-ok/10 text-ok border border-ok/30' : (a.available ? 'bg-info/10 text-info border border-info/30' : 'bg-paper-sunken text-ink-faint border border-line')}">
-                ${escapeHtml(a.statusLabel || (a.available ? '本地就绪' : '未检测到'))}
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${a.isRunning ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-info/10 text-info border border-info/30'}">
+                ${escapeHtml(a.statusLabel || (a.isRunning ? '进程运行中' : '本地已就绪'))}
               </span>
             </div>
             <p class="text-xs text-ink-soft leading-relaxed">${escapeHtml(a.description)}</p>
           </div>
-          <div class="text-[11px] font-mono ${a.isRunning ? 'text-ink' : 'text-ink-soft'} truncate" title="${escapeHtml(a.path || '未安装')}">
-            路径: ${escapeHtml(a.path || '未在 PATH 或 AppData 中找到')}
+          <div class="text-[11px] font-mono ${a.isRunning ? 'text-ink' : 'text-ink-soft'} truncate" title="${escapeHtml(a.path || '')}">
+            路径: ${escapeHtml(a.path || '已在系统环境变量中识别')}
           </div>
         `;
         grid.appendChild(card);
       });
+
+      // Fold unavailable agents into accordion
+      if (unavailContainer) {
+        if (unavailable.length === 0) {
+          unavailContainer.classList.add('hidden');
+          unavailContainer.innerHTML = '';
+        } else {
+          unavailContainer.classList.remove('hidden');
+          const unavailItems = unavailable.map(a => `
+            <div class="p-3 rounded-md bg-paper border border-line text-xs flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-ink-faint"></span>
+                <span class="font-medium text-ink-soft">${escapeHtml(a.displayName)}</span>
+              </div>
+              <span class="text-[10px] font-mono text-ink-faint">未安装</span>
+            </div>
+          `).join('');
+
+          unavailContainer.innerHTML = `
+            <details class="border border-line rounded-lg bg-paper-sunken/60 p-3 mt-4">
+              <summary class="cursor-pointer text-xs font-semibold text-ink-soft hover:text-ink select-none">
+                未检测到的工具 (${unavailable.length} 个) ▸
+              </summary>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-3">
+                ${unavailItems}
+              </div>
+            </details>
+          `;
+        }
+      }
     }
 
     function populateJudgeSelectors(agents) {
@@ -711,6 +760,7 @@
           const r = results.find(item => item.agent === agent.name) || {};
           const isPassed = agent.gatePassed ?? (r.test_passed && r.build_passed && r.lint_passed);
           const isEnsemble = agent.name === 'ensemble' || agent.isSupervisor;
+          const isFailed = agent.status === 'failed' || (!isPassed && ((agent.attempts >= 3) || active.status === 'completed' || agent.isFailed));
 
           const roleLabels = {
             algorithm_architect: '算法架构师',
@@ -724,7 +774,9 @@
           const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '主协调 Agent' : '协同 Agent');
           const roleBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-crail text-crail bg-crail-soft/30">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>`;
           const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '(主 Agent 融合版)' : ''}`;
-          const agentSubtitle = agent.title ? `<div class="text-[11px] text-ink-soft mt-0.5">执行引擎: <b class="text-ink font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span></div>` : '';
+          const agentSubtitle = agent.title 
+            ? `执行引擎: <b class="text-ink font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span>`
+            : '';
 
           const buildPassed = agent.verify?.build?.passed ?? (r.build_passed ?? true);
           const lintPassed = agent.verify?.lint?.passed ?? (r.lint_passed ?? true);
@@ -733,56 +785,99 @@
           const sourceRemoved = agent.diffStats?.sourceRemoved ?? (r.source_lines_removed || 0);
           const testAdded = agent.diffStats?.testAdded ?? (r.test_lines_added || 0);
 
+          // Status state string and color
+          let statusText = '';
+          let statusColor = 'text-crail';
+          let dotColor = 'bg-crail';
+          if (isPassed) {
+            statusText = `[PASS] 门禁通过 ${agent.attempts ? '(第 ' + agent.attempts + '/3 次)' : ''}`;
+            statusColor = 'text-ok';
+            dotColor = 'bg-ok';
+          } else if (isFailed) {
+            statusText = `[FAIL] 门禁未通过 ${agent.attempts ? '(已尝试 ' + agent.attempts + '/3 次)' : ''}`;
+            statusColor = 'text-bad';
+            dotColor = 'bg-bad';
+          } else {
+            statusText = isEnsemble ? '正在全量架构集成' : '正在编码与独立验真';
+            statusColor = 'text-crail';
+            dotColor = 'bg-crail animate-pulse';
+          }
+
+          // Telemetry with consistent source check
+          let telemetryHtml = '';
+          const hasTokens = (r.tokens?.totalTokens != null && r.tokens.totalTokens > 0) || (agent.tokens?.totalTokens != null && agent.tokens.totalTokens > 0);
+          const totalToks = r.tokens?.totalTokens ?? agent.tokens?.totalTokens;
+          const costEst = r.tokens?.costEstimate ?? agent.tokens?.costEstimate;
+          if (hasTokens) {
+            telemetryHtml += `<span>Tokens: <b class="text-ink">${totalToks.toLocaleString()}</b>${costEst ? ' · <b class="text-ok">' + costEst + '</b>' : ''}</span>`;
+          } else {
+            telemetryHtml += `<span>Tokens: <b class="text-ink-soft">—</b></span>`;
+          }
+
+          const toolsList = (r.tools_called || agent.toolsCalled || []).filter(Boolean);
+          if (toolsList.length > 0) {
+            telemetryHtml += `<span class="text-[11px] truncate text-ink-soft" title="${escapeHtml(toolsList.join(' · '))}">工具: ${escapeHtml(toolsList.join(' · '))}</span>`;
+          }
+
+          // Diff clean string without +0 / -0 noise
+          const diffStr = (sourceAdded === 0 && sourceRemoved === 0)
+            ? '代码改动: <span class="text-ink-soft">无改动</span>'
+            : `代码改动: <b class="text-ok">+${sourceAdded}</b> / <b class="text-bad">-${sourceRemoved}</b>`;
+          const testDiffStr = (testAdded === 0)
+            ? '测试: <span class="text-ink-soft">无新增</span>'
+            : `测试改动: <b class="text-ink">+${testAdded}</b>`;
+
           const card = document.createElement('div');
-          card.className = `bg-paper-panel border ${isEnsemble ? 'border-crail' : 'border-line'} rounded-lg p-5 space-y-3.5 flex flex-col justify-between`;
+          card.className = `bg-paper-panel border ${isEnsemble ? 'border-crail' : 'border-line'} rounded-lg p-5 space-y-3.5 flex flex-col justify-between h-full`;
 
           card.innerHTML = `
-            <div class="space-y-3">
-              <div class="flex items-start justify-between gap-2">
-                <div class="space-y-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="w-2.5 h-2.5 rounded-full ${isPassed ? 'bg-ok' : 'bg-crail'}"></span>
-                    ${roleBadge}
+            <div class="space-y-3 flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-start justify-between gap-2">
+                  <div class="space-y-1 min-w-0 flex-1">
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="w-2 h-2 rounded-full ${dotColor} shrink-0"></span>
+                      ${roleBadge}
+                    </div>
+                    <h4 class="font-bold text-sm text-ink leading-snug line-clamp-2 min-h-[2.5rem] mt-1">${escapeHtml(cardTitle)}</h4>
+                    <div class="text-[11px] text-ink-soft min-h-[1.25rem] truncate">${agentSubtitle}</div>
                   </div>
-                  <h4 class="font-bold text-sm text-ink leading-snug">${escapeHtml(cardTitle)}</h4>
-                  ${agentSubtitle}
+                  <span class="text-xs font-mono text-ink-soft shrink-0">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : (agent.durationSeconds ? agent.durationSeconds.toFixed(1) + 's' : '0.0s')}</span>
                 </div>
-                <span class="text-xs font-mono text-ink-soft shrink-0">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : (agent.durationSeconds ? agent.durationSeconds.toFixed(1) + 's' : '0.0s')}</span>
-              </div>
 
-              <!-- Real-time Activity Status -->
-              <div class="p-2.5 rounded-md bg-paper-sunken border border-line flex items-center justify-between text-xs">
-                <span class="text-ink-soft">当前状态:</span>
-                <span class="font-semibold ${isPassed ? 'text-ok' : 'text-crail'}">
-                  ${isPassed ? `[PASS] 门禁通过 ${agent.attempts ? '(第 ' + agent.attempts + '/3 次)' : ''}` : (isEnsemble ? '正在全量架构集成' : '正在编码与独立验真')}
-                </span>
-              </div>
-
-              <!-- Combined Single-Line Telemetry -->
-              <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1">
-                <span>Tokens: <b class="text-ink">${r.tokens?.totalTokens != null ? r.tokens.totalTokens.toLocaleString() : '—'}</b> · <b class="text-ok">${r.tokens?.costEstimate ?? '$0.00'}</b></span>
-                <span class="text-[11px] truncate text-ink-soft">${escapeHtml((r.tools_called || agent.toolsCalled || []).join('·') || 'view·edit')}</span>
-              </div>
-
-              <!-- Gate 3 Boxes -->
-              <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
-                  <div class="text-ink-soft text-[10px]">Build</div>
-                  <div class="font-bold ${buildPassed ? 'text-ok' : 'text-bad'}">${buildPassed ? '[PASS]' : '[FAIL]'}</div>
+                <!-- Real-time Activity Status -->
+                <div class="p-2.5 rounded-md bg-paper-sunken border border-line flex items-center justify-between text-xs mt-3">
+                  <span class="text-ink-soft">门禁状态:</span>
+                  <span class="font-semibold font-mono ${statusColor}">
+                    ${statusText}
+                  </span>
                 </div>
-                <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
-                  <div class="text-ink-soft text-[10px]">Lint</div>
-                  <div class="font-bold ${lintPassed ? 'text-ok' : 'text-bad'}">${lintPassed ? '[PASS]' : '[FAIL]'}</div>
+
+                <!-- Combined Single-Line Telemetry -->
+                <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
+                  ${telemetryHtml}
                 </div>
-                <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
-                  <div class="text-ink-soft text-[10px]">Tests</div>
-                  <div class="font-bold ${testPassed ? 'text-ok' : 'text-bad'}">${testPassed ? '[PASS]' : '[FAIL]'}</div>
+
+                <!-- Gate 3 Boxes -->
+                <div class="grid grid-cols-3 gap-2 text-center text-xs mt-2">
+                  <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                    <div class="text-ink-soft text-[10px]">Build</div>
+                    <div class="font-bold ${buildPassed ? 'text-ok' : 'text-bad'}">${buildPassed ? '[PASS]' : '[FAIL]'}</div>
+                  </div>
+                  <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                    <div class="text-ink-soft text-[10px]">Lint</div>
+                    <div class="font-bold ${lintPassed ? 'text-ok' : 'text-bad'}">${lintPassed ? '[PASS]' : '[FAIL]'}</div>
+                  </div>
+                  <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                    <div class="text-ink-soft text-[10px]">Tests</div>
+                    <div class="font-bold ${testPassed ? 'text-ok' : 'text-bad'}">${testPassed ? '[PASS]' : '[FAIL]'}</div>
+                  </div>
                 </div>
               </div>
 
-              <div class="flex items-center justify-between text-xs px-1 text-ink-soft">
-                <span>代码改动: <b class="text-ok">+${sourceAdded}</b> / <b class="text-bad">-${sourceRemoved}</b></span>
-                <span>测试改动: <b class="text-ink">+${testAdded}</b></span>
+              <div class="flex items-center justify-between text-xs px-1 text-ink-soft pt-1">
+                <span>${diffStr}</span>
+                <span>${testDiffStr}</span>
               </div>
             </div>
 
@@ -790,8 +885,8 @@
               <button class="action-view-log flex-1 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-semibold border border-line-strong hover:border-crail transition cursor-pointer">
                 执行日志
               </button>
-              <button class="action-keep flex-1 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-white text-xs font-bold transition cursor-pointer">
-                一键采用
+              <button class="action-keep flex-1 py-1.5 rounded-md ${isPassed ? 'bg-crail hover:bg-crail-hover text-white text-xs font-bold' : 'bg-paper-panel hover:bg-paper-sunken text-ink-faint border border-line text-xs font-medium'} transition cursor-pointer" title="${isPassed ? '合并该方案' : '该方案门禁未通过，不建议合并'}">
+                ${isPassed ? '一键采用' : '采用 (未过门禁)'}
               </button>
             </div>
           `;
@@ -799,14 +894,21 @@
           card.querySelector('.action-keep').onclick = () => keepAgent(agent.name);
           container.appendChild(card);
 
+          // Studio Single Keep List Item
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
-          btn.className = 'w-full py-2.5 px-3 rounded-md text-xs font-semibold flex items-center justify-between transition cursor-pointer bg-paper-panel hover:bg-paper-sunken text-ink border border-line-strong hover:border-crail';
-          btn.innerHTML = `<span>采用 <b>${escapeHtml(cardTitle)}</b></span> <span class="font-mono text-[10px] text-ink-soft">${escapeHtml(agent.branch)}</span>`;
+          btn.className = 'w-full py-2 px-3 rounded-md text-xs flex flex-col gap-0.5 transition cursor-pointer bg-paper-panel hover:bg-paper-sunken text-ink border border-line-strong hover:border-crail text-left overflow-hidden';
+          btn.innerHTML = `
+            <div class="flex items-center justify-between w-full">
+              <span class="font-semibold line-clamp-1">采用 ${escapeHtml(cardTitle)}</span>
+              <span class="text-[10px] ${isPassed ? 'text-ok font-mono' : 'text-bad font-mono'} shrink-0">${isPassed ? '[PASS]' : '[FAIL]'}</span>
+            </div>
+            <span class="font-mono text-[10px] text-ink-soft truncate max-w-[200px]">${escapeHtml(agent.branch)}</span>
+          `;
           keepButtons.appendChild(btn);
         });
       } else {
-        // Idle State: Show static Task Launch Console
+        // Idle State
         const launcher = document.getElementById('workbench-task-launcher');
         const container = document.getElementById('agent-cards-container');
         if (launcher) launcher.classList.remove('hidden');
@@ -824,7 +926,7 @@
       }
     }
 
-    let currentDiffFileType = 'solution'; // 'solution' | 'test' | 'diff'
+    let currentDiffFileType = 'solution';
 
     function switchDiffFileView(type) {
       currentDiffFileType = type;
@@ -928,13 +1030,16 @@
         grid.innerHTML = '';
         activities.forEach(act => {
           const isPassed = act.testPassed && act.buildPassed && act.lintPassed;
+          const isFailed = act.status === 'failed' || (!isPassed && act.currentAction?.includes('未通过'));
+          const dotClass = isPassed ? 'bg-ok' : (isFailed ? 'bg-bad' : 'bg-crail animate-pulse');
+
           const card = document.createElement('div');
-          card.className = 'bg-paper-panel border border-line rounded-lg p-5 space-y-4 flex flex-col justify-between';
+          card.className = 'bg-paper-panel border border-line rounded-lg p-5 space-y-3.5 flex flex-col justify-between h-full';
 
           let timelineHtml = '';
           (act.steps || []).forEach(step => {
             timelineHtml += `
-              <div class="flex items-start justify-between text-xs py-1.5 border-b border-line last:border-0">
+              <div class="flex items-start justify-between text-xs py-1 border-b border-line last:border-0">
                 <div class="flex-1 min-w-0 pr-2">
                   <div class="font-semibold text-ink">${escapeHtml(step.title)}</div>
                   <div class="text-[11px] text-ink-soft truncate">${escapeHtml(step.detail)}</div>
@@ -944,50 +1049,67 @@
             `;
           });
 
+          // Telemetry
+          let telemetryHtml = '';
+          const hasTokens = act.tokens?.totalTokens != null && act.tokens.totalTokens > 0;
+          if (hasTokens) {
+            const costStr = act.tokens?.costEstimate ? ` · <b class="text-ok">${act.tokens.costEstimate}</b>` : '';
+            telemetryHtml += `<span>Tokens: <b class="text-ink">${act.tokens.totalTokens.toLocaleString()}</b>${costStr}</span>`;
+          } else {
+            telemetryHtml += `<span>Tokens: <b class="text-ink-soft">—</b></span>`;
+          }
+
+          const toolsList = (act.toolsCalled || []).filter(Boolean);
+          if (toolsList.length > 0) {
+            telemetryHtml += `<span class="text-[11px] truncate text-ink-soft" title="${escapeHtml(toolsList.join(' · '))}">工具: ${escapeHtml(toolsList.join(' · '))}</span>`;
+          }
+
+          const diffStr = (act.sourceDiff?.added === 0 && act.sourceDiff?.removed === 0)
+            ? '代码: <span class="text-ink-soft">无改动</span>'
+            : `代码: <b class="text-ok">+${act.sourceDiff?.added || 0}</b> / <b class="text-bad">-${act.sourceDiff?.removed || 0}</b>`;
+
           card.innerHTML = `
-            <div class="space-y-3.5">
-              <!-- Card Header -->
-              <div class="flex items-center justify-between border-b border-line pb-2.5">
-                <div class="flex items-center gap-2">
-                  <span class="w-2.5 h-2.5 rounded-full ${isPassed ? 'bg-ok' : 'bg-crail'}"></span>
-                  <h4 class="font-bold text-sm text-ink">${escapeHtml(act.displayName)}</h4>
+            <div class="space-y-3 flex-1 flex flex-col justify-between">
+              <div>
+                <!-- Header with integrated currentAction -->
+                <div class="flex items-start justify-between border-b border-line pb-2.5 gap-2">
+                  <div class="flex items-center gap-2 min-w-0 flex-1">
+                    <span class="w-2 h-2 rounded-full ${dotClass} shrink-0 mt-0.5"></span>
+                    <div class="min-w-0">
+                      <h4 class="font-bold text-sm text-ink truncate">${escapeHtml(act.displayName)}</h4>
+                      <div class="text-[11px] ${isFailed ? 'text-bad' : 'text-ink-soft'} font-medium truncate">${escapeHtml(act.currentAction)}</div>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <button onclick="viewAgentLog('${escapeJsAttr(act.agent)}')" class="px-2.5 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer whitespace-nowrap shrink-0">
+                      日志
+                    </button>
+                    <span class="text-xs font-mono text-ink-soft">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃'}</span>
+                  </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <button onclick="viewAgentLog('${escapeJsAttr(act.agent)}')" class="px-2.5 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer">
-                    全屏日志
-                  </button>
-                  <span class="text-xs font-mono text-ink-soft">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃中'}</span>
+
+                <!-- Timeline of Steps -->
+                <div class="space-y-1 p-3 rounded-md bg-paper-sunken border border-line mt-2.5">
+                  <div class="text-[10px] text-ink-soft font-bold uppercase tracking-wider mb-1">执行步骤与思维链路</div>
+                  ${timelineHtml}
                 </div>
-              </div>
 
-              <!-- Current Action Banner -->
-              <div class="p-2.5 rounded-md bg-paper-sunken border border-line text-xs">
-                <div class="text-[10px] text-ink-soft font-semibold mb-0.5">当前具体动作</div>
-                <div class="font-bold text-ink truncate">${escapeHtml(act.currentAction)}</div>
-              </div>
-
-              <!-- Timeline of Steps -->
-              <div class="space-y-1 p-3 rounded-md bg-paper-sunken border border-line">
-                <div class="text-[10px] text-ink-soft font-bold uppercase tracking-wider mb-1">执行步骤与思维链路</div>
-                ${timelineHtml}
-              </div>
-
-              <!-- Telemetry Metrics -->
-              <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1">
-                <span>Tokens: <b class="text-ink">${act.tokens?.totalTokens != null ? act.tokens.totalTokens.toLocaleString() : '—'}</b> · <b class="text-ok">${act.tokens?.costEstimate ?? '$0.00'}</b></span>
-                <span class="text-[11px] truncate text-ink-soft">${escapeHtml((act.toolsCalled || []).join('·') || 'view·edit')}</span>
+                <!-- Telemetry Metrics -->
+                <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
+                  ${telemetryHtml}
+                </div>
               </div>
 
               <!-- Test & Code Stats -->
-              <div class="flex items-center justify-between text-xs px-1 text-ink-soft">
-                <span>代码改动: <b class="text-ok">+${act.sourceDiff?.added || 0}</b> / <b class="text-bad">-${act.sourceDiff?.removed || 0}</b></span>
-                <span>测试门禁: <b class="${act.testPassed ? 'text-ok' : 'text-ink'}">${act.testsPassedCount || 0}/${act.testsTotalCount || 0} PASS</b></span>
+              <div class="flex items-center justify-between text-xs px-1 text-ink-soft pt-1">
+                <span>${diffStr}</span>
+                <span>测试门禁: <b class="${act.testPassed ? 'text-ok font-mono' : 'text-bad font-mono'}">${act.testsPassedCount || 0}/${act.testsTotalCount || 0} PASS</b></span>
               </div>
             </div>
 
             <!-- Terminal Log Viewer -->
             <details class="pt-2 border-t border-line">
-              <summary class="text-xs text-ink-soft hover:text-ink cursor-pointer font-semibold py-1">
+              <summary class="text-xs text-ink-soft hover:text-ink cursor-pointer font-semibold py-1 select-none">
                 查看终端日志与模型输出
               </summary>
               <pre class="mt-2 bg-[#1F1E1D] p-3 rounded-md text-[11px] font-mono text-[#E8E4DA] max-h-48 overflow-y-auto border border-line leading-relaxed whitespace-pre-wrap">${escapeHtml(act.rawLog || '// 暂无日志输出')}</pre>
@@ -1091,18 +1213,20 @@
       }
     }
 
-    function triggerQuickBlend() {
+    async function triggerQuickBlend() {
       const judge = document.getElementById('quick-judge-select').value || 'antigravity';
-      executeBlend(judge);
+      await executeBlend(judge);
     }
 
-    function triggerStudioBlend() {
+    async function triggerStudioBlend() {
       const judge = document.getElementById('studio-judge-select').value || 'antigravity';
-      executeBlend(judge);
+      await executeBlend(judge);
     }
 
     async function executeBlend(judge) {
-      if (!confirm(`确定由主 Agent「${judge}」统筹提取各方案优势并合成最终交付代码吗？`)) return;
+      const confirmed = await showAppConfirm(`确定由主 Agent「${judge}」统筹提取各方案优势并合成最终交付代码吗？`, '统筹融合确认');
+      if (!confirmed) return;
+      
       try {
         const res = await fetch('/api/blend', {
           method: 'POST',
@@ -1111,19 +1235,21 @@
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`协同融合失败: ${err.error || res.statusText}`);
+          showToast(`协同融合失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        alert(`主 Agent「${judge}」协同融合完成！已成功将最优代码与测试集成至 ensemble 分支。`);
+        showToast(`主 Agent「${judge}」协同融合完成！最优代码已集成至 ensemble 分支。`, 'success');
         loadStatus();
         loadDiffs();
       } catch (err) {
-        alert('融合失败: ' + err.message);
+        showToast('融合失败: ' + err.message, 'error');
       }
     }
 
     async function keepAgent(agent) {
-      if (!confirm(`确定采用 ${agent} 的方案并合并回主分支吗？`)) return;
+      const confirmed = await showAppConfirm(`确定采用 ${agent} 的方案并合并回主分支吗？`, '方案合并确认');
+      if (!confirmed) return;
+      
       try {
         const res = await fetch('/api/keep', {
           method: 'POST',
@@ -1131,28 +1257,31 @@
           body: JSON.stringify({ agent })
         });
         if (res.ok) {
-          alert(`已成功采用 ${agent} 方案并更新主分支！`);
+          showToast(`已成功采用 ${agent} 方案并更新主分支！`, 'success');
           loadStatus();
         } else {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`采用失败: ${err.error || res.statusText}`);
+          showToast(`采用失败: ${err.error || res.statusText}`, 'error');
         }
       } catch (err) {
-        alert('采用失败: ' + err.message);
+        showToast('采用失败: ' + err.message, 'error');
       }
     }
 
     async function discardCurrentRace() {
-      if (!confirm('确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n说明：历史任务、性能画像与战绩指标已永久保存在本地 SQLite 数据库中，不受任何影响。')) return;
+      const confirmed = await showAppConfirm('确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n说明：历史任务、性能画像与战绩指标已保存在本地 SQLite 数据库中。', '清理工作区确认');
+      if (!confirmed) return;
+      
       try {
         const res = await fetch('/api/discard', { method: 'POST' });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`清理失败: ${err.error || res.statusText}`);
+          showToast(`清理失败: ${err.error || res.statusText}`, 'error');
           return;
         }
+        showToast('临时工作区已清理完成。', 'success');
       } catch (err) {
-        alert('清理失败: ' + err.message);
+        showToast('清理失败: ' + err.message, 'error');
         return;
       }
       loadStatus();
@@ -1166,7 +1295,7 @@
         document.getElementById('log-modal-content').textContent = text;
         document.getElementById('log-modal').classList.remove('hidden');
       } catch (err) {
-        alert('日志加载失败: ' + err.message);
+        showToast('日志加载失败: ' + err.message, 'error');
       }
     }
 
@@ -1176,9 +1305,9 @@
 
     async function submitInlineTask() {
       const task = document.getElementById('inline-task-input')?.value || '';
-      if (!task.trim()) return alert('请输入任务需求描述');
+      if (!task.trim()) return showToast('请输入任务需求描述', 'error');
       const checkedAgents = Array.from(document.querySelectorAll('#inline-agent-selector-grid input[type="checkbox"]:checked')).map(cb => cb.value);
-      if (checkedAgents.length === 0) return alert('请至少选择一个参与协同的 Agent');
+      if (checkedAgents.length === 0) return showToast('请至少选择一个参与协同的 Agent', 'error');
       
       const supervisor = document.getElementById('quick-judge-select')?.value || 'antigravity';
       const mode = document.querySelector('input[name="arace-mode"]:checked')?.value || 'orchestration';
@@ -1191,10 +1320,10 @@
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`启动任务编排失败: ${err.error || res.statusText}`);
+          showToast(`启动任务编排失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        alert(`已启动「主 Agent 智能编排分工」！主 Agent「${supervisor.toUpperCase()}」正在拆解子任务并派发给专精团队，各子任务通过硬性客观门禁后将自动整合交付。`);
+        showToast(`已启动「主 Agent 智能编排分工」！主 Agent「${supervisor.toUpperCase()}」正在拆解执行。`, 'success');
       } else {
         const res = await fetch('/api/run', {
           method: 'POST',
@@ -1203,10 +1332,10 @@
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`启动竞速失败: ${err.error || res.statusText}`);
+          showToast(`启动竞速失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        alert('已启动「多 Agent 锦标赛竞速」！各个 Agent 正在隔离环境中完整实现与独立打擂...');
+        showToast('已启动「多 Agent 锦标赛竞速」！', 'success');
       }
       loadStatus();
     }
@@ -1238,7 +1367,7 @@
     async function saveEditedTask() {
       const textarea = document.getElementById('edit-task-textarea');
       const taskText = textarea?.value || '';
-      if (!taskText.trim()) return alert('请输入有效的任务需求');
+      if (!taskText.trim()) return showToast('请输入有效的任务需求', 'error');
 
       const runId = currentData?.activeRun?.runId;
       try {
@@ -1255,22 +1384,22 @@
             document.getElementById('inline-task-input').value = taskText;
           }
           closeEditTaskModal();
-          alert('任务需求已成功更新！');
+          showToast('任务需求已成功更新！', 'success');
           loadStatus();
           loadHistory();
         } else {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`更新失败: ${err.error || res.statusText}`);
+          showToast(`更新失败: ${err.error || res.statusText}`, 'error');
         }
       } catch (err) {
-        alert('更新失败: ' + err.message);
+        showToast('更新失败: ' + err.message, 'error');
       }
     }
 
     async function rerunEditedTask() {
       const textarea = document.getElementById('edit-task-textarea');
       const taskText = textarea?.value || '';
-      if (!taskText.trim()) return alert('请输入有效的任务需求');
+      if (!taskText.trim()) return showToast('请输入有效的任务需求', 'error');
 
       closeEditTaskModal();
       if (document.getElementById('inline-task-input')) {
@@ -1280,7 +1409,7 @@
       await submitInlineTask();
     }
 
-    async function loadHistory(showToast = false) {
+    async function loadHistory(showToastMsg = false) {
       const container = document.getElementById('history-tasks-container');
       const countBadge = document.getElementById('history-total-count');
       if (!container) return;
@@ -1315,53 +1444,41 @@
           const isAllPassed = totalCount > 0 && passedCount === totalCount;
           const dateStr = new Date(run.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
-          const card = document.createElement('div');
-          card.className = 'bg-paper-panel border border-line hover:border-line-strong rounded-lg p-5 space-y-3.5 transition';
-
           const agentBadges = results.map(r => `
-            <span class="px-2 py-0.5 rounded text-xs font-mono font-semibold ${r.test_passed ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-bad/10 text-bad border border-bad/30'}">
-              [${r.test_passed ? 'PASS' : 'FAIL'}] ${escapeHtml(r.agent)} (${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '-'})
+            <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${r.test_passed ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-bad/10 text-bad border border-bad/30'}">
+              ${r.test_passed ? '✓' : '✗'}${escapeHtml(r.agent)}
             </span>
           `).join('');
 
-          card.innerHTML = `
-            <div class="flex items-start justify-between gap-4 flex-wrap">
-              <div class="space-y-1.5 flex-1 min-w-[280px]">
-                <div class="flex items-center gap-2 flex-wrap text-xs">
-                  <span class="px-2 py-0.5 rounded font-mono font-bold bg-paper-sunken text-ink border border-line">#${escapeHtml(run.id)}</span>
-                  <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-crail-soft text-crail border border-crail/30">${escapeHtml(run.task_category || 'feature')}</span>
-                  <span class="text-ink-soft font-mono text-[11px]">${dateStr}</span>
-                  <span class="text-ink-soft font-mono text-[11px]">Base: ${escapeHtml(run.base_commit?.slice(0, 7) || 'main')}</span>
-                </div>
-                <h4 class="font-bold text-sm text-ink leading-snug">${escapeHtml(run.task_text || '未命名的任务需求')}</h4>
-              </div>
-              <div class="flex items-center gap-2">
-                <button onclick="switchHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-white text-xs font-semibold transition flex items-center gap-1 cursor-pointer">
-                  查看复盘
-                </button>
-                <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition flex items-center gap-1 cursor-pointer">
-                  修改并复用
-                </button>
-              </div>
-            </div>
+          // Compact Single Row List Item
+          const row = document.createElement('div');
+          row.className = 'p-3 bg-paper-panel border border-line rounded-lg hover:border-line-strong transition flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs';
 
-            <!-- Agent Results Row -->
-            <div class="pt-2.5 border-t border-line flex items-center justify-between gap-4 flex-wrap">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs text-ink-soft font-semibold">协同战绩:</span>
-                ${agentBadges || '<span class="text-xs text-ink-faint font-mono">暂无详细记录</span>'}
-              </div>
-              <div class="text-xs font-semibold font-mono ${isAllPassed ? 'text-ok' : 'text-crail'}">
-                ${isAllPassed ? '[全量通过]' : `[通过率 ${passedCount}/${totalCount}]`}
+          row.innerHTML = `
+            <div class="flex items-center gap-2.5 flex-1 min-w-0">
+              <span class="font-mono font-bold text-ink shrink-0">#${escapeHtml(run.id)}</span>
+              <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-crail-soft text-crail border border-crail/30 shrink-0">${escapeHtml(run.task_category || 'feature')}</span>
+              <span class="font-medium text-ink truncate flex-1" title="${escapeHtml(run.task_text || '')}">${escapeHtml(run.task_text || '未命名任务')}</span>
+            </div>
+            <div class="flex items-center gap-3 shrink-0 flex-wrap justify-between md:justify-end">
+              <div class="flex items-center gap-1.5">${agentBadges || '<span class="text-ink-faint font-mono text-[10px]">无结果</span>'}</div>
+              <span class="text-ink-soft font-mono text-[11px]">${dateStr}</span>
+              <div class="flex items-center gap-1.5">
+                <button onclick="switchHistoricalTask('${escapeJsAttr(run.id)}')" class="px-2.5 py-1 rounded-md bg-crail hover:bg-crail-hover text-white text-[11px] font-semibold transition cursor-pointer">
+                  复盘
+                </button>
+                <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-2.5 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-[11px] font-medium border border-line-strong hover:border-crail transition cursor-pointer">
+                  复用
+                </button>
               </div>
             </div>
           `;
 
-          container.appendChild(card);
+          container.appendChild(row);
         });
 
-        if (showToast) {
-          alert(`历史记录已刷新！共加载 ${history.length} 个已完成的任务数据。`);
+        if (showToastMsg) {
+          showToast(`历史记录已刷新，共加载 ${history.length} 条记录。`, 'info');
         }
       } catch (err) {
         console.error('Failed to load history:', err);
@@ -1379,12 +1496,13 @@
           switchTab('orchestrator');
           loadStatus();
           loadDiffs();
+          showToast(`已切换至历史任务 #${runId}`, 'info');
         } else {
           const err = await res.json().catch(() => ({ error: res.statusText }));
-          alert(`切换任务失败: ${err.error || res.statusText}`);
+          showToast(`切换任务失败: ${err.error || res.statusText}`, 'error');
         }
       } catch (err) {
-        alert('切换任务失败: ' + err.message);
+        showToast('切换任务失败: ' + err.message, 'error');
       }
     }
 
@@ -1404,9 +1522,9 @@
         const btn = document.getElementById(`tab-${t}`);
         if (btn) {
           if (t === tab) {
-            btn.className = 'pb-2 font-semibold text-ink border-b-2 border-crail transition';
+            btn.className = 'pb-2 font-semibold text-ink border-b-2 border-crail transition cursor-pointer';
           } else {
-            btn.className = 'pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition';
+            btn.className = 'pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition cursor-pointer';
           }
         }
       });
@@ -1417,7 +1535,7 @@
       if (tab === 'activity') renderActivityLog();
     }
 
-    // SSE Connection for live updates with auto-reconnect (exponential backoff)
+    // SSE Connection for live updates with auto-reconnect
     let evtSource = null;
     let sseReconnectTimer = null;
     let sseRetryDelay = 1000;
@@ -1489,7 +1607,7 @@
       };
     }
 
-    // Initial load: instant detection, status, and SSE setup
+    // Initial load
     setupSSE();
     loadDetection();
     loadStatus();
