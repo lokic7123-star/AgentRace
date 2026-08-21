@@ -872,14 +872,17 @@
           card.querySelector('.action-keep').onclick = () => keepAgent(agent.name);
           container.appendChild(card);
 
-          // B5: Studio Right Side Keep Buttons
+          // B5 & B10: Studio Right Side Keep Buttons (Muted styling for failed runs without disabling)
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
-          btn.className = 'w-full py-2.5 px-3 rounded-md text-xs flex items-center justify-between gap-2 transition cursor-pointer bg-paper-panel hover:bg-paper-sunken text-ink border border-line-strong hover:border-crail text-left overflow-hidden';
+          const studioBtnBorder = isPassed 
+            ? 'border-line-strong hover:border-crail text-ink' 
+            : (isFailed ? 'border-line text-ink-soft opacity-75 hover:border-line-strong' : 'border-line-strong hover:border-crail text-ink');
+          btn.className = `w-full py-2.5 px-3 rounded-md text-xs flex items-center justify-between gap-2 transition cursor-pointer bg-paper-panel hover:bg-paper-sunken border ${studioBtnBorder} text-left overflow-hidden`;
           btn.innerHTML = `<div class="min-w-0 flex-1 text-left">
-              <div class="truncate text-xs font-semibold">${escapeHtml(cardTitle)}</div>
+              <div class="truncate text-xs font-semibold ${isFailed ? 'text-ink-soft' : 'text-ink'}">${escapeHtml(cardTitle)}</div>
               <div class="truncate text-[10px] text-ink-faint font-mono">${escapeHtml(agent.branch)}</div>
-            </div><span class="ml-2 shrink-0 text-xs text-crail font-medium">采用 ›</span>`;
+            </div><span class="ml-2 shrink-0 text-xs ${isPassed ? 'text-crail font-medium' : 'text-ink-faint'}">采用 ›</span>`;
           keepButtons.appendChild(btn);
         });
       } else {
