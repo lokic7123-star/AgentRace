@@ -75,10 +75,15 @@ export function createWorktree({ repoRoot, runId, agentName, baseCommit }) {
   } catch {}
 
   const commitTarget = baseCommit || 'HEAD';
-  const cmd = `git worktree add -b "${branchName}" "${worktreeAbsPath}" "${commitTarget}"`;
-
   try {
-    execSync(cmd, { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const res = spawnSync('git', ['worktree', 'add', '-b', branchName, worktreeAbsPath, commitTarget], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+    if (res.status !== 0) {
+      throw new Error(res.stderr || res.stdout || `Exit code ${res.status}`);
+    }
     return {
       worktreePath: worktreeAbsPath,
       branchName
