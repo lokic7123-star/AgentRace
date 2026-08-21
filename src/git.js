@@ -71,7 +71,8 @@ export function createWorktree({ repoRoot, runId, agentName, baseCommit }) {
 
   // Delete existing branch or worktree if needed
   try {
-    execSync(`git branch -D "${branchName}"`, { cwd: repoRoot, stdio: 'ignore' });
+    assertSafeGitRef(branchName);
+    spawnSync('git', ['branch', '-D', branchName], { cwd: repoRoot, stdio: 'ignore' });
   } catch {}
 
   const commitTarget = baseCommit || 'HEAD';
@@ -96,18 +97,18 @@ export function createWorktree({ repoRoot, runId, agentName, baseCommit }) {
 export function removeWorktree(worktreePath, repoRoot = process.cwd(), branchName = null) {
   try {
     if (fs.existsSync(worktreePath)) {
-      execSync(`git worktree remove --force "${worktreePath}"`, { cwd: repoRoot, stdio: 'ignore' });
+      spawnSync('git', ['worktree', 'remove', '--force', worktreePath], { cwd: repoRoot, stdio: 'ignore' });
     }
   } catch {}
 
   try {
-    execSync('git worktree prune', { cwd: repoRoot, stdio: 'ignore' });
+    spawnSync('git', ['worktree', 'prune'], { cwd: repoRoot, stdio: 'ignore' });
   } catch {}
 
   if (branchName) {
     try {
       assertSafeGitRef(branchName);
-      execSync(`git branch -D "${branchName}"`, { cwd: repoRoot, stdio: 'ignore' });
+      spawnSync('git', ['branch', '-D', branchName], { cwd: repoRoot, stdio: 'ignore' });
     } catch (err) {
       if (err.message.includes('Unsafe git ref')) {
         console.warn(`[arace] Unsafe/suspicious ref skipped: ${branchName}`);

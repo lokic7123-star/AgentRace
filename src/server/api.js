@@ -1,8 +1,9 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { getRepoRoot, getWorktreeDiff } from '../git.js';
+import { getRepoRoot, getWorktreeDiff, assertSafeGitRef } from '../git.js';
 import { loadProjectConfig } from '../config.js';
 import { getLatestRun, getStats, markAgentKept, getRunHistory, getRunById, updateRunTaskText } from '../db.js';
 import { analyzeTestDiffSecurity } from '../ast_guard.js';
@@ -127,6 +128,152 @@ export function createServer(repoRoot = process.cwd()) {
     }
 
     if (pathname === '/api/diff') {
+      const reqRunId = url.searchParams.get('runId');
+
+      if (reqRunId) {
+        try {
+          assertSafeGitRef(reqRunId);
+        } catch (e) {
+          jsonResponse(res, 400, { error: `Invalid runId: ${reqRunId}` });
+          return;
+        }
+
+        const runRecord = getRunById(reqRunId);
+        if (!runRecord) {
+          jsonResponse(res, 404, { error: `Run ${reqRunId} not found` });
+          return;
+        }
+
+        const baseCommit = runRecord.base_commit || 'HEAD';
+        const results = runRecord.results || [];
+        const diffs = [];
+
+        // Collect agents/roles
+        const agentNames = Array.from(new Set(results.map(r => r.agent_name || r.agent).filter(Boolean)));
+        if (runRecord.winner_agent && !agentNames.includes(runRecord.winner_agent)) {
+          agentNames.push(runRecord.winner_agent);
+        }
+        if (runRecord.mode === 'orchestration' && !agentNames.includes('supervisor')) {
+          agentNames.push('supervisor');
+        }
+
+        if (agentNames.length === 0) {
+          try {
+            const brRes = spawnSync('git', ['branch', '--list', `arace/${reqRunId}/*`], { cwd: root, encoding: 'utf8' });
+            const lines = (brRes.stdout || '').split('\n').map(l => l.replace(/^[* ]+/, '').trim()).filter(Boolean);
+            for (const l of lines) {
+              const parts = l.split('/');
+              const aName = parts.slice(2).join('/');
+              if (aName && !agentNames.includes(aName)) agentNames.push(aName);
+            }
+          } catch {}
+        }
+
+        for (const agentName of agentNames) {
+          let validBranch = null;
+          const candidateBranches = [
+            `arace/${reqRunId}/${agentName}`,
+            `arace/${reqRunId}/integrated`,
+            `arace/${reqRunId}/supervisor`
+          ];
+
+          for (const cb of candidateBranches) {
+            try {
+              const chk = spawnSync('git', ['rev-parse', '--verify', cb], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
+              if (chk.status === 0 && chk.stdout.trim()) {
+                validBranch = cb;
+                break;
+              }
+            } catch {}
+          }
+
+          if (!validBranch) {
+            try {
+              const brRes = spawnSync('git', ['branch', '--list', `arace/${reqRunId}/*`], { cwd: root, encoding: 'utf8' });
+              const matched = (brRes.stdout || '').split('\n').map(l => l.replace(/^[* ]+/, '').trim()).find(b => b.includes(agentName));
+              if (matched) validBranch = matched;
+            } catch {}
+          }
+
+          // Channel 1: Worktree directory on disk
+          const worktreePath = path.join(root, '.arace', 'worktrees', reqRunId, agentName);
+          let diffText = '';
+          let numstatText = '';
+          const files = [];
+
+          if (fs.existsSync(worktreePath)) {
+            const wtDiff = getWorktreeDiff(worktreePath, baseCommit);
+            diffText = wtDiff.diffText;
+            numstatText = wtDiff.numstatText;
+
+            const solFile = path.join(worktreePath, 'src', 'solution.js');
+            const solAgentFile = path.join(worktreePath, 'src', `${agentName}_solution.js`);
+            const testFile = path.join(worktreePath, 'tests', 'solution.test.js');
+
+            if (fs.existsSync(solFile)) {
+              files.push({ name: 'src/solution.js', content: fs.readFileSync(solFile, 'utf8') });
+            } else if (fs.existsSync(solAgentFile)) {
+              files.push({ name: `src/${agentName}_solution.js`, content: fs.readFileSync(solAgentFile, 'utf8') });
+            }
+            if (fs.existsSync(testFile)) {
+              files.push({ name: 'tests/solution.test.js', content: fs.readFileSync(testFile, 'utf8') });
+            }
+          } else if (validBranch) {
+            // Channel 2: Git branch inspection
+            try {
+              const diffRes = spawnSync('git', ['diff', `${baseCommit}...${validBranch}`], {
+                cwd: root,
+                encoding: 'utf8',
+                maxBuffer: 20 * 1024 * 1024
+              });
+              diffText = diffRes.stdout || '';
+
+              const numstatRes = spawnSync('git', ['diff', '--numstat', `${baseCommit}...${validBranch}`], {
+                cwd: root,
+                encoding: 'utf8'
+              });
+              numstatText = numstatRes.stdout || '';
+
+              const candidateFiles = [
+                'src/solution.js',
+                `src/${agentName}_solution.js`,
+                'tests/solution.test.js',
+                'src/models.js',
+                'src/types.js'
+              ];
+
+              for (const f of candidateFiles) {
+                try {
+                  const showRes = spawnSync('git', ['show', `${validBranch}:${f}`], {
+                    cwd: root,
+                    encoding: 'utf8',
+                    stdio: ['ignore', 'pipe', 'ignore']
+                  });
+                  if (showRes.status === 0 && showRes.stdout) {
+                    files.push({ name: f, content: showRes.stdout });
+                  }
+                } catch {}
+              }
+            } catch {}
+          }
+
+          if (diffText || files.length > 0 || validBranch) {
+            const security = analyzeTestDiffSecurity(diffText, agentName);
+            diffs.push({
+              agent: agentName,
+              branch: validBranch || `arace/${reqRunId}/${agentName}`,
+              diffText,
+              numstatText,
+              files,
+              security
+            });
+          }
+        }
+
+        jsonResponse(res, 200, { runId: reqRunId, baseCommit, diffs });
+        return;
+      }
+
       const latestRunFile = path.join(root, '.arace', 'latest_run.json');
       if (!fs.existsSync(latestRunFile)) {
         jsonResponse(res, 200, { diffs: [] });
@@ -135,8 +282,8 @@ export function createServer(repoRoot = process.cwd()) {
       const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
       const diffs = [];
 
-      for (const a of runInfo.agents) {
-        if (fs.existsSync(a.path)) {
+      for (const a of runInfo.agents || []) {
+        if (a && a.path && fs.existsSync(a.path)) {
           const { diffText, numstatText } = getWorktreeDiff(a.path, runInfo.baseCommit);
           const security = analyzeTestDiffSecurity(diffText, a.name);
 

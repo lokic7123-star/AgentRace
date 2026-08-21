@@ -8,7 +8,7 @@ import {
   isTestFile,
   generateRunId
 } from '../src/utils.js';
-import { assertSafeGitRef } from '../src/git.js';
+import { assertSafeGitRef, createWorktree, removeWorktree } from '../src/git.js';
 
 test('parseDurationToMs parses valid strings', () => {
   assert.strictEqual(parseDurationToMs('600s'), 600000);
@@ -40,6 +40,26 @@ test('assertSafeGitRef validates git refs safely and rejects injection', () => {
   assert.throws(() => assertSafeGitRef('branch & calc'), /Unsafe git ref rejected/);
   assert.throws(() => assertSafeGitRef('`whoami`'), /Unsafe git ref rejected/);
   assert.throws(() => assertSafeGitRef('-flag'), /Unsafe git ref rejected/);
+});
+
+test('恶意 branchName 拒绝且不触 shell', () => {
+  // createWorktree 拒绝恶意 runId 或 agentName，阻止命令生成
+  assert.throws(() => {
+    createWorktree({ repoRoot: process.cwd(), runId: 'run-1', agentName: 'evil; calc' });
+  }, /Unsafe git ref rejected/);
+
+  assert.throws(() => {
+    createWorktree({ repoRoot: process.cwd(), runId: 'run; whoami', agentName: 'agent-1' });
+  }, /Unsafe git ref rejected/);
+
+  assert.throws(() => {
+    createWorktree({ repoRoot: process.cwd(), runId: 'run-1', agentName: 'agent-1', baseCommit: 'HEAD; rm -rf /' });
+  }, /Unsafe git ref rejected/);
+
+  // removeWorktree 安全捕获恶意 branchName 且不触发 shell 执行
+  assert.doesNotThrow(() => {
+    removeWorktree('non_existent_path', process.cwd(), 'malicious_branch; calc');
+  });
 });
 
 test('formatDuration formats seconds', () => {
