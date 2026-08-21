@@ -75,8 +75,18 @@ export function renderFactDashboard({
   return output.join('\n');
 }
 
+export function getVisibleWidth(str) {
+  if (!str) return 0;
+  const clean = stripAnsi(String(str));
+  let width = 0;
+  for (const ch of clean) {
+    width += (ch.codePointAt(0) > 0xFF) ? 2 : 1;
+  }
+  return width;
+}
+
 function pad(str, length, visualLength = null) {
-  const visibleLen = visualLength !== null ? visualLength : stripAnsi(str).length;
+  const visibleLen = visualLength !== null ? visualLength : getVisibleWidth(str);
   const padding = Math.max(0, length - visibleLen);
   return str + ' '.repeat(padding);
 }

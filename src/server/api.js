@@ -19,9 +19,16 @@ const PUBLIC_DIR = path.join(__dirname, 'public');
 
 const sseClients = new Set();
 
+// Honest zero-value telemetry placeholder (never fabricate usage numbers)
+const ZERO_TOKENS = { promptTokens: 0, completionTokens: 0, totalTokens: 0, costEstimate: '$0.0000' };
+
 export function broadcastEvent(event, data) {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
   for (const client of sseClients) {
+    if (client.destroyed || client.writableEnded) {
+      sseClients.delete(client);
+      continue;
+    }
     try {
       client.write(payload);
     } catch {
@@ -58,6 +65,18 @@ export function createServer(repoRoot = process.cwd()) {
       res.writeHead(204);
       res.end();
       return;
+    }
+
+    // Origin check for state-mutating requests (prevent DNS rebinding / CSRF)
+    if (req.method !== 'GET' && req.method !== 'HEAD' && req.method !== 'OPTIONS') {
+      const origin = req.headers.origin;
+      if (origin) {
+        const isAllowedOrigin = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(origin);
+        if (!isAllowedOrigin) {
+          jsonResponse(res, 403, { error: 'Forbidden origin' });
+          return;
+        }
+      }
     }
 
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -101,7 +120,7 @@ export function createServer(repoRoot = process.cwd()) {
     }
 
     if (pathname === '/api/stats') {
-      const since = parseInt(url.searchParams.get('since') || '30', 10);
+      const since = Math.min(3650, Math.max(1, parseInt(url.searchParams.get('since'), 10) || 30));
       const stats = getStats({ repoPath: root, sinceDays: since });
       jsonResponse(res, 200, stats);
       return;
@@ -197,9 +216,9 @@ export function createServer(repoRoot = process.cwd()) {
                   branch: r.branchName,
                   status: isPassed ? 'passed' : 'failed',
                   currentAction: isPassed ? `✅ 门禁通过 (第 ${r.attempts || 1}/3 次检验)` : `❌ 门禁未通过 (已尝试 ${r.attempts || 1}/3 次)`,
-                  durationSeconds: r.durationSeconds || 1.2,
-                  tokens: r.tokens || { promptTokens: 3850, completionTokens: 1420, totalTokens: 5270, costEstimate: '$0.015' },
-                  toolsCalled: ['view_file', 'write_to_file', 'verify_gate'],
+                  durationSeconds: r.durationSeconds || 0,
+                  tokens: r.tokens || ZERO_TOKENS,
+                  toolsCalled: r.toolsCalled || [],
                   buildPassed: r.verify?.build?.passed ?? true,
                   lintPassed: r.verify?.lint?.passed ?? true,
                   testPassed: r.verify?.test?.passed ?? true,
@@ -228,9 +247,9 @@ export function createServer(repoRoot = process.cwd()) {
                 branch: runInfo.finalResult?.branch || `arace/${runId}/integrated`,
                 status: runInfo.finalResult?.gatePassed ? 'passed' : 'active',
                 currentAction: runInfo.finalResult?.gatePassed ? '✅ 终极全量门禁全部通过，就绪待交付' : '🧪 正在执行终极全量门禁验真',
-                durationSeconds: runInfo.finalResult?.durationSeconds || 1.5,
-                tokens: { promptTokens: 4120, completionTokens: 1850, totalTokens: 5970, costEstimate: '$0.018' },
-                toolsCalled: ['view_file', 'synthesize', 'verify_full_suite'],
+                durationSeconds: runInfo.finalResult?.durationSeconds || 0,
+                tokens: runInfo.finalResult?.tokens || ZERO_TOKENS,
+                toolsCalled: runInfo.finalResult?.toolsCalled || [],
                 buildPassed: runInfo.finalResult?.verify?.build?.passed ?? true,
                 lintPassed: runInfo.finalResult?.verify?.lint?.passed ?? true,
                 testPassed: runInfo.finalResult?.verify?.test?.passed ?? true,
@@ -306,7 +325,7 @@ export function createServer(repoRoot = process.cwd()) {
           {
             icon: isPassed ? '✅' : '🧪',
             title: isEnsemble ? '主 Agent 提炼融合' : '全量自动化测试独立验真',
-            detail: isPassed ? `测试全量通过 (${r.tests_passed_count || 29}/${r.tests_total_count || 29})` : (r.duration_seconds ? '门禁验真已完成' : '正在执行 Build / Lint / Tests'),
+            detail: isPassed ? `测试全量通过 (${r.tests_passed_count || 0}/${r.tests_total_count || 0})` : (r.duration_seconds ? '门禁验真已完成' : '正在执行 Build / Lint / Tests'),
             status: isPassed ? 'completed' : (r.duration_seconds ? 'completed' : 'pending'),
             time: r.duration_seconds ? `${r.duration_seconds.toFixed(1)}s` : '进行中'
           }
@@ -318,16 +337,16 @@ export function createServer(repoRoot = process.cwd()) {
           branch: a.branch,
           status: isPassed ? 'passed' : (r.duration_seconds ? 'completed' : 'active'),
           currentAction: isPassed ? '✅ 方案已通过全部测试' : (isEnsemble ? '🤖 正在融合各方优势代码' : (r.duration_seconds ? '🏁 方案验证完成' : '🧪 正在编码与独立验真')),
-          durationSeconds: r.duration_seconds || 1.2,
-          tokens: r.tokens || { promptTokens: 3850, completionTokens: 1420, totalTokens: 5270, costEstimate: '$0.015' },
-          toolsCalled: ['view_file', 'replace_file_content', 'write_to_file', 'run_command'],
+          durationSeconds: r.duration_seconds || 0,
+          tokens: r.tokens || ZERO_TOKENS,
+          toolsCalled: r.toolsCalled || [],
           buildPassed: r.build_passed ?? true,
           lintPassed: r.lint_passed ?? true,
           testPassed: r.test_passed ?? true,
-          testsPassedCount: r.tests_passed_count || 29,
-          testsTotalCount: r.tests_total_count || 29,
-          sourceDiff: { added: r.source_lines_added || 68, removed: r.source_lines_removed || 0 },
-          testDiff: { added: r.test_lines_added || 21, removed: r.test_lines_removed || 0 },
+          testsPassedCount: r.tests_passed_count || 0,
+          testsTotalCount: r.tests_total_count || 0,
+          sourceDiff: { added: r.source_lines_added || 0, removed: r.source_lines_removed || 0 },
+          testDiff: { added: r.test_lines_added || 0, removed: r.test_lines_removed || 0 },
           steps,
           rawLog: rawLog || '// 暂无实时日志输出'
         };
@@ -572,7 +591,14 @@ export function createServer(repoRoot = process.cwd()) {
         'Pragma': 'no-cache',
         'Expires': '0'
       });
-      fs.createReadStream(filePath).pipe(res);
+      fs.readFile(filePath, (err, data) => {
+        if (err) {
+          res.writeHead(500);
+          res.end('Error loading asset');
+        } else {
+          res.end(data);
+        }
+      });
     } else {
       res.writeHead(404);
       res.end('Not found');
@@ -581,7 +607,19 @@ export function createServer(repoRoot = process.cwd()) {
 
   server.on('close', () => {
     clearInterval(statusTimer);
+    sseClients.clear();
   });
+
+  // Ending SSE streams before closing lets server.close() actually finish
+  // (open keep-alive SSE responses would otherwise block the close event forever)
+  const originalClose = server.close.bind(server);
+  server.close = (callback) => {
+    for (const client of sseClients) {
+      try { client.end(); } catch {}
+    }
+    sseClients.clear();
+    return originalClose(callback);
+  };
 
   return server;
 }

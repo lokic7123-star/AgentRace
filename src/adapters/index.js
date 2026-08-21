@@ -28,14 +28,30 @@ export class BaseAdapter {
 
     const { command, args } = this.buildCommand(taskText, worktreePath);
 
+    const isCmdScript = process.platform === 'win32' && /\.(cmd|bat|ps1)$/i.test(path.basename(command));
+    const isCustom = this.constructor.name === 'CustomAdapter' || args.length === 0;
+    const needsShell = isCustom || isCmdScript;
+
+    let finalArgs = args;
+    if (needsShell && process.platform === 'win32') {
+      // Windows cmd.exe escape: double quotes ""
+      finalArgs = args.map(a => {
+        const str = String(a);
+        if (/[\s"^&|<>%]/.test(str)) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      });
+    }
+
     return new Promise((resolve) => {
       logStream.write(`\n=== ARACE AGENT START: ${this.name} ===\n`);
-      logStream.write(`Command: ${command} ${args.join(' ')}\n`);
+      logStream.write(`Command: ${command} ${finalArgs.join(' ')}\n`);
       logStream.write(`Worktree: ${worktreePath}\n\n`);
 
-      const child = spawn(command, args, {
+      const child = spawn(command, finalArgs, {
         cwd: worktreePath,
-        shell: true,
+        shell: needsShell,
         env: {
           ...process.env,
           CI: 'true',
@@ -74,7 +90,11 @@ export class BaseAdapter {
         logStream.write(text);
       });
 
+      let isDone = false;
+
       child.on('error', async (err) => {
+        if (isDone) return;
+        isDone = true;
         clearTimeout(timer);
         logStream.write(`\n[ARACE NOTICE] CLI spawn error (${err.message}). Seamlessly engaging AgentRace Autonomous Solution Engine...\n`);
         const autoRes = await this.generateAutonomousSolution({ taskText, worktreePath, logStream, startTime, agentName: this.name });
@@ -82,6 +102,8 @@ export class BaseAdapter {
       });
 
       child.on('close', async (code) => {
+        if (isDone) return;
+        isDone = true;
         clearTimeout(timer);
         const durationSec = (Date.now() - startTime) / 1000;
 
@@ -300,7 +322,7 @@ export class DshAdapter extends BaseAdapter {
   constructor(config = {}) { super('dsh', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'dsh';
-    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['run', taskText] };
   }
 }
 
@@ -308,7 +330,7 @@ export class ClaudeAdapter extends BaseAdapter {
   constructor(config = {}) { super('claude', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'claude';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`, '--dangerously-skip-permissions'] };
+    return { command: customCmd, args: ['-p', taskText, '--dangerously-skip-permissions'] };
   }
 }
 
@@ -316,7 +338,7 @@ export class CodexAdapter extends BaseAdapter {
   constructor(config = {}) { super('codex', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'codex';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -324,7 +346,7 @@ export class AiderAdapter extends BaseAdapter {
   constructor(config = {}) { super('aider', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'aider';
-    return { command: customCmd, args: ['--message', `"${taskText.replace(/"/g, '\\"')}"`, '--yes-always', '--no-git'] };
+    return { command: customCmd, args: ['--message', taskText, '--yes-always', '--no-git'] };
   }
 }
 
@@ -332,7 +354,7 @@ export class GeminiAdapter extends BaseAdapter {
   constructor(config = {}) { super('gemini', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'agy';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -340,7 +362,7 @@ export class AntigravityAdapter extends BaseAdapter {
   constructor(config = {}) { super('antigravity', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'agy';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -348,7 +370,7 @@ export class CursorAdapter extends BaseAdapter {
   constructor(config = {}) { super('cursor', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'cursor-agent';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -356,7 +378,7 @@ export class WindsurfAdapter extends BaseAdapter {
   constructor(config = {}) { super('windsurf', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'windsurf';
-    return { command: customCmd, args: ['--prompt', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['--prompt', taskText] };
   }
 }
 
@@ -364,7 +386,7 @@ export class CopilotAdapter extends BaseAdapter {
   constructor(config = {}) { super('copilot', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'copilot';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -372,7 +394,7 @@ export class OpenHandsAdapter extends BaseAdapter {
   constructor(config = {}) { super('openhands', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'openhands';
-    return { command: customCmd, args: ['--prompt', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['--prompt', taskText] };
   }
 }
 
@@ -380,7 +402,7 @@ export class CodyAdapter extends BaseAdapter {
   constructor(config = {}) { super('cody', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'cody';
-    return { command: customCmd, args: ['chat', '-m', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['chat', '-m', taskText] };
   }
 }
 
@@ -388,7 +410,7 @@ export class GooseAdapter extends BaseAdapter {
   constructor(config = {}) { super('goose', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'goose';
-    return { command: customCmd, args: ['run', '--instruction', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['run', '--instruction', taskText] };
   }
 }
 
@@ -396,7 +418,7 @@ export class ClineAdapter extends BaseAdapter {
   constructor(config = {}) { super('cline', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'cline';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -404,7 +426,7 @@ export class PlandexAdapter extends BaseAdapter {
   constructor(config = {}) { super('plandex', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'plandex';
-    return { command: customCmd, args: ['tell', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['tell', taskText] };
   }
 }
 
@@ -412,7 +434,7 @@ export class MentatAdapter extends BaseAdapter {
   constructor(config = {}) { super('mentat', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'mentat';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -421,7 +443,7 @@ export class OllamaAdapter extends BaseAdapter {
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'ollama';
     const model = this.config.model || 'deepseek-coder';
-    return { command: customCmd, args: ['run', model, `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['run', model, taskText] };
   }
 }
 
@@ -429,7 +451,7 @@ export class SgptAdapter extends BaseAdapter {
   constructor(config = {}) { super('sgpt', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'sgpt';
-    return { command: customCmd, args: ['--code', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['--code', taskText] };
   }
 }
 
@@ -437,7 +459,7 @@ export class OpenCodeAdapter extends BaseAdapter {
   constructor(config = {}) { super('opencode', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'opencode';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -445,7 +467,7 @@ export class LmStudioAdapter extends BaseAdapter {
   constructor(config = {}) { super('lmstudio', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'lms';
-    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['run', taskText] };
   }
 }
 
@@ -453,7 +475,7 @@ export class OpenClawAdapter extends BaseAdapter {
   constructor(config = {}) { super('openclaw', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'openclaw';
-    return { command: customCmd, args: ['run', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['run', taskText] };
   }
 }
 
@@ -461,7 +483,7 @@ export class ReasonixAdapter extends BaseAdapter {
   constructor(config = {}) { super('reasonix', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'reasonix';
-    return { command: customCmd, args: ['-p', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['-p', taskText] };
   }
 }
 
@@ -469,7 +491,7 @@ export class TabnineAdapter extends BaseAdapter {
   constructor(config = {}) { super('tabnine', config); }
   buildCommand(taskText) {
     const customCmd = this.config.cmd || 'tabnine';
-    return { command: customCmd, args: ['chat', `"${taskText.replace(/"/g, '\\"')}"`] };
+    return { command: customCmd, args: ['chat', taskText] };
   }
 }
 

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AgentRace (arace) - 多 Agent 任务协同与最优方案交付平台</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/vendor/tailwind.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -525,6 +525,7 @@
     async function loadDetection(showToast = false) {
       try {
         const res = await fetch('/api/detect');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         detectedAgents = data.agents || [];
         renderDetection(detectedAgents);
@@ -560,16 +561,16 @@
             <div class="flex items-center justify-between mb-1.5">
               <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full ${a.isRunning ? 'bg-emerald-400 animate-pulse' : (a.available ? 'bg-blue-400' : 'bg-slate-600')}"></span>
-                ${a.displayName}
+                ${escapeHtml(a.displayName)}
               </h4>
               <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.isRunning ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : (a.available ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-800 text-slate-500')}">
-                ${a.statusLabel || (a.available ? '✓ 本地就绪' : '未检测到')}
+                ${escapeHtml(a.statusLabel || (a.available ? '✓ 本地就绪' : '未检测到'))}
               </span>
             </div>
-            <p class="text-xs text-slate-400 leading-relaxed">${a.description}</p>
+            <p class="text-xs text-slate-400 leading-relaxed">${escapeHtml(a.description)}</p>
           </div>
-          <div class="text-[11px] font-mono ${a.isRunning ? 'text-emerald-400' : (a.available ? 'text-blue-300' : 'text-slate-500')} truncate" title="${a.path || '未安装'}">
-            路径: ${a.path || '未在 PATH 或 AppData 中找到'}
+          <div class="text-[11px] font-mono ${a.isRunning ? 'text-emerald-400' : (a.available ? 'text-blue-300' : 'text-slate-500')} truncate" title="${escapeHtml(a.path || '未安装')}">
+            路径: ${escapeHtml(a.path || '未在 PATH 或 AppData 中找到')}
           </div>
         `;
         grid.appendChild(card);
@@ -641,11 +642,11 @@
         const label = document.createElement('label');
         label.className = `flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${isRun ? 'bg-slate-900/95 border-emerald-500/60 shadow-md hover:border-emerald-400' : 'bg-slate-900/80 border-blue-500/40 hover:border-blue-400'}`;
         label.innerHTML = `
-          <input type="checkbox" value="${a.name}" checked class="w-4 h-4 rounded ${isRun ? 'accent-emerald-500' : 'accent-blue-500'}">
+          <input type="checkbox" value="${escapeHtml(a.name)}" checked class="w-4 h-4 rounded ${isRun ? 'accent-emerald-500' : 'accent-blue-500'}">
           <div class="truncate">
             <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
               <span class="w-2.5 h-2.5 rounded-full ${isRun ? 'bg-emerald-400 animate-pulse' : 'bg-blue-400'}"></span>
-              ${a.displayName}
+              ${escapeHtml(a.displayName)}
             </div>
             <div class="text-[10px] ${isRun ? 'text-emerald-400 font-semibold' : 'text-blue-300 font-medium'} truncate">
               ${isRun ? '🟢 进程在后台运行中' : '🔵 本地已安装 (发起时自动拉起)'}
@@ -672,6 +673,7 @@
     async function loadDiffs() {
       try {
         const res = await fetch('/api/diff');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         currentDiffs = data.diffs || [];
         populateDiffSelector(currentDiffs);
@@ -681,6 +683,7 @@
     async function loadStats() {
       try {
         const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         renderStats(data);
       } catch (err) {}
@@ -724,9 +727,9 @@
           };
 
           const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '👑 主协调 Agent' : '🤖 协同 Agent');
-          const roleBadge = agent.role ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${isEnsemble ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}">${agent.id ? '[' + agent.id + '] ' : ''}${roleName}</span>` : '';
+          const roleBadge = agent.role ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${isEnsemble ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>` : '';
           const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '✨ (主 Agent 融合版)' : ''}`;
-          const agentSubtitle = agent.title ? `<div class="text-[11px] text-slate-400 mt-1">执行引擎: <b class="text-cyan-300 font-mono">${agent.name.toUpperCase()}</b> · 交付: <span class="font-mono text-slate-300">${agent.outputFile || 'src/solution.js'}</span></div>` : '';
+          const agentSubtitle = agent.title ? `<div class="text-[11px] text-slate-400 mt-1">执行引擎: <b class="text-cyan-300 font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-slate-300">${escapeHtml(agent.outputFile || 'src/solution.js')}</span></div>` : '';
 
           const buildPassed = agent.verify?.build?.passed ?? (r.build_passed ?? true);
           const lintPassed = agent.verify?.lint?.passed ?? (r.lint_passed ?? true);
@@ -746,7 +749,7 @@
                     <span class="w-3 h-3 rounded-full ${isPassed ? 'bg-emerald-400' : 'bg-yellow-400'}"></span>
                     ${roleBadge}
                   </div>
-                  <h4 class="font-bold text-sm text-slate-100 leading-snug">${cardTitle}</h4>
+                  <h4 class="font-bold text-sm text-slate-100 leading-snug">${escapeHtml(cardTitle)}</h4>
                   ${agentSubtitle}
                 </div>
                 <span class="text-xs font-mono text-slate-400 shrink-0">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : (agent.durationSeconds ? agent.durationSeconds.toFixed(1) + 's' : '0.0s')}</span>
@@ -764,18 +767,18 @@
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div class="p-2 rounded-xl bg-slate-900/70 border border-slate-800">
                   <div class="text-slate-400 text-[10px]">🪙 Token 消耗</div>
-                  <div class="font-mono font-bold text-purple-300 text-xs">${r.tokens ? r.tokens.totalTokens.toLocaleString() : '4,820'}</div>
+                  <div class="font-mono font-bold text-purple-300 text-xs">${r.tokens?.totalTokens != null ? r.tokens.totalTokens.toLocaleString() : '—'}</div>
                 </div>
                 <div class="p-2 rounded-xl bg-slate-900/70 border border-slate-800">
                   <div class="text-slate-400 text-[10px]">💵 预估成本</div>
-                  <div class="font-mono font-bold text-emerald-400 text-xs">${r.tokens ? r.tokens.costEstimate : '$0.014'}</div>
+                  <div class="font-mono font-bold text-emerald-400 text-xs">${r.tokens?.costEstimate ?? '—'}</div>
                 </div>
               </div>
 
               <!-- Tools Called Telemetry -->
               <div class="p-2 rounded-xl bg-slate-900/50 border border-slate-800 text-[11px] flex items-center justify-between">
                 <span class="text-slate-400">🛠️ 工具调用:</span>
-                <span class="text-cyan-300 font-mono">view_file · edit_file · run_test</span>
+                <span class="text-cyan-300 font-mono">${escapeHtml((r.tools_called || agent.toolsCalled || []).join(' · ') || '—')}</span>
               </div>
 
               <div class="grid grid-cols-3 gap-2 text-center text-xs">
@@ -799,21 +802,23 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80">
-              <button onclick="viewAgentLog('${agent.name}')" class="flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer">
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80" data-agent-actions="${escapeHtml(agent.name)}">
+              <button class="action-view-log flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer">
                 📜 执行日志
               </button>
-              <button onclick="keepAgent('${agent.name}')" class="flex-1 py-2 rounded-xl ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'} text-xs font-bold transition cursor-pointer">
+              <button class="action-keep flex-1 py-2 rounded-xl ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'} text-xs font-bold transition cursor-pointer">
                 一键采用
               </button>
             </div>
           `;
+          card.querySelector('.action-view-log').onclick = () => viewAgentLog(agent.name);
+          card.querySelector('.action-keep').onclick = () => keepAgent(agent.name);
           container.appendChild(card);
 
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
           btn.className = `w-full py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`;
-          btn.innerHTML = `<span>采用 <b>${cardTitle}</b></span> <span class="font-mono text-[10px] text-slate-400">${agent.branch}</span>`;
+          btn.innerHTML = `<span>采用 <b>${escapeHtml(cardTitle)}</b></span> <span class="font-mono text-[10px] text-slate-400">${escapeHtml(agent.branch)}</span>`;
           keepButtons.appendChild(btn);
         });
       } else {
@@ -922,6 +927,7 @@
 
       try {
         const res = await fetch('/api/activities');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const activities = data.activities || [];
 
@@ -946,13 +952,13 @@
           (act.steps || []).forEach(step => {
             timelineHtml += `
               <div class="flex items-start gap-2.5 text-xs">
-                <span class="text-sm shrink-0">${step.icon}</span>
+                <span class="text-sm shrink-0">${escapeHtml(step.icon)}</span>
                 <div class="flex-1 min-w-0">
                   <div class="font-bold text-slate-200 flex items-center justify-between">
-                    <span class="truncate">${step.title}</span>
-                    <span class="text-[10px] text-slate-500 font-mono">${step.time}</span>
+                    <span class="truncate">${escapeHtml(step.title)}</span>
+                    <span class="text-[10px] text-slate-500 font-mono">${escapeHtml(step.time)}</span>
                   </div>
-                  <div class="text-[11px] text-slate-400 truncate">${step.detail}</div>
+                  <div class="text-[11px] text-slate-400 truncate">${escapeHtml(step.detail)}</div>
                 </div>
               </div>
             `;
@@ -964,10 +970,10 @@
               <div class="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div class="flex items-center gap-2">
                   <span class="w-3 h-3 rounded-full ${isPassed ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'}"></span>
-                  <h4 class="font-bold text-sm text-slate-100">${act.displayName}</h4>
+                  <h4 class="font-bold text-sm text-slate-100">${escapeHtml(act.displayName)}</h4>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button onclick="viewAgentLog('${act.agent}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 border border-slate-700 transition cursor-pointer">
+                  <button onclick="viewAgentLog('${escapeJsAttr(act.agent)}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 border border-slate-700 transition cursor-pointer">
                     📜 全屏日志
                   </button>
                   <span class="text-xs font-mono text-slate-400">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃中'}</span>
@@ -977,7 +983,7 @@
               <!-- Current Action Banner -->
               <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/90 text-xs">
                 <div class="text-[10px] text-slate-500 font-semibold mb-0.5">当前具体动作</div>
-                <div class="font-bold text-cyan-300 truncate">${act.currentAction}</div>
+                <div class="font-bold text-cyan-300 truncate">${escapeHtml(act.currentAction)}</div>
               </div>
 
               <!-- Timeline of Steps -->
@@ -990,11 +996,11 @@
               <div class="grid grid-cols-2 gap-2 text-xs">
                 <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
                   <div class="text-slate-500 text-[10px]">🪙 Token 消耗</div>
-                  <div class="font-mono font-bold text-purple-300 text-xs">${act.tokens?.totalTokens?.toLocaleString() || '4,270'}</div>
+                  <div class="font-mono font-bold text-purple-300 text-xs">${act.tokens?.totalTokens != null ? act.tokens.totalTokens.toLocaleString() : '—'}</div>
                 </div>
                 <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
                   <div class="text-slate-500 text-[10px]">💵 预估成本</div>
-                  <div class="font-mono font-bold text-emerald-400 text-xs">${act.tokens?.costEstimate || '$0.012'}</div>
+                  <div class="font-mono font-bold text-emerald-400 text-xs">${act.tokens?.costEstimate ?? '—'}</div>
                 </div>
               </div>
 
@@ -1010,7 +1016,7 @@
               <summary class="text-xs text-slate-400 hover:text-slate-200 cursor-pointer font-semibold py-1">
                 📜 查看终端日志与模型输出
               </summary>
-              <pre class="mt-2 bg-slate-950 p-3 rounded-xl text-[11px] font-mono text-slate-300 max-h-48 overflow-y-auto border border-slate-800 leading-relaxed whitespace-pre-wrap">${act.rawLog || '// 暂无日志输出'}</pre>
+              <pre class="mt-2 bg-slate-950 p-3 rounded-xl text-[11px] font-mono text-slate-300 max-h-48 overflow-y-auto border border-slate-800 leading-relaxed whitespace-pre-wrap">${escapeHtml(act.rawLog || '// 暂无日志输出')}</pre>
             </details>
           `;
 
@@ -1022,13 +1028,18 @@
     }
 
     function escapeHtml(str) {
-      if (!str) return '';
+      if (str === null || str === undefined) return '';
       return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
+    }
+
+    // Safe for inline onclick="fn('${...}')" contexts: JS-escape first, then HTML-escape
+    function escapeJsAttr(str) {
+      return escapeHtml(String(str ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
     }
 
     function renderStats(stats) {
@@ -1052,7 +1063,7 @@
         }
       }
 
-      const avgDuration = totalAttempts > 0 ? `~${(totalDuration / totalAttempts).toFixed(1)}s` : '~18.2s';
+      const avgDuration = totalAttempts > 0 ? `~${(totalDuration / totalAttempts).toFixed(1)}s` : '—';
 
       if (summaryContainer) {
         summaryContainer.innerHTML = `
@@ -1125,7 +1136,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ judge })
         });
-        const data = await res.json();
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`协同融合失败: ${err.error || res.statusText}`);
+          return;
+        }
         alert(`主 Agent「${judge}」协同融合完成！已成功将最优代码与测试集成至 ensemble 分支。`);
         loadStatus();
         loadDiffs();
@@ -1136,29 +1151,50 @@
 
     async function keepAgent(agent) {
       if (!confirm(`确定采用 ${agent} 的方案并合并回主分支吗？`)) return;
-      const res = await fetch('/api/keep', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ agent })
-      });
-      if (res.ok) {
-        alert(`已成功采用 ${agent} 方案并更新主分支！`);
-        loadStatus();
+      try {
+        const res = await fetch('/api/keep', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ agent })
+        });
+        if (res.ok) {
+          alert(`已成功采用 ${agent} 方案并更新主分支！`);
+          loadStatus();
+        } else {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`采用失败: ${err.error || res.statusText}`);
+        }
+      } catch (err) {
+        alert('采用失败: ' + err.message);
       }
     }
 
     async function discardCurrentRace() {
       if (!confirm('确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n💡 说明：历史任务、性能画像与战绩指标已永久保存在本地 SQLite 数据库中，不受任何影响。')) return;
-      await fetch('/api/discard', { method: 'POST' });
+      try {
+        const res = await fetch('/api/discard', { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`清理失败: ${err.error || res.statusText}`);
+          return;
+        }
+      } catch (err) {
+        alert('清理失败: ' + err.message);
+        return;
+      }
       loadStatus();
     }
 
     async function viewAgentLog(agent) {
-      const res = await fetch(`/api/logs/${agent}`);
-      const text = await res.text();
-      document.getElementById('log-modal-title').textContent = `${agent.toUpperCase()} 运行与思维日志`;
-      document.getElementById('log-modal-content').textContent = text;
-      document.getElementById('log-modal').classList.remove('hidden');
+      try {
+        const res = await fetch(`/api/logs/${encodeURIComponent(agent)}`);
+        const text = await res.text();
+        document.getElementById('log-modal-title').textContent = `${agent.toUpperCase()} 运行与思维日志`;
+        document.getElementById('log-modal-content').textContent = text;
+        document.getElementById('log-modal').classList.remove('hidden');
+      } catch (err) {
+        alert('日志加载失败: ' + err.message);
+      }
     }
 
     function closeLogModal() {
@@ -1249,6 +1285,9 @@
           alert('任务需求已成功更新！');
           loadStatus();
           loadHistory();
+        } else {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`更新失败: ${err.error || res.statusText}`);
         }
       } catch (err) {
         alert('更新失败: ' + err.message);
@@ -1275,6 +1314,7 @@
 
       try {
         const res = await fetch('/api/history');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const history = data.history || [];
 
@@ -1324,10 +1364,10 @@
                 <h4 class="font-bold text-base text-slate-100 leading-snug">${escapeHtml(run.task_text || '未命名的任务需求')}</h4>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="switchHistoricalTask('${escapeHtml(run.id)}')" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition flex items-center gap-1.5 cursor-pointer">
+                <button onclick="switchHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition flex items-center gap-1.5 cursor-pointer">
                   <span>🔍</span> 查看复盘
                 </button>
-                <button onclick="reuseHistoricalTask('${escapeHtml(run.id)}')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+                <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
                   <span>✏️</span> 修改并复用
                 </button>
               </div>
@@ -1367,6 +1407,9 @@
           switchTab('orchestrator');
           loadStatus();
           loadDiffs();
+        } else {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`切换任务失败: ${err.error || res.statusText}`);
         }
       } catch (err) {
         alert('切换任务失败: ' + err.message);
@@ -1399,18 +1442,22 @@
       if (tab === 'activity') renderActivityLog();
     }
 
-    // SSE Connection for live updates with auto-reconnect
+    // SSE Connection for live updates with auto-reconnect (exponential backoff)
     let evtSource = null;
     let sseReconnectTimer = null;
+    let sseRetryDelay = 1000;
+    const SSE_RETRY_MAX_DELAY = 30000;
 
     function setupSSE() {
       if (evtSource) {
         try { evtSource.close(); } catch {}
+        evtSource = null;
       }
 
       evtSource = new EventSource('/api/events');
 
       evtSource.onopen = () => {
+        sseRetryDelay = 1000;
         if (sseReconnectTimer) {
           clearTimeout(sseReconnectTimer);
           sseReconnectTimer = null;
@@ -1453,12 +1500,18 @@
       });
 
       evtSource.onerror = () => {
+        // Drop the broken stream and reconnect with exponential backoff (1s → 2s → 4s ... capped at 30s)
+        if (evtSource) {
+          try { evtSource.close(); } catch {}
+          evtSource = null;
+        }
         if (!sseReconnectTimer) {
           sseReconnectTimer = setTimeout(() => {
             sseReconnectTimer = null;
             setupSSE();
             loadStatus();
-          }, 3000);
+          }, sseRetryDelay);
+          sseRetryDelay = Math.min(sseRetryDelay * 2, SSE_RETRY_MAX_DELAY);
         }
       };
     }

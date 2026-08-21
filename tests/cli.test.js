@@ -62,3 +62,38 @@ test('CLI run in mock mode executes full race, dashboard, and persistence', () =
     fs.unlinkSync(latestRunFile);
   }
 });
+
+test('CLI pick matches agent by name, id, and role', () => {
+  const tmpDir = path.resolve('.arace', 'test_pick_fixture');
+  fs.mkdirSync(tmpDir, { recursive: true });
+  fs.writeFileSync(path.join(tmpDir, 'solution.js'), '// solution content');
+
+  const latestRunFile = path.resolve('.arace/latest_run.json');
+  fs.writeFileSync(latestRunFile, JSON.stringify({
+    runId: 'testrun123',
+    agents: [
+      { id: 'subtask-1', role: 'algorithm_architect', name: 'opencode', path: tmpDir }
+    ]
+  }));
+
+  try {
+    // Pick using id
+    const resId = runCLI(['pick', 'solution.js:subtask-1']);
+    assert.strictEqual(resId.status, 0);
+    assert.ok(resId.stdout.includes('Copied'));
+
+    // Pick using role
+    const resRole = runCLI(['pick', 'solution.js:algorithm_architect']);
+    assert.strictEqual(resRole.status, 0);
+    assert.ok(resRole.stdout.includes('Copied'));
+
+    // Pick using name
+    const resName = runCLI(['pick', 'solution.js:opencode']);
+    assert.strictEqual(resName.status, 0);
+    assert.ok(resName.stdout.includes('Copied'));
+  } finally {
+    if (fs.existsSync(latestRunFile)) fs.unlinkSync(latestRunFile);
+    if (fs.existsSync(path.resolve('solution.js'))) fs.unlinkSync(path.resolve('solution.js'));
+    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+});

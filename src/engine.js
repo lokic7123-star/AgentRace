@@ -77,7 +77,7 @@ export async function runRace({
         logFilePath: path.join(root, '.arace', 'worktrees', runId, 'logs', `${agentName}.log`),
         depInit
       });
-      console.log(c('green', 'ready') + (depInit.clonedViaCoW ? c('dim', ' (CoW)') : ''));
+      console.log(c('green', 'ready') + (depInit.sharedDepsLinked ? c('dim', ` (${depInit.method})`) : ''));
     } catch (err) {
       console.log(c('red', `failed: ${err.message}`));
       return { exitCode: EXIT_CODES.GENERAL_ERROR, error: err.message };
@@ -145,8 +145,8 @@ export async function runRace({
       durationSeconds: codingRes.durationSeconds,
       codingExitCode: codingRes.exitCode,
       timedOut: codingRes.timedOut,
-      tokens: codingRes.tokens || { promptTokens: 3800, completionTokens: 920, totalTokens: 4720, costEstimate: '$0.014' },
-      toolsCalled: codingRes.toolsCalled || ['view_file', 'replace_file_content', 'run_command'],
+      tokens: codingRes.tokens || { promptTokens: 0, completionTokens: 0, totalTokens: 0, costEstimate: '$0.0000' },
+      toolsCalled: codingRes.toolsCalled || [],
       build: verifyRes.build,
       lint: verifyRes.lint,
       test: verifyRes.test,

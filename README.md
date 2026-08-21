@@ -160,9 +160,21 @@ defaults:
 
 ---
 
+## 🔒 安全与隔离机制声明
+
+1. **Git Ref 与 Agent 命名安全白名单**：
+   - 为防御命令注入，所有分支名、Agent 标识符（`name` / `id`）与 Commit Target 必须严格符合正则白名单 `/^[\w][\w./-]*$/`（仅支持 ASCII 字母、数字、下划线、短横线与点号）。非 ASCII 自定义名称请通过 `displayName` 属性展示。
+2. **工作树依赖共享（Shared Dependencies Mode）**：
+   - 调度引擎为隔离 Worktree 初始化依赖时，优先尝试系统级 Copy-on-Write（macOS APFS Clone / Linux Reflink），在 Windows 上自动使用 NTFS Junction 目录连接（`sharedDepsLinked`），兼具零秒就绪与免磁盘膨胀优势。
+   - *注意*：若构建流水线中包含会就地修改 `node_modules` 的非常规操作，共享依赖存在潜在并发冲突风险；可通过 `.arace.yaml` 的 `workspace.prepare_cmd` 指定专属准备命令。
+3. **适配器参数安全与自定义命令规范**：
+   - 所有内置适配器均采用裸参数数组（去 Shell 化）调用，彻底杜绝特殊字符注入与 Node.js `DEP0190` 警告。用户自定义适配器（CustomAdapter）命令将经 shell 执行，请勿配置不可信来源。
+
+---
+
 ## 🧪 自动化测试套件
 
-AgentRace 自带完备的自动化测试体系，包含 **30 个** 单元与集成测试用例：
+AgentRace 自带完备的自动化测试体系，包含 **40 个** 单元与集成测试用例：
 
 ```bash
 npm test
@@ -174,6 +186,8 @@ npm test
 - `diff_parser.test.js`: 业务代码与测试代码分流解析
 - `cli.test.js` & `ui.test.js`: 命令行与 Web 服务接口验证
 - `db.test.js`: 本地 SQLite 遥测与统计持久化验证
+- `config.test.js`: 引号感知的 YAML 注释状态机与项目配置解析
+- `utils.test.js`: 16 字符高熵 RunId 生成与 Git Ref 防注入断言
 
 ---
 

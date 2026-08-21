@@ -7,12 +7,18 @@ import { EXIT_CODES } from '../types.js';
 
 export async function uiCommand(args = []) {
   let port = 3333;
+  let host = '127.0.0.1';
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--port' && args[i + 1]) {
       port = parseInt(args[i + 1], 10) || 3333;
       i++;
     } else if (args[i].startsWith('--port=')) {
       port = parseInt(args[i].slice(7), 10) || 3333;
+    } else if (args[i] === '--host' && args[i + 1]) {
+      host = args[i + 1];
+      i++;
+    } else if (args[i].startsWith('--host=')) {
+      host = args[i].slice(7);
     }
   }
 
@@ -20,8 +26,9 @@ export async function uiCommand(args = []) {
   const server = createServer(repoRoot);
 
   return new Promise((resolve) => {
-    server.listen(port, () => {
-      const url = `http://localhost:${port}`;
+    server.listen(port, host, () => {
+      const displayHost = (host === '0.0.0.0' || host === '127.0.0.1') ? 'localhost' : host;
+      const url = `http://${displayHost}:${port}`;
       console.log(`\n${c('bold', 'AgentRace Web Dashboard & Ensemble Studio')}\n`);
       console.log(`  ${c('green', symbols.check)} Local Server: ${c('cyan', url)}`);
       console.log(`  ${c('cyan', symbols.arrow)} Press ${c('bold', 'Ctrl+C')} to stop\n`);

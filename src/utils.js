@@ -62,7 +62,7 @@ export function formatDuration(seconds) {
 }
 
 export function generateRunId() {
-  return crypto.randomBytes(3).toString('hex'); // 6-character short hash
+  return crypto.randomBytes(8).toString('hex'); // 16-character secure hash
 }
 
 export function classifyTaskCategory(taskText) {

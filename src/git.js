@@ -2,6 +2,12 @@ import { execSync, spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 
+export function assertSafeGitRef(name) {
+  if (!/^[\w][\w./-]*$/.test(String(name))) {
+    throw new Error(`Unsafe git ref rejected: ${name}`);
+  }
+}
+
 export function isGitRepo(cwd = process.cwd()) {
   try {
     const res = execSync('git rev-parse --is-inside-work-tree', { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
@@ -50,6 +56,12 @@ export function getCurrentBranch(cwd = process.cwd()) {
 }
 
 export function createWorktree({ repoRoot, runId, agentName, baseCommit }) {
+  assertSafeGitRef(runId);
+  assertSafeGitRef(agentName);
+  if (baseCommit) {
+    assertSafeGitRef(baseCommit);
+  }
+
   const worktreeRelPath = path.join('.arace', 'worktrees', runId, agentName);
   const worktreeAbsPath = path.resolve(repoRoot, worktreeRelPath);
   const branchName = `arace/${runId}/${agentName}`;
@@ -59,11 +71,11 @@ export function createWorktree({ repoRoot, runId, agentName, baseCommit }) {
 
   // Delete existing branch or worktree if needed
   try {
-    execSync(`git branch -D ${branchName}`, { cwd: repoRoot, stdio: 'ignore' });
+    execSync(`git branch -D "${branchName}"`, { cwd: repoRoot, stdio: 'ignore' });
   } catch {}
 
   const commitTarget = baseCommit || 'HEAD';
-  const cmd = `git worktree add -b ${branchName} "${worktreeAbsPath}" ${commitTarget}`;
+  const cmd = `git worktree add -b "${branchName}" "${worktreeAbsPath}" "${commitTarget}"`;
 
   try {
     execSync(cmd, { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
@@ -89,8 +101,13 @@ export function removeWorktree(worktreePath, repoRoot = process.cwd(), branchNam
 
   if (branchName) {
     try {
-      execSync(`git branch -D ${branchName}`, { cwd: repoRoot, stdio: 'ignore' });
-    } catch {}
+      assertSafeGitRef(branchName);
+      execSync(`git branch -D "${branchName}"`, { cwd: repoRoot, stdio: 'ignore' });
+    } catch (err) {
+      if (err.message.includes('Unsafe git ref')) {
+        console.warn(`[arace] Unsafe/suspicious ref skipped: ${branchName}`);
+      }
+    }
   }
 }
 
@@ -112,20 +129,26 @@ export function getWorktreeDiff(worktreePath, baseCommit) {
     // First, add all untracked files in worktree so diff includes them if any
     execSync('git add -N .', { cwd: worktreePath, stdio: 'ignore' });
     
+    const diffTarget = baseCommit || 'HEAD';
+    assertSafeGitRef(diffTarget);
+
     // Get diff against baseCommit
-    const diffText = execSync(`git diff ${baseCommit || 'HEAD'}`, {
+    const diffText = execSync(`git diff "${diffTarget}"`, {
       cwd: worktreePath,
       encoding: 'utf8',
       maxBuffer: 20 * 1024 * 1024
     });
 
-    const numstatText = execSync(`git diff --numstat ${baseCommit || 'HEAD'}`, {
+    const numstatText = execSync(`git diff --numstat "${diffTarget}"`, {
       cwd: worktreePath,
       encoding: 'utf8'
     });
 
     return { diffText, numstatText };
   } catch (err) {
+    if (err.message && err.message.includes('Unsafe git ref')) {
+      console.warn(`[arace] Unsafe/suspicious ref skipped: ${baseCommit}`);
+    }
     return { diffText: '', numstatText: '' };
   }
 }
@@ -135,8 +158,8 @@ export function commitWorktreeChanges(worktreePath, message = 'arace: agent auto
     execSync('git add -A', { cwd: worktreePath, stdio: 'ignore' });
     const status = execSync('git status --porcelain', { cwd: worktreePath, encoding: 'utf8' });
     if (status.trim().length > 0) {
-      execSync(`git commit -m "${message.replace(/"/g, '\\"')}"`, { cwd: worktreePath, stdio: 'ignore' });
-      return true;
+      const res = spawnSync('git', ['commit', '-m', message], { cwd: worktreePath, stdio: 'ignore' });
+      return res.status === 0;
     }
     return false;
   } catch {
@@ -146,9 +169,15 @@ export function commitWorktreeChanges(worktreePath, message = 'arace: agent auto
 
 export function mergeBranchToCurrent(repoRoot, branchName, strategy = 'merge') {
   try {
+    assertSafeGitRef(branchName);
+
     // Check if target branch has commits
-    const log = execSync(`git log -n 1 ${branchName}`, { cwd: repoRoot, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] });
-    if (!log.trim()) {
+    const logRes = spawnSync('git', ['log', '-n', '1', branchName], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    });
+    if (logRes.status !== 0 || !logRes.stdout.trim()) {
       throw new Error(`Branch ${branchName} has no commits.`);
     }
 

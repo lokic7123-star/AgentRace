@@ -29,6 +29,24 @@ defaults:
   assert.strictEqual(parsed.defaults.agents[1], 'codex');
 });
 
+test('parseSimpleYaml correctly preserves # within quotes and strips true comments', () => {
+  const yaml = `
+# Header full line comment
+title: "Issue #123: fix critical bug" # inline comment
+description: 'Tag #core #v2 should stay'
+raw_comment: without quotes # this is removed
+list:
+  - "Item #1" # list inline comment
+  - 'Item #2'
+`;
+  const parsed = parseSimpleYaml(yaml);
+  assert.strictEqual(parsed.title, 'Issue #123: fix critical bug');
+  assert.strictEqual(parsed.description, 'Tag #core #v2 should stay');
+  assert.strictEqual(parsed.raw_comment, 'without quotes');
+  assert.strictEqual(parsed.list[0], 'Item #1');
+  assert.strictEqual(parsed.list[1], 'Item #2');
+});
+
 test('loadProjectConfig loads project config properly', () => {
   const config = loadProjectConfig();
   assert.ok(config);

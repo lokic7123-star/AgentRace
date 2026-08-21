@@ -7,6 +7,7 @@ import { EXIT_CODES } from '../types.js';
 export async function discardCommand(args = []) {
   const repoRoot = getRepoRoot();
   const latestRunFile = path.join(repoRoot, '.arace', 'latest_run.json');
+  const failedWorktrees = [];
 
   if (fs.existsSync(latestRunFile)) {
     const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
@@ -14,6 +15,9 @@ export async function discardCommand(args = []) {
 
     for (const a of runInfo.agents) {
       removeWorktree(a.path, repoRoot, a.branch);
+      if (fs.existsSync(a.path)) {
+        failedWorktrees.push(a.path);
+      }
     }
 
     try {
@@ -22,6 +26,14 @@ export async function discardCommand(args = []) {
   } else {
     console.log(`Pruning all temporary worktrees...`);
     pruneAllWorktrees(repoRoot);
+  }
+
+  if (failedWorktrees.length > 0) {
+    console.warn(c('yellow', `\n${symbols.warning} Failed to remove ${failedWorktrees.length} worktree directory(s):`));
+    for (const p of failedWorktrees) {
+      console.warn(`  - ${p}`);
+    }
+    return EXIT_CODES.GENERAL_ERROR;
   }
 
   console.log(c('green', `${symbols.check} All temporary race worktrees and branches discarded.\n`));

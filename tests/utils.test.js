@@ -5,8 +5,10 @@ import {
   formatDuration,
   classifyTaskCategory,
   matchGlob,
-  isTestFile
+  isTestFile,
+  generateRunId
 } from '../src/utils.js';
+import { assertSafeGitRef } from '../src/git.js';
 
 test('parseDurationToMs parses valid strings', () => {
   assert.strictEqual(parseDurationToMs('600s'), 600000);
@@ -14,6 +16,30 @@ test('parseDurationToMs parses valid strings', () => {
   assert.strictEqual(parseDurationToMs('1h'), 3600000);
   assert.strictEqual(parseDurationToMs('500ms'), 500);
   assert.strictEqual(parseDurationToMs(30), 30000);
+});
+
+test('generateRunId returns 16-character hex string', () => {
+  const id1 = generateRunId();
+  const id2 = generateRunId();
+  assert.strictEqual(id1.length, 16);
+  assert.strictEqual(id2.length, 16);
+  assert.match(id1, /^[0-9a-f]{16}$/);
+  assert.notStrictEqual(id1, id2);
+});
+
+test('assertSafeGitRef validates git refs safely and rejects injection', () => {
+  // Valid refs
+  assert.doesNotThrow(() => assertSafeGitRef('main'));
+  assert.doesNotThrow(() => assertSafeGitRef('feature/login_v2'));
+  assert.doesNotThrow(() => assertSafeGitRef('v1.0.0-beta.1'));
+  assert.doesNotThrow(() => assertSafeGitRef('arace/run-123/agent-1'));
+
+  // Invalid / malicious refs
+  assert.throws(() => assertSafeGitRef('a; calc'), /Unsafe git ref rejected/);
+  assert.throws(() => assertSafeGitRef('foo | bar'), /Unsafe git ref rejected/);
+  assert.throws(() => assertSafeGitRef('branch & calc'), /Unsafe git ref rejected/);
+  assert.throws(() => assertSafeGitRef('`whoami`'), /Unsafe git ref rejected/);
+  assert.throws(() => assertSafeGitRef('-flag'), /Unsafe git ref rejected/);
 });
 
 test('formatDuration formats seconds', () => {

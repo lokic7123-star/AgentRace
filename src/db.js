@@ -242,10 +242,32 @@ export function getRunHistory({ repoPath, limit = 50 } = {}) {
   params.push(limit);
 
   const runs = db.prepare(query).all(...params);
-  return runs.map(run => {
-    const results = db.prepare(`SELECT * FROM run_results WHERE run_id = ?`).all(run.id);
-    return { ...run, results };
-  });
+  if (runs.length === 0) return [];
+
+  // Single JOIN with a subquery: fetch all results for the selected runs at once
+  // (avoids N+1 queries and avoids expanding a massive IN (?) parameter array)
+  let resultsQuery = `
+    SELECT m.id AS _run_id, r.*
+    FROM run_results r
+    JOIN runs m ON r.run_id = m.id
+    WHERE m.id IN (SELECT id FROM runs`;
+  const resultsParams = [];
+  if (repoPath) {
+    resultsQuery += ` WHERE repo_path = ?`;
+    resultsParams.push(repoPath);
+  }
+  resultsQuery += ` ORDER BY created_at DESC LIMIT ?) ORDER BY r.id ASC`;
+  resultsParams.push(limit);
+
+  const rows = db.prepare(resultsQuery).all(...resultsParams);
+  const resultsByRun = new Map();
+  for (const row of rows) {
+    const { _run_id, ...result } = row;
+    if (!resultsByRun.has(_run_id)) resultsByRun.set(_run_id, []);
+    resultsByRun.get(_run_id).push(result);
+  }
+
+  return runs.map(run => ({ ...run, results: resultsByRun.get(run.id) || [] }));
 }
 
 export function getRunById(runId) {

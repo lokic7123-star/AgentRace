@@ -40,7 +40,11 @@ export async function pickCommand(args = []) {
     const relFilePath = pair.slice(0, colonIdx);
     const agentName = pair.slice(colonIdx + 1).toLowerCase();
 
-    const targetAgent = runInfo.agents.find(a => a.name.toLowerCase() === agentName);
+    const targetAgent = runInfo.agents.find(a =>
+      a.name.toLowerCase() === agentName ||
+      (a.id && a.id.toLowerCase() === agentName) ||
+      (a.role && a.role.toLowerCase() === agentName)
+    );
     if (!targetAgent) {
       console.error(c('red', `Error: Agent '${agentName}' not found in current run.`));
       continue;

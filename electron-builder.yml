@@ -1,0 +1,29 @@
+appId: com.agentrace.desktop
+productName: AgentRace
+copyright: Copyright (c) 2026 AgentRace Team
+compression: maximum
+electronLanguages:
+  - zh-CN
+  - en-US
+extraMetadata:
+  main: desktop/main.js
+directories:
+  output: dist
+files:
+  - desktop/**/*
+  - src/**/*
+  - bin/**/*
+  - package.json
+win:
+  icon: desktop/icon.ico
+  target:
+    - target: nsis
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: AgentRace
+  differentialPackage: false

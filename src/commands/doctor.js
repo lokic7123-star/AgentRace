@@ -57,12 +57,27 @@ export async function doctorCommand(args = []) {
 
   // 5. Worktrees / Orphan cleanup
   const worktreeDir = path.join(repoRoot, '.arace', 'worktrees');
+  const latestRunFile = path.join(repoRoot, '.arace', 'latest_run.json');
+  let isTaskRunning = false;
+  if (fs.existsSync(latestRunFile)) {
+    try {
+      const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
+      if (runInfo.status === 'running') {
+        isTaskRunning = true;
+      }
+    } catch {}
+  }
+
   if (fs.existsSync(worktreeDir)) {
     const orphans = fs.readdirSync(worktreeDir);
     if (orphans.length > 0) {
       if (isFix) {
-        pruneAllWorktrees(repoRoot);
-        console.log(`  ${c('green', symbols.check)} Orphan Worktrees: Cleaned up ${orphans.length} leftover directory(s)`);
+        if (isTaskRunning) {
+          console.log(`  ${c('yellow', symbols.warning)} Orphan Worktrees: Skipping cleanup — an active race run is currently in progress.`);
+        } else {
+          pruneAllWorktrees(repoRoot);
+          console.log(`  ${c('green', symbols.check)} Orphan Worktrees: Cleaned up ${orphans.length} leftover directory(s)`);
+        }
       } else {
         console.log(`  ${c('yellow', symbols.warning)} Orphan Worktrees: Found ${orphans.length} leftover runs. Run ${c('bold', 'arace doctor --fix')} to prune.`);
       }

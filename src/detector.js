@@ -201,7 +201,8 @@ export const KNOWN_AGENTS = [
     extraPaths: [
       path.join(os.homedir(), 'AppData', 'Local', 'Programs', 'Ollama', 'ollama.exe'),
       '/usr/local/bin/ollama',
-      '/usr/bin/ollama'
+      '/usr/bin/ollama',
+      '/opt/homebrew/bin/ollama'
     ],
     versionFlag: '--version',
     description: 'Ollama Local LLM Runner & Agent'
@@ -213,8 +214,11 @@ export const KNOWN_AGENTS = [
     binaries: ['lms', 'lms.cmd', 'lmstudio', 'lmstudio.cmd'],
     extraPaths: [
       path.join(os.homedir(), '.lmstudio', 'bin', 'lms.cmd'),
+      path.join(os.homedir(), '.lmstudio', 'bin', 'lms'),
       path.join(os.homedir(), 'AppData', 'Local', 'LM-Studio', 'LM Studio.exe'),
-      path.join(os.homedir(), '.cache', 'lm-studio', 'bin', 'lms')
+      path.join(os.homedir(), '.cache', 'lm-studio', 'bin', 'lms'),
+      '/usr/local/bin/lms',
+      '/opt/homebrew/bin/lms'
     ],
     versionFlag: 'version',
     description: 'LM Studio Local Headless Inference & Agent CLI'

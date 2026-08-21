@@ -44,7 +44,7 @@ export function detectCoWSupport(testDir = process.cwd()) {
 export async function initializeWorktreeDependencies({ repoRoot, worktreePath, prepareCmd }) {
   const cow = detectCoWSupport(repoRoot);
   const depDirs = ['node_modules', 'vendor', 'target', '.venv'];
-  let clonedViaCoW = false;
+  let sharedDepsLinked = false;
 
   if (cow.supported) {
     for (const dep of depDirs) {
@@ -54,20 +54,20 @@ export async function initializeWorktreeDependencies({ repoRoot, worktreePath, p
         try {
           if (cow.method === 'apfs_clone') {
             execSync(`cp -c -R "${srcDep}" "${dstDep}"`, { stdio: 'ignore' });
-            clonedViaCoW = true;
+            sharedDepsLinked = true;
           } else if (cow.method === 'linux_reflink') {
             execSync(`cp --reflink=auto -R "${srcDep}" "${dstDep}"`, { stdio: 'ignore' });
-            clonedViaCoW = true;
+            sharedDepsLinked = true;
           }
         } catch {
-          clonedViaCoW = false;
+          sharedDepsLinked = false;
         }
       }
     }
   }
 
   // If not CoW, try creating directory symlink or junction on Windows/Linux if safe
-  if (!clonedViaCoW) {
+  if (!sharedDepsLinked) {
     for (const dep of depDirs) {
       const srcDep = path.join(repoRoot, dep);
       const dstDep = path.join(worktreePath, dep);
@@ -76,14 +76,14 @@ export async function initializeWorktreeDependencies({ repoRoot, worktreePath, p
           // On Windows, create directory junction
           const isWin = os.platform() === 'win32';
           fs.symlinkSync(srcDep, dstDep, isWin ? 'junction' : 'dir');
-          clonedViaCoW = true;
+          sharedDepsLinked = true;
         } catch {}
       }
     }
   }
 
   // If not cloned via CoW or link, fallback to prepare command
-  if (!clonedViaCoW && prepareCmd && prepareCmd.trim()) {
+  if (!sharedDepsLinked && prepareCmd && prepareCmd.trim()) {
     try {
       execSync(prepareCmd, {
         cwd: worktreePath,
@@ -96,5 +96,9 @@ export async function initializeWorktreeDependencies({ repoRoot, worktreePath, p
     }
   }
 
-  return { clonedViaCoW, method: clonedViaCoW ? (cow.supported ? cow.method : 'junction_mirror') : 'prepare_cmd' };
+  return {
+    sharedDepsLinked,
+    clonedViaCoW: sharedDepsLinked,
+    method: sharedDepsLinked ? (cow.supported ? cow.method : 'junction_mirror') : 'prepare_cmd'
+  };
 }

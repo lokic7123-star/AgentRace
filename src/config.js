@@ -6,6 +6,37 @@ import { DEFAULT_CONFIG } from './types.js';
 /**
  * Clean YAML parser for standard key-value, nested maps, and array lists
  */
+export function stripYamlComment(rawLine) {
+  if (!rawLine || typeof rawLine !== 'string') return '';
+  let inSingleQuote = false;
+  let inDoubleQuote = false;
+  let escaped = false;
+
+  for (let i = 0; i < rawLine.length; i++) {
+    const ch = rawLine[i];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (ch === '\\' && inDoubleQuote) {
+      escaped = true;
+      continue;
+    }
+    if (ch === "'" && !inDoubleQuote) {
+      inSingleQuote = !inSingleQuote;
+      continue;
+    }
+    if (ch === '"' && !inSingleQuote) {
+      inDoubleQuote = !inDoubleQuote;
+      continue;
+    }
+    if (ch === '#' && !inSingleQuote && !inDoubleQuote) {
+      return rawLine.slice(0, i);
+    }
+  }
+  return rawLine;
+}
+
 export function parseSimpleYaml(content) {
   if (!content || typeof content !== 'string') return {};
   const lines = content.split(/\r?\n/);
@@ -16,8 +47,7 @@ export function parseSimpleYaml(content) {
 
     while (i < lines.length) {
       const rawLine = lines[i];
-      const commentIdx = rawLine.indexOf('#');
-      const lineWithoutComment = commentIdx >= 0 ? rawLine.slice(0, commentIdx) : rawLine;
+      const lineWithoutComment = stripYamlComment(rawLine);
       if (!lineWithoutComment.trim()) {
         i++;
         continue;

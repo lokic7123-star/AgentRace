@@ -11,7 +11,9 @@
     "test": "node --test tests/*.test.js",
     "doctor": "node ./bin/arace.js doctor",
     "detect": "node ./bin/arace.js detect",
-    "stats": "node ./bin/arace.js stats"
+    "stats": "node ./bin/arace.js stats",
+    "desktop": "electron desktop/main.js",
+    "dist": "electron-builder --win nsis"
   },
   "keywords": [
     "agent",
@@ -24,5 +26,9 @@
     "codex"
   ],
   "author": "Antigravity",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^43.4.1",
+    "electron-builder": "^26.15.3"
+  }
 }
