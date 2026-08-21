@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,19 +7,20 @@
   <script src="/vendor/tailwind.js"></script>
   <script>
     tailwind.config = {
-      darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            brand: {
-              50: '#f0fdf4',
-              500: '#22c55e',
-              600: '#16a34a',
-              900: '#14532d'
-            },
-            darkbg: '#0b1120',
-            darkcard: '#1e293b',
-            darkborder: '#334155'
+            paper: { DEFAULT: '#FAF9F5', panel: '#FFFFFF', sunken: '#F0EEE6' },
+            ink:   { DEFAULT: '#1F1E1D', soft: '#6B6560', faint: '#98928A' },
+            line:  { DEFAULT: '#E5E0D6', strong: '#D6D0C2' },
+            crail: { DEFAULT: '#D97757', hover: '#C4633F', soft: '#F5E6DE' },
+            ok:    '#5A7247',
+            bad:   '#BF4D43',
+            info:  '#5B7A99'
+          },
+          fontFamily: {
+            mono: ['Cascadia Code', 'JetBrains Mono', 'ui-monospace', 'Consolas', 'monospace'],
+            sans: ['Segoe UI', 'system-ui', 'sans-serif']
           }
         }
       }
@@ -28,55 +29,55 @@
   <style>
     @keyframes pulse-slow { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
     .animate-pulse-slow { animation: pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-    pre code { font-family: 'Fira Code', 'Cascadia Code', monospace; }
-    select option { background-color: #0f172a; color: #f8fafc; padding: 6px 12px; }
+    pre code { font-family: 'Cascadia Code', 'JetBrains Mono', monospace; }
+    select option { background-color: #FAF9F5; color: #1F1E1D; padding: 6px 12px; }
   </style>
 </head>
-<body class="bg-darkbg text-slate-100 min-h-screen flex flex-col antialiased">
+<body class="bg-paper text-ink min-h-screen flex flex-col antialiased">
 
   <!-- Top Navbar -->
-  <header class="border-b border-slate-800 bg-slate-900/95 backdrop-blur sticky top-0 z-30 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shadow-md">
-    <div class="flex items-center gap-3.5">
-      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-400 to-cyan-500 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg shadow-emerald-500/20">
-        🏎️
+  <header class="border-b border-line bg-paper-panel sticky top-0 z-30 px-6 py-3.5 flex flex-wrap items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-md bg-paper-sunken border border-line flex items-center justify-center font-black text-crail text-base">
+        ▪
       </div>
       <div>
-        <h1 class="font-bold text-lg tracking-tight bg-gradient-to-r from-emerald-400 via-cyan-300 to-blue-400 bg-clip-text text-transparent">
-          AgentRace (arace)
+        <h1 class="font-bold text-base tracking-tight text-ink flex items-center gap-1.5">
+          AgentRace <span class="text-xs text-ink-faint font-mono font-normal">arace 2.0</span>
         </h1>
-        <p class="text-xs text-slate-400">多 Agent 任务协同与最优方案交付平台 — 主 Agent 统筹分工，各 Agent 优势互补</p>
+        <p class="text-[11px] text-ink-soft">多 Agent 任务协同攻坚与客观验真门禁平台</p>
       </div>
     </div>
 
-    <!-- Navigation Tabs -->
-    <nav class="flex items-center gap-1.5 bg-slate-800/90 p-1.5 rounded-xl border border-slate-700/80 text-sm flex-wrap">
-      <button onclick="switchTab('orchestrator')" id="tab-orchestrator" class="px-4 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-        ⚡ 任务协同工作台
+    <!-- Navigation Tabs (Underline Style) -->
+    <nav class="flex items-center gap-5 text-sm flex-wrap pt-1">
+      <button onclick="switchTab('orchestrator')" id="tab-orchestrator" class="pb-2 font-semibold text-ink border-b-2 border-crail transition">
+        任务协同工作台
       </button>
-      <button onclick="switchTab('activity')" id="tab-activity" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        👀 Agent 实时动态
+      <button onclick="switchTab('activity')" id="tab-activity" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+        Agent 实时动态
       </button>
-      <button onclick="switchTab('diff')" id="tab-diff" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        🔍 方案代码对比
+      <button onclick="switchTab('diff')" id="tab-diff" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+        方案代码对比
       </button>
-      <button onclick="switchTab('studio')" id="tab-studio" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        🔀 优点融合与交付
+      <button onclick="switchTab('studio')" id="tab-studio" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+        优点融合与交付
       </button>
-      <button onclick="switchTab('history')" id="tab-history" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        📜 历史任务
+      <button onclick="switchTab('history')" id="tab-history" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+        历史任务
       </button>
-      <button onclick="switchTab('detector')" id="tab-detector" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        🤖 Agent 探测大厅
+      <button onclick="switchTab('detector')" id="tab-detector" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+        Agent 探测大厅
       </button>
-      <button onclick="switchTab('stats')" id="tab-stats" class="px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200">
-        📈 效率分析
+      <button onclick="switchTab('stats')" id="tab-stats" class="pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition">
+        效率分析
       </button>
     </nav>
 
-    <!-- Quick Actions & Detected Badge -->
+    <!-- Quick Actions & Detected Badge (Single Status Header) -->
     <div class="flex items-center gap-3">
-      <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-800/90 hover:bg-slate-700 text-xs font-semibold text-emerald-400 border border-emerald-500/30 transition cursor-pointer">
-        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <button onclick="switchTab('detector')" id="detected-agents-badge" class="flex items-center gap-2 px-3 py-1.5 rounded-md bg-paper-sunken hover:bg-line text-xs font-medium text-ink border border-line transition cursor-pointer">
+        <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
         <span id="detected-count-text">1 个运行中 · 3 个按需拉起</span>
       </button>
     </div>
@@ -86,42 +87,42 @@
   <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
 
     <!-- Active Task Banner -->
-    <div id="active-task-banner" class="bg-gradient-to-r from-slate-900 via-slate-850 to-slate-900 border border-slate-700/80 rounded-2xl p-6 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-2xl">
+    <div id="active-task-banner" class="bg-paper-panel border border-line rounded-lg p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-5">
       <div class="space-y-2 flex-1">
-        <div class="flex items-center gap-3 flex-wrap" id="banner-tags-container">
-          <span id="run-id-badge" class="px-2.5 py-0.5 rounded-md text-xs font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">状态: 空闲就绪</span>
-          <span id="run-category-badge" class="px-2.5 py-0.5 rounded-md text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Ready</span>
-          <span id="base-commit-badge" class="text-xs text-slate-400 font-mono">主仓库就绪</span>
+        <div class="flex items-center gap-2.5 flex-wrap" id="banner-tags-container">
+          <span id="run-id-badge" class="px-2 py-0.5 rounded text-xs font-mono bg-paper-sunken text-ink border border-line">状态: 空闲就绪</span>
+          <span id="run-category-badge" class="px-2 py-0.5 rounded text-xs font-mono font-semibold bg-crail-soft text-crail border border-crail/30">Ready</span>
+          <span id="base-commit-badge" class="text-xs text-ink-soft font-mono">主仓库就绪</span>
         </div>
-        <h2 id="current-task-text" class="text-base lg:text-lg font-bold text-slate-100">🎯 当前系统空闲就绪 — 在下方输入任务并选择 Agent 团队即可开始协同！</h2>
+        <h2 id="current-task-text" class="text-base font-bold text-ink">当前系统空闲就绪 — 在下方输入任务并选择 Agent 团队即可开始协同</h2>
         <div class="flex items-center gap-2 pt-1">
-          <button onclick="openEditTaskModal()" id="btn-edit-task" class="px-3 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-purple-300 border border-purple-500/40 transition flex items-center gap-1 cursor-pointer">
-            <span>✏️</span> 修改当前任务需求
+          <button onclick="openEditTaskModal()" id="btn-edit-task" class="px-3 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition flex items-center gap-1 cursor-pointer">
+            修改当前任务需求
           </button>
-          <button onclick="newOrchestrationTask()" id="btn-new-task" class="px-3 py-1 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-xs text-emerald-300 border border-emerald-500/30 transition flex items-center gap-1 cursor-pointer">
-            <span>➕</span> 发起新任务
+          <button onclick="newOrchestrationTask()" id="btn-new-task" class="px-3 py-1 rounded-md bg-crail-soft hover:bg-crail/20 text-xs text-crail font-semibold border border-crail/30 transition flex items-center gap-1 cursor-pointer">
+            发起新任务
           </button>
         </div>
       </div>
 
-      <!-- Action Panel: Large Selectable Lead / Judge Box -->
-      <div id="banner-action-controls" class="flex flex-wrap items-center gap-3 bg-slate-950/80 p-3 rounded-2xl border border-slate-800">
+      <!-- Action Panel: Lead / Judge Select -->
+      <div id="banner-action-controls" class="flex flex-wrap items-center gap-2.5 bg-paper-sunken p-2.5 rounded-lg border border-line">
         <div class="flex items-center gap-2">
-          <label for="quick-judge-select" class="text-xs font-bold text-purple-300 flex items-center gap-1 pl-1">
-            <span>👑</span> 主协调 Agent:
+          <label for="quick-judge-select" class="text-xs font-bold text-ink pl-1">
+            主协调 Agent:
           </label>
-          <select id="quick-judge-select" class="bg-slate-800 text-slate-100 text-sm font-semibold border border-purple-500/60 rounded-xl px-4 py-2 min-w-[240px] focus:ring-2 focus:ring-purple-500 focus:outline-none cursor-pointer shadow-md">
-            <option value="antigravity">🟢 Google Antigravity / Gemini (进程运行中)</option>
-            <option value="opencode">🔵 OpenCode Assistant (发起时按需拉起)</option>
-            <option value="openclaw">🔵 OpenClaw Agent (发起时按需拉起)</option>
-            <option value="reasonix">🔵 Reasonix AI Agent (发起时按需拉起)</option>
+          <select id="quick-judge-select" class="bg-paper-panel text-ink text-xs font-medium border border-line-strong rounded-md px-3 py-1.5 min-w-[220px] focus:border-crail focus:outline-none cursor-pointer">
+            <option value="antigravity">Google Antigravity / Gemini (进程运行中)</option>
+            <option value="opencode">OpenCode Assistant (按需拉起)</option>
+            <option value="openclaw">OpenClaw Agent (按需拉起)</option>
+            <option value="reasonix">Reasonix AI Agent (按需拉起)</option>
           </select>
         </div>
-        <button onclick="triggerQuickBlend()" id="btn-quick-blend" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition flex items-center gap-1.5 cursor-pointer">
-          <span>✨</span> 主 Agent 统筹融合
+        <button onclick="triggerQuickBlend()" id="btn-quick-blend" class="px-3.5 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-white text-xs font-semibold transition cursor-pointer">
+          主 Agent 统筹融合
         </button>
-        <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件（历史统计与战绩数据保留在本地数据库）" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-rose-950/60 hover:text-rose-400 text-slate-300 text-xs border border-slate-700 transition cursor-pointer">
-          🧹 清理临时工作区
+        <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件（历史统计与战绩数据保留在本地数据库）" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken hover:text-bad hover:border-bad text-ink-soft text-xs border border-line-strong transition cursor-pointer">
+          清理临时工作区
         </button>
       </div>
     </div>
@@ -129,96 +130,91 @@
     <!-- TAB 1: 任务协同工作台 (Orchestrator Board) -->
     <section id="panel-orchestrator" class="space-y-6">
       <!-- 1. Permanent Static Task Launcher Console (shown when idle) -->
-      <div id="workbench-task-launcher" class="bg-darkcard border border-slate-700/80 rounded-3xl p-7 shadow-2xl space-y-6">
-        <div class="border-b border-slate-800 pb-4 flex items-center justify-between">
+      <div id="workbench-task-launcher" class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+        <div class="border-b border-line pb-3 flex items-center justify-between">
           <div>
-            <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <span>🚀</span> 发起多 Agent 任务协同攻坚
+            <h3 class="text-base font-bold text-ink">
+              发起多 Agent 任务协同攻坚
             </h3>
-            <p class="text-xs text-slate-400 mt-1">输入您的业务编码任务，自由选择本次要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
+            <p class="text-xs text-ink-soft mt-1">输入业务编码任务，选择要派出的本地 Agent 团队。主 Agent 统筹协调，各 Agent 在物理沙盒中分工实现并独立验真。</p>
           </div>
-          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-            ● 1 个运行中 · 3 个按需拉起
-          </span>
         </div>
 
         <!-- Task Input -->
-        <div class="space-y-2">
-          <label for="inline-task-input" class="block text-xs font-bold text-slate-300">任务需求描述 (Task Prompt):</label>
-          <textarea id="inline-task-input" rows="4" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition shadow-inner font-sans leading-relaxed" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
+        <div class="space-y-1.5">
+          <label for="inline-task-input" class="block text-xs font-bold text-ink">任务需求描述 (Task Prompt):</label>
+          <textarea id="inline-task-input" rows="4" class="w-full bg-paper-panel border border-line-strong rounded-lg p-3.5 text-sm text-ink focus:outline-none focus:border-crail focus:ring-1 focus:ring-crail font-sans leading-relaxed" placeholder="例如：优化 Redis 连接池并发锁超时与自动重试机制，并补充完整的高并发边界压力测试用例"></textarea>
         </div>
 
         <!-- Mode Selector -->
-        <div class="flex items-center gap-4 bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 flex-wrap">
-          <span class="text-xs font-bold text-slate-300 shrink-0">⚙️ 协同模式:</span>
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-bold text-purple-300 bg-purple-950/40 border border-purple-500/50 px-3.5 py-2 rounded-xl transition">
-            <input type="radio" name="arace-mode" value="orchestration" checked class="accent-purple-500">
-            👑 主 Agent 智能编排分工 (Supervisor 拆解 + 专精执行 + 硬性门禁) [推荐]
+        <div class="flex items-center gap-3 bg-paper-sunken p-3 rounded-lg border border-line flex-wrap">
+          <span class="text-xs font-bold text-ink shrink-0">协同模式:</span>
+          <label class="flex items-center gap-2 cursor-pointer text-xs font-semibold text-crail bg-crail-soft border border-crail/40 px-3 py-1.5 rounded-md transition">
+            <input type="radio" name="arace-mode" value="orchestration" checked class="accent-crail">
+            主 Agent 智能编排分工 (Supervisor 拆解 + 专精执行 + 硬性门禁) [推荐]
           </label>
-          <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-slate-400 hover:text-slate-200 px-3.5 py-2 rounded-xl transition">
-            <input type="radio" name="arace-mode" value="race" class="accent-emerald-500">
-            🏁 多 Agent 锦标赛竞速 (同题打擂)
+          <label class="flex items-center gap-2 cursor-pointer text-xs font-medium text-ink-soft hover:text-ink px-3 py-1.5 rounded-md transition">
+            <input type="radio" name="arace-mode" value="race" class="accent-crail">
+            多 Agent 锦标赛竞速 (同题打擂)
           </label>
         </div>
 
         <!-- Agent Team Selector Grid (Only locally installed agents) -->
-        <div class="space-y-3">
+        <div class="space-y-2.5">
           <div class="flex items-center justify-between flex-wrap gap-2">
-            <label class="block text-xs font-bold text-slate-300">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
+            <label class="block text-xs font-bold text-ink">选择参与攻坚的本地 Agent 团队 (自由多选):</label>
           </div>
 
-          <!-- Agent selector grid is dynamically populated by populateInlineAgentCheckboxes -->
-
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="inline-agent-selector-grid">
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/95 border-emerald-500/60 shadow-md cursor-pointer hover:border-emerald-400 transition">
-              <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-emerald-500">
+            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
+              <input type="checkbox" value="antigravity" checked class="w-4 h-4 rounded accent-crail">
               <div class="truncate">
-                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
                   Google Antigravity
                 </div>
-                <div class="text-[10px] text-emerald-400 font-semibold truncate">🟢 进程在后台运行中</div>
+                <div class="text-[10px] text-ok font-semibold truncate">进程在后台运行中</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/80 border-blue-500/40 shadow-sm cursor-pointer hover:border-blue-400 transition">
-              <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-blue-500">
+            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
+              <input type="checkbox" value="opencode" checked class="w-4 h-4 rounded accent-crail">
               <div class="truncate">
-                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-info"></span>
                   OpenCode
                 </div>
-                <div class="text-[10px] text-blue-300 font-medium truncate">🔵 本地已安装 (发起时自动拉起)</div>
+                <div class="text-[10px] text-ink-soft font-medium truncate">本地已安装 (按需拉起)</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/80 border-blue-500/40 shadow-sm cursor-pointer hover:border-blue-400 transition">
-              <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-blue-500">
+            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
+              <input type="checkbox" value="openclaw" checked class="w-4 h-4 rounded accent-crail">
               <div class="truncate">
-                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-info"></span>
                   OpenClaw
                 </div>
-                <div class="text-[10px] text-blue-300 font-medium truncate">🔵 本地已安装 (发起时自动拉起)</div>
+                <div class="text-[10px] text-ink-soft font-medium truncate">本地已安装 (按需拉起)</div>
               </div>
             </label>
 
-            <label class="flex items-center gap-3 p-3.5 rounded-2xl border bg-slate-900/80 border-blue-500/40 shadow-sm cursor-pointer hover:border-blue-400 transition">
-              <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-blue-500">
+            <label class="flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition">
+              <input type="checkbox" value="reasonix" checked class="w-4 h-4 rounded accent-crail">
               <div class="truncate">
-                <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                <div class="font-bold text-xs text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-info"></span>
                   Reasonix
                 </div>
-                <div class="text-[10px] text-blue-300 font-medium truncate">🔵 本地已安装 (发起时自动拉起)</div>
+                <div class="text-[10px] text-ink-soft font-medium truncate">本地已安装 (按需拉起)</div>
               </div>
             </label>
           </div>
         </div>
 
         <!-- Submit Button -->
-        <button onclick="submitInlineTask()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 font-black text-slate-950 text-sm shadow-xl shadow-emerald-500/25 transition cursor-pointer flex items-center justify-center gap-2">
-          <span>🚀</span> 立即启动选定 Agent 团队协同攻坚
+        <button onclick="submitInlineTask()" class="w-full py-3 rounded-md bg-crail hover:bg-crail-hover font-bold text-white text-sm transition cursor-pointer">
+          立即启动选定 Agent 团队协同攻坚
         </button>
       </div>
 
@@ -228,23 +224,23 @@
       </div>
     </section>
 
-    <!-- TAB 2: 各 Agent 实时工作动态与执行详情 (All-Agent Live Activity Matrix) -->
+    <!-- TAB 2: 各 Agent 实时工作动态与执行详情 (Live Activity Matrix) -->
     <section id="panel-activity" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
-        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-darkborder pb-4">
+      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
           <div>
-            <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
-              <span>👀</span> 各 Agent 实时工作动态与思维链路 (Live Activity Matrix)
+            <h3 class="font-bold text-base text-ink">
+              各 Agent 实时工作动态与思维链路
             </h3>
-            <p class="text-xs text-slate-400 mt-1">并排全景监控各个 Agent 当前正在做什么：环境准备、代码分析、业务编码、自动化测试验真与 Token 消耗。</p>
+            <p class="text-xs text-ink-soft mt-1">全景监控各个 Agent 当前正在执行的动作：环境准备、代码编写、自动化测试验真与 Token 消耗。</p>
           </div>
-          <button onclick="renderActivityLog()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition cursor-pointer flex items-center gap-1.5">
-            <span>🔄</span> 刷新实时状态
+          <button onclick="renderActivityLog()" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+            刷新实时状态
           </button>
         </div>
 
         <!-- Multi-Agent Live Activity Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="activity-cards-grid">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5" id="activity-cards-grid">
           <!-- Populated by renderActivityLog() -->
         </div>
       </div>
@@ -252,35 +248,35 @@
 
     <!-- TAB 3: 方案代码对比与源码查看 (Diff & Solution Viewer) -->
     <section id="panel-diff" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-4">
-        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-darkborder pb-4">
+      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
+        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
           <div>
-            <h3 class="font-bold text-base text-slate-100">各 Agent 成果方案代码与测试用例对比</h3>
-            <p class="text-xs text-slate-400">直接查看各 Agent 编写的完整源码、算法逻辑、单元测试用例及 Git 变更补丁</p>
+            <h3 class="font-bold text-base text-ink">各 Agent 成果方案代码与测试用例对比</h3>
+            <p class="text-xs text-ink-soft mt-0.5">查看各 Agent 编写的完整源码、单元测试用例及 Git 变更补丁</p>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-400">选择 Agent:</span>
-            <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-slate-800 border border-slate-700 text-sm rounded-xl px-4 py-2 text-slate-100 min-w-[220px] cursor-pointer">
+          <div class="flex items-center gap-2.5">
+            <span class="text-xs text-ink-soft">选择 Agent:</span>
+            <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-paper-panel border border-line-strong text-xs rounded-md px-3 py-1.5 text-ink min-w-[200px] cursor-pointer focus:border-crail focus:outline-none">
               <!-- Options populated dynamically -->
             </select>
           </div>
         </div>
 
         <!-- File View Switcher Tabs -->
-        <div class="flex items-center gap-2 border-b border-slate-800 pb-2" id="diff-file-tabs">
-          <button onclick="switchDiffFileView('solution')" id="diff-tab-solution" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition cursor-pointer">
-            📄 核心算法实现 (src/solution.js)
+        <div class="flex items-center gap-2 border-b border-line pb-2" id="diff-file-tabs">
+          <button onclick="switchDiffFileView('solution')" id="diff-tab-solution" class="px-3 py-1 rounded-md text-xs font-semibold bg-crail text-white border border-crail transition cursor-pointer">
+            核心实现 (src/solution.js)
           </button>
-          <button onclick="switchDiffFileView('test')" id="diff-tab-test" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 border border-transparent transition cursor-pointer">
-            🧪 单元测试用例 (tests/solution.test.js)
+          <button onclick="switchDiffFileView('test')" id="diff-tab-test" class="px-3 py-1 rounded-md text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer">
+            单元测试 (tests/solution.test.js)
           </button>
-          <button onclick="switchDiffFileView('diff')" id="diff-tab-diff" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 border border-transparent transition cursor-pointer">
-            📊 Git Diff 变更补丁
+          <button onclick="switchDiffFileView('diff')" id="diff-tab-diff" class="px-3 py-1 rounded-md text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer">
+            Git Diff 补丁
           </button>
         </div>
 
-        <div id="diff-security-badge" class="hidden p-3.5 rounded-xl text-xs flex items-center justify-between border"></div>
-        <pre class="bg-slate-950 p-5 rounded-2xl text-xs overflow-x-auto text-slate-200 font-mono max-h-[600px] border border-slate-800 leading-relaxed whitespace-pre-wrap" id="diff-content-area">// 正在加载方案代码...</pre>
+        <div id="diff-security-badge" class="hidden p-3 rounded-md text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
+        <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap" id="diff-content-area">// 正在加载方案代码...</pre>
       </div>
     </section>
 
@@ -288,45 +284,45 @@
     <section id="panel-studio" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- AI Blend Panel -->
-        <div class="lg:col-span-2 bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
-          <div class="flex items-center justify-between flex-wrap gap-4 border-b border-darkborder pb-4">
+        <div class="lg:col-span-2 bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+          <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
             <div>
-              <h3 class="font-bold text-lg text-purple-300 flex items-center gap-2">
-                <span>🤖</span> 主 Agent 统筹协同融合 (Ensemble Synthesis)
+              <h3 class="font-bold text-base text-ink">
+                主 Agent 统筹协同融合 (Ensemble Synthesis)
               </h3>
-              <p class="text-xs text-slate-400 mt-1">由主 Agent 统筹提炼各协同子 Agent 的最佳解法（架构优势 + 完备测试），消除盲区，合成 100% 跑通测试的终版代码。</p>
+              <p class="text-xs text-ink-soft mt-1">由主 Agent 统筹提炼各协同子 Agent 的最佳解法，合成 100% 跑通测试的终版代码。</p>
             </div>
             <div class="flex items-center gap-2">
-              <label for="studio-judge-select" class="text-xs font-semibold text-purple-200">主统筹 Agent:</label>
-              <select id="studio-judge-select" class="bg-slate-800 border border-purple-500/60 text-slate-100 text-sm font-semibold rounded-xl px-4 py-2 min-w-[240px] focus:outline-none cursor-pointer shadow-md">
-                <option value="antigravity">🟢 Google Antigravity / Gemini (进程运行中)</option>
-                <option value="opencode">🔵 OpenCode Assistant (发起时按需拉起)</option>
-                <option value="openclaw">🔵 OpenClaw Agent (发起时按需拉起)</option>
-                <option value="reasonix">🔵 Reasonix AI Agent (发起时按需拉起)</option>
+              <label for="studio-judge-select" class="text-xs font-semibold text-ink">主统筹 Agent:</label>
+              <select id="studio-judge-select" class="bg-paper-panel border border-line-strong text-ink text-xs font-medium rounded-md px-3 py-1.5 min-w-[220px] focus:border-crail focus:outline-none cursor-pointer">
+                <option value="antigravity">Google Antigravity / Gemini (进程运行中)</option>
+                <option value="opencode">OpenCode Assistant (按需拉起)</option>
+                <option value="openclaw">OpenClaw Agent (按需拉起)</option>
+                <option value="reasonix">Reasonix AI Agent (按需拉起)</option>
               </select>
             </div>
           </div>
 
-          <div class="p-5 rounded-xl bg-purple-950/20 border border-purple-800/40 text-xs text-purple-200 space-y-3">
-            <p class="font-bold text-sm text-purple-300">协同融合机制：</p>
-            <ul class="list-disc list-inside space-y-1.5 text-slate-300">
+          <div class="p-4 rounded-md bg-paper-sunken border border-line text-xs text-ink space-y-2">
+            <p class="font-bold text-xs text-ink">协同融合机制：</p>
+            <ul class="list-disc list-inside space-y-1 text-ink-soft">
               <li>收集参与协同的各 Agent 提交的完整实现与测试用例</li>
-              <li>在独立的 <code class="text-purple-300 font-mono px-1 py-0.5 bg-slate-900 rounded">arace/ensemble</code> 工作区中由主 Agent 执行代码精炼与集成</li>
+              <li>在独立的 <code class="text-crail font-mono px-1 py-0.5 bg-paper rounded border border-line">arace/ensemble</code> 工作区中由主 Agent 执行代码精炼与集成</li>
               <li>自动触发 Build、Lint 与全量单元测试门禁二次验真</li>
             </ul>
           </div>
 
-          <button onclick="triggerStudioBlend()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm shadow-xl shadow-purple-600/30 transition flex items-center justify-center gap-2 cursor-pointer">
-            <span>✨</span> 执行多 Agent 协同融合与方案生成
+          <button onclick="triggerStudioBlend()" class="w-full py-3 rounded-md bg-crail hover:bg-crail-hover text-white font-bold text-sm transition cursor-pointer">
+            执行多 Agent 协同融合与方案生成
           </button>
         </div>
 
         <!-- Single Keep Panel -->
-        <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-4">
-          <h3 class="font-bold text-base text-slate-100">直接采用单方方案</h3>
-          <p class="text-xs text-slate-400">若某个 Agent 的方案已经非常完美，可直接一键合并回主分支：</p>
+        <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-4">
+          <h3 class="font-bold text-base text-ink">直接采用单方方案</h3>
+          <p class="text-xs text-ink-soft">若某个 Agent 的方案已达到预期，可直接一键合并回主分支：</p>
           <div id="quick-keep-buttons" class="space-y-2.5 pt-2">
-            <div class="text-xs text-slate-500 p-4 text-center border border-dashed border-slate-700 rounded-xl">暂无正在比拼的分支</div>
+            <div class="text-xs text-ink-faint p-4 text-center border border-dashed border-line rounded-md">暂无正在比拼的分支</div>
           </div>
         </div>
       </div>
@@ -334,139 +330,137 @@
 
     <!-- TAB 5: Agent 探测诊断大厅 (Detector) -->
     <section id="panel-detector" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
-        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-darkborder pb-4">
+      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+        <div class="flex items-center justify-between flex-wrap gap-4 border-b border-line pb-3">
           <div>
-            <h3 class="font-bold text-lg text-slate-100 flex items-center gap-2">
-              <span>🤖</span> 本地 AI 编程 Agent 工具链深度探测大厅
+            <h3 class="font-bold text-base text-ink">
+              本地 AI 编程 Agent 工具链探测大厅
             </h3>
-            <p class="text-xs text-slate-400 mt-1">系统已自动深度扫描系统 PATH 与用户 AppData 目录中的所有 AI 编程命令行工具与应用。任何就绪的 Agent 均可参与协同！</p>
+            <p class="text-xs text-ink-soft mt-1">系统自动扫描 PATH 与用户 AppData 目录中的 AI 编程命令行工具与应用，就绪的 Agent 均可参与协同。</p>
           </div>
-          <button onclick="loadDetection(true)" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition cursor-pointer flex items-center gap-1.5">
-            <span>🔄</span> 立即重新扫描
+          <button onclick="loadDetection(true)" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+            立即重新扫描
           </button>
         </div>
 
         <!-- Status Legend Bar in Detector -->
-        <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs bg-slate-950/70 p-3.5 rounded-2xl border border-slate-800/90 text-slate-300">
-          <span class="font-bold text-slate-200 flex items-center gap-1.5 shrink-0">
-            <span>💡</span> 状态图例说明:
+        <div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-xs bg-paper-sunken p-3 rounded-md border border-line text-ink-soft">
+          <span class="font-bold text-ink shrink-0">状态说明:</span>
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
+            <b class="text-ok font-medium">绿色 (运行中)</b>：常驻服务已在内存中运行，可直接通信
           </span>
           <span class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            <b class="text-emerald-300">🟢 绿色 (进程运行中)</b>：桌面端应用或常驻服务当前已在内存中运行，随时可直接通信
+            <span class="w-2 h-2 rounded-full bg-info"></span>
+            <b class="text-info font-medium">蓝色 (按需启动)</b>：本地已安装 CLI，任务发起时由系统在独立沙盒拉起
           </span>
           <span class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
-            <b class="text-blue-300">🔵 蓝色 (按需启动)</b>：本地已安装 CLI/工具，平时不占用内存，任务发起时由系统自动在独立沙盒拉起执行
-          </span>
-          <span class="flex items-center gap-1.5">
-            <span class="w-2.5 h-2.5 rounded-full bg-slate-600"></span>
-            <b class="text-slate-400">⚪ 灰色 (未检测到)</b>：本地未安装
+            <span class="w-2 h-2 rounded-full bg-ink-faint"></span>
+            <b class="text-ink-faint font-medium">灰色 (未检测到)</b>：本地未安装
           </span>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="detector-agent-grid">
           <!-- Pre-rendered default cards -->
-          <div class="p-4 rounded-xl border bg-slate-900/95 border-emerald-500/80 shadow-lg shadow-emerald-500/10 flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-ok animate-pulse"></span>
                   Google Antigravity / Gemini
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">🟢 进程运行中 (Active)</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-ok/10 text-ok border border-ok/30">进程运行中</span>
               </div>
-              <p class="text-xs text-slate-400 leading-relaxed">Google Antigravity IDE & Gemini Autonomous Agent</p>
+              <p class="text-xs text-ink-soft leading-relaxed">Google Antigravity IDE & Gemini Autonomous Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-emerald-400 truncate">路径: AppData\Local\Programs\antigravity\Antigravity.exe</div>
+            <div class="text-[11px] font-mono text-ink-soft truncate">路径: AppData\Local\Programs\antigravity\Antigravity.exe</div>
           </div>
 
-          <div class="p-4 rounded-xl border bg-slate-900/80 border-blue-500/50 shadow-md flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-info"></span>
                   OpenCode Assistant
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 本地已安装 (按需拉起)</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-info/10 text-info border border-info/30">本地已安装 (按需拉起)</span>
               </div>
-              <p class="text-xs text-slate-400 leading-relaxed">OpenCode Local AI Coding Agent</p>
+              <p class="text-xs text-ink-soft leading-relaxed">OpenCode Local AI Coding Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-blue-300 truncate">路径: AppData\Local\Programs\@opencode-aidesktop\OpenCode.exe</div>
+            <div class="text-[11px] font-mono text-ink-soft truncate">路径: AppData\Local\Programs\@opencode-aidesktop\OpenCode.exe</div>
           </div>
 
-          <div class="p-4 rounded-xl border bg-slate-900/80 border-blue-500/50 shadow-md flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-info"></span>
                   OpenClaw Agent
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 本地已安装 (按需拉起)</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-info/10 text-info border border-info/30">本地已安装 (按需拉起)</span>
               </div>
-              <p class="text-xs text-slate-400 leading-relaxed">OpenClaw Autonomous Developer Agent</p>
+              <p class="text-xs text-ink-soft leading-relaxed">OpenClaw Autonomous Developer Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-blue-300 truncate">路径: D:\OpenClawTray\OpenClaw.Tray.WinUI.exe</div>
+            <div class="text-[11px] font-mono text-ink-soft truncate">路径: D:\OpenClawTray\OpenClaw.Tray.WinUI.exe</div>
           </div>
 
-          <div class="p-4 rounded-xl border bg-slate-900/80 border-blue-500/50 shadow-md flex flex-col justify-between space-y-3">
+          <div class="p-4 rounded-lg border bg-paper-panel border-line hover:border-crail flex flex-col justify-between space-y-3">
             <div>
               <div class="flex items-center justify-between mb-1">
-                <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                  <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-info"></span>
                   Reasonix AI Agent
                 </h4>
-                <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">🔵 本地已安装 (按需拉起)</span>
+                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-info/10 text-info border border-info/30">本地已安装 (按需拉起)</span>
               </div>
-              <p class="text-xs text-slate-400 leading-relaxed">Reasonix AI Autonomous Reasoning & Coding Agent</p>
+              <p class="text-xs text-ink-soft leading-relaxed">Reasonix AI Autonomous Reasoning & Coding Agent</p>
             </div>
-            <div class="text-[11px] font-mono text-blue-300 truncate">路径: AppData\Local\Reasonix</div>
+            <div class="text-[11px] font-mono text-ink-soft truncate">路径: AppData\Local\Reasonix</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- TAB 5: 历史任务 (History) -->
+    <!-- TAB 6: 历史任务 (History) -->
     <section id="panel-history" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-3xl p-7 shadow-2xl space-y-6">
-        <div class="border-b border-slate-800 pb-4 flex items-center justify-between flex-wrap gap-3">
+      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+        <div class="border-b border-line pb-3 flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h3 class="text-lg font-bold text-slate-100 flex items-center gap-2">
-              <span>📜</span> 历史任务记录与复盘回溯
+            <h3 class="text-base font-bold text-ink">
+              历史任务记录与复盘回溯
             </h3>
-            <p class="text-xs text-slate-400 mt-1">所有数据永久保存在本地 SQLite 数据库中。可随时查看任何历史任务的代码交付方案、测试门禁战绩或一键复用修改需求。</p>
+            <p class="text-xs text-ink-soft mt-1">数据永久保存在本地 SQLite 数据库中，可随时查看历史任务交付方案与门禁战绩。</p>
           </div>
           <div class="flex items-center gap-3">
-            <button onclick="loadHistory(true)" class="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs text-emerald-400 border border-emerald-500/30 transition flex items-center gap-1.5 cursor-pointer">
-              <span>🔄</span> 刷新历史
+            <button onclick="loadHistory(true)" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition flex items-center gap-1.5 cursor-pointer">
+              刷新历史
             </button>
-            <span id="history-total-count" class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+            <span id="history-total-count" class="px-2.5 py-0.5 rounded text-xs font-mono font-semibold bg-paper-sunken text-ink-soft border border-line">
               共 0 条历史记录
             </span>
           </div>
         </div>
 
-        <div id="history-tasks-container" class="space-y-4">
+        <div id="history-tasks-container" class="space-y-3">
           <!-- Dynamically populated history cards -->
         </div>
       </div>
     </section>
 
-    <!-- TAB 6: 效率分析 (Stats) -->
+    <!-- TAB 7: 效率分析 (Stats) -->
     <section id="panel-stats" class="hidden space-y-6">
-      <div class="bg-darkcard border border-darkborder rounded-2xl p-6 shadow-xl space-y-6">
-        <div class="flex items-center justify-between">
+      <div class="bg-paper-panel border border-line rounded-lg p-6 space-y-5">
+        <div class="flex items-center justify-between border-b border-line pb-3">
           <div>
-            <h3 class="font-bold text-lg text-slate-100">任务执行与协同效率分析</h3>
-            <p class="text-xs text-slate-400">基于本地 SQLite 历史数据聚合计算</p>
+            <h3 class="font-bold text-base text-ink">任务执行与协同效率分析</h3>
+            <p class="text-xs text-ink-soft mt-0.5">基于本地 SQLite 历史数据聚合计算</p>
           </div>
-          <span class="text-xs text-slate-400 font-mono">统计窗口: 最近 30 天</span>
+          <span class="text-xs text-ink-soft font-mono">统计窗口: 最近 30 天</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4" id="stats-summary-cards">
           <!-- Summary cards -->
         </div>
-        <div class="border-t border-darkborder pt-5" id="stats-category-breakdown">
+        <div class="border-t border-line pt-4" id="stats-category-breakdown">
           <!-- Category breakdown -->
         </div>
       </div>
@@ -475,31 +469,31 @@
   </main>
 
   <!-- Edit Task Modal -->
-  <div id="edit-task-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-    <div class="bg-slate-900 border border-purple-500/50 rounded-2xl max-w-2xl w-full flex flex-col shadow-2xl space-y-4 p-6">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
-        <h3 class="font-bold text-base text-slate-100 flex items-center gap-2">
-          <span>✏️</span> 修改/编辑当前任务需求
+  <div id="edit-task-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+    <div class="bg-paper-panel border border-line rounded-lg max-w-2xl w-full flex flex-col p-6 space-y-4">
+      <div class="flex items-center justify-between border-b border-line pb-3">
+        <h3 class="font-bold text-base text-ink">
+          修改/编辑当前任务需求
         </h3>
-        <button onclick="closeEditTaskModal()" class="text-slate-400 hover:text-slate-200 text-lg cursor-pointer">✕</button>
+        <button onclick="closeEditTaskModal()" class="text-ink-soft hover:text-ink text-lg cursor-pointer">✕</button>
       </div>
-      <div class="space-y-2">
-        <label class="block text-xs font-bold text-slate-300">任务需求描述 (Task Prompt):</label>
-        <textarea id="edit-task-textarea" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-2xl p-4 text-sm text-slate-100 focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 font-sans leading-relaxed"></textarea>
+      <div class="space-y-1.5">
+        <label class="block text-xs font-bold text-ink">任务需求描述 (Task Prompt):</label>
+        <textarea id="edit-task-textarea" rows="5" class="w-full bg-paper-panel border border-line-strong rounded-lg p-3.5 text-sm text-ink focus:outline-none focus:border-crail focus:ring-1 focus:ring-crail font-sans leading-relaxed"></textarea>
       </div>
       <div class="flex items-center justify-between gap-3 pt-2 flex-wrap">
-        <div class="text-[11px] text-slate-400">
-          💡 修改后可仅保存记录，或以新需求一键重新派发协同攻坚。
+        <div class="text-[11px] text-ink-soft">
+          说明：修改后可仅保存记录，或以新需求一键重新派发协同攻坚。
         </div>
-        <div class="flex items-center gap-3">
-          <button onclick="closeEditTaskModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300 transition cursor-pointer">
+        <div class="flex items-center gap-2.5">
+          <button onclick="closeEditTaskModal()" class="px-3.5 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-semibold text-ink-soft border border-line-strong transition cursor-pointer">
             取消
           </button>
-          <button onclick="saveEditedTask()" class="px-4 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white shadow-lg shadow-purple-600/30 transition cursor-pointer">
-            💾 仅保存修改
+          <button onclick="saveEditedTask()" class="px-3.5 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-xs font-bold text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+            仅保存修改
           </button>
-          <button onclick="rerunEditedTask()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-xs font-bold text-white shadow-lg shadow-emerald-600/30 transition cursor-pointer">
-            🚀 保存并立即重跑
+          <button onclick="rerunEditedTask()" class="px-3.5 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-xs font-bold text-white transition cursor-pointer">
+            保存并立即重跑
           </button>
         </div>
       </div>
@@ -507,13 +501,13 @@
   </div>
 
   <!-- Log Modal -->
-  <div id="log-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
-    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full max-h-[85vh] flex flex-col shadow-2xl">
-      <div class="px-5 py-4 border-b border-slate-800 flex items-center justify-between">
-        <h3 id="log-modal-title" class="font-bold text-sm text-slate-200">Agent 实时运行日志</h3>
-        <button onclick="closeLogModal()" class="text-slate-400 hover:text-slate-200 text-lg cursor-pointer">✕</button>
+  <div id="log-modal" class="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-6">
+    <div class="bg-paper-panel border border-line rounded-lg max-w-4xl w-full max-h-[85vh] flex flex-col">
+      <div class="px-5 py-3.5 border-b border-line flex items-center justify-between">
+        <h3 id="log-modal-title" class="font-bold text-sm text-ink">Agent 实时运行日志</h3>
+        <button onclick="closeLogModal()" class="text-ink-soft hover:text-ink text-lg cursor-pointer">✕</button>
       </div>
-      <pre id="log-modal-content" class="flex-1 p-5 text-xs font-mono text-slate-300 bg-slate-950 overflow-y-auto leading-relaxed"></pre>
+      <pre id="log-modal-content" class="flex-1 p-5 text-xs font-mono text-[#E8E4DA] bg-[#1F1E1D] overflow-y-auto leading-relaxed whitespace-pre-wrap"></pre>
     </div>
   </div>
 
@@ -544,32 +538,35 @@
       const available = agents.filter(a => a.available);
       const running = agents.filter(a => a.isRunning);
       const countBadge = document.getElementById('detected-count-text');
-      countBadge.textContent = `${running.length} 个运行中 · ${available.length} 个已就绪`;
+      if (countBadge) {
+        countBadge.textContent = `${running.length} 个运行中 · ${available.length} 个已就绪`;
+      }
 
       const grid = document.getElementById('detector-agent-grid');
+      if (!grid) return;
       grid.innerHTML = '';
 
       agents.forEach(a => {
         const card = document.createElement('div');
         const borderClass = a.isRunning 
-          ? 'bg-slate-900/95 border-emerald-500/80 shadow-lg shadow-emerald-500/10'
-          : (a.available ? 'bg-slate-900/80 border-blue-500/50 shadow-md' : 'bg-slate-900/30 border-slate-800 opacity-50');
+          ? 'bg-paper-panel border-line hover:border-crail'
+          : (a.available ? 'bg-paper-panel border-line hover:border-line-strong' : 'bg-paper-sunken/60 border-line opacity-60');
 
-        card.className = `p-4 rounded-xl border ${borderClass} flex flex-col justify-between space-y-3`;
+        card.className = `p-4 rounded-lg border ${borderClass} flex flex-col justify-between space-y-3`;
         card.innerHTML = `
           <div>
             <div class="flex items-center justify-between mb-1.5">
-              <h4 class="font-bold text-sm text-slate-100 flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full ${a.isRunning ? 'bg-emerald-400 animate-pulse' : (a.available ? 'bg-blue-400' : 'bg-slate-600')}"></span>
+              <h4 class="font-bold text-sm text-ink flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full ${a.isRunning ? 'bg-ok animate-pulse' : (a.available ? 'bg-info' : 'bg-ink-faint')}"></span>
                 ${escapeHtml(a.displayName)}
               </h4>
-              <span class="px-2 py-0.5 rounded text-[10px] font-semibold ${a.isRunning ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : (a.available ? 'bg-blue-500/20 text-blue-300 border border-blue-500/30' : 'bg-slate-800 text-slate-500')}">
-                ${escapeHtml(a.statusLabel || (a.available ? '✓ 本地就绪' : '未检测到'))}
+              <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${a.isRunning ? 'bg-ok/10 text-ok border border-ok/30' : (a.available ? 'bg-info/10 text-info border border-info/30' : 'bg-paper-sunken text-ink-faint border border-line')}">
+                ${escapeHtml(a.statusLabel || (a.available ? '本地就绪' : '未检测到'))}
               </span>
             </div>
-            <p class="text-xs text-slate-400 leading-relaxed">${escapeHtml(a.description)}</p>
+            <p class="text-xs text-ink-soft leading-relaxed">${escapeHtml(a.description)}</p>
           </div>
-          <div class="text-[11px] font-mono ${a.isRunning ? 'text-emerald-400' : (a.available ? 'text-blue-300' : 'text-slate-500')} truncate" title="${escapeHtml(a.path || '未安装')}">
+          <div class="text-[11px] font-mono ${a.isRunning ? 'text-ink' : 'text-ink-soft'} truncate" title="${escapeHtml(a.path || '未安装')}">
             路径: ${escapeHtml(a.path || '未在 PATH 或 AppData 中找到')}
           </div>
         `;
@@ -598,18 +595,17 @@
       if (activitySelect) activitySelect.innerHTML = '';
 
       listToUse.forEach(a => {
-        const prefix = a.isRunning ? '🟢' : '🔵';
         const suffix = a.isRunning ? '(进程运行中)' : '(按需拉起)';
 
         const opt1 = document.createElement('option');
         opt1.value = a.name;
-        opt1.textContent = `${prefix} ${a.displayName} ${suffix}`;
+        opt1.textContent = `${a.displayName} ${suffix}`;
         quickSelect.appendChild(opt1);
 
         if (studioSelect) {
           const opt2 = document.createElement('option');
           opt2.value = a.name;
-          opt2.textContent = `${prefix} ${a.displayName} ${suffix}`;
+          opt2.textContent = `${a.displayName} ${suffix}`;
           studioSelect.appendChild(opt2);
         }
 
@@ -640,16 +636,16 @@
       listToUse.forEach(a => {
         const isRun = a.isRunning;
         const label = document.createElement('label');
-        label.className = `flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition ${isRun ? 'bg-slate-900/95 border-emerald-500/60 shadow-md hover:border-emerald-400' : 'bg-slate-900/80 border-blue-500/40 hover:border-blue-400'}`;
+        label.className = 'flex items-center gap-3 p-3 rounded-lg border bg-paper-panel border-line cursor-pointer hover:border-crail transition';
         label.innerHTML = `
-          <input type="checkbox" value="${escapeHtml(a.name)}" checked class="w-4 h-4 rounded ${isRun ? 'accent-emerald-500' : 'accent-blue-500'}">
+          <input type="checkbox" value="${escapeHtml(a.name)}" checked class="w-4 h-4 rounded accent-crail">
           <div class="truncate">
-            <div class="font-bold text-xs text-slate-100 flex items-center gap-1.5">
-              <span class="w-2.5 h-2.5 rounded-full ${isRun ? 'bg-emerald-400 animate-pulse' : 'bg-blue-400'}"></span>
+            <div class="font-bold text-xs text-ink flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full ${isRun ? 'bg-ok animate-pulse' : 'bg-info'}"></span>
               ${escapeHtml(a.displayName)}
             </div>
-            <div class="text-[10px] ${isRun ? 'text-emerald-400 font-semibold' : 'text-blue-300 font-medium'} truncate">
-              ${isRun ? '🟢 进程在后台运行中' : '🔵 本地已安装 (发起时自动拉起)'}
+            <div class="text-[10px] ${isRun ? 'text-ok font-semibold' : 'text-ink-soft font-medium'} truncate">
+              ${isRun ? '进程在后台运行中' : '本地已安装 (按需拉起)'}
             </div>
           </div>
         `;
@@ -715,21 +711,20 @@
           const r = results.find(item => item.agent === agent.name) || {};
           const isPassed = agent.gatePassed ?? (r.test_passed && r.build_passed && r.lint_passed);
           const isEnsemble = agent.name === 'ensemble' || agent.isSupervisor;
-          const isOrch = active.mode === 'orchestration';
 
           const roleLabels = {
-            algorithm_architect: '🏛️ 算法架构师',
-            core_implementer: '⚙️ 核心开发',
-            domain_architect: '🏛️ 系统架构师',
-            backend_developer: '⚙️ 后端开发',
-            qa_engineer: '🧪 黑盒测试专家',
-            supervisor_integration: '👑 架构总监 (全量集成)'
+            algorithm_architect: '算法架构师',
+            core_implementer: '核心开发',
+            domain_architect: '系统架构师',
+            backend_developer: '后端开发',
+            qa_engineer: '黑盒测试专家',
+            supervisor_integration: '架构总监 (全量集成)'
           };
 
-          const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '👑 主协调 Agent' : '🤖 协同 Agent');
-          const roleBadge = agent.role ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold ${isEnsemble ? 'bg-purple-500/20 text-purple-300 border border-purple-500/40' : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'}">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>` : '';
-          const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '✨ (主 Agent 融合版)' : ''}`;
-          const agentSubtitle = agent.title ? `<div class="text-[11px] text-slate-400 mt-1">执行引擎: <b class="text-cyan-300 font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-slate-300">${escapeHtml(agent.outputFile || 'src/solution.js')}</span></div>` : '';
+          const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '主协调 Agent' : '协同 Agent');
+          const roleBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold border border-crail text-crail bg-crail-soft/30">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>`;
+          const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '(主 Agent 融合版)' : ''}`;
+          const agentSubtitle = agent.title ? `<div class="text-[11px] text-ink-soft mt-0.5">执行引擎: <b class="text-ink font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span></div>` : '';
 
           const buildPassed = agent.verify?.build?.passed ?? (r.build_passed ?? true);
           const lintPassed = agent.verify?.lint?.passed ?? (r.lint_passed ?? true);
@@ -739,74 +734,63 @@
           const testAdded = agent.diffStats?.testAdded ?? (r.test_lines_added || 0);
 
           const card = document.createElement('div');
-          card.className = `bg-darkcard border ${isEnsemble ? 'border-purple-500/60 shadow-purple-500/10' : 'border-darkborder'} rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between`;
+          card.className = `bg-paper-panel border ${isEnsemble ? 'border-crail' : 'border-line'} rounded-lg p-5 space-y-3.5 flex flex-col justify-between`;
 
           card.innerHTML = `
             <div class="space-y-3">
               <div class="flex items-start justify-between gap-2">
                 <div class="space-y-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="w-3 h-3 rounded-full ${isPassed ? 'bg-emerald-400' : 'bg-yellow-400'}"></span>
+                    <span class="w-2.5 h-2.5 rounded-full ${isPassed ? 'bg-ok' : 'bg-crail'}"></span>
                     ${roleBadge}
                   </div>
-                  <h4 class="font-bold text-sm text-slate-100 leading-snug">${escapeHtml(cardTitle)}</h4>
+                  <h4 class="font-bold text-sm text-ink leading-snug">${escapeHtml(cardTitle)}</h4>
                   ${agentSubtitle}
                 </div>
-                <span class="text-xs font-mono text-slate-400 shrink-0">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : (agent.durationSeconds ? agent.durationSeconds.toFixed(1) + 's' : '0.0s')}</span>
+                <span class="text-xs font-mono text-ink-soft shrink-0">${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : (agent.durationSeconds ? agent.durationSeconds.toFixed(1) + 's' : '0.0s')}</span>
               </div>
 
               <!-- Real-time Activity Status -->
-              <div class="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/90 flex items-center justify-between text-xs">
-                <span class="text-slate-400">当前工作状态:</span>
-                <span class="font-semibold ${isPassed ? 'text-emerald-400' : 'text-cyan-300'}">
-                  ${isPassed ? `✅ 门禁通过 ${agent.attempts ? '(第 ' + agent.attempts + '/3 次)' : ''}` : (isEnsemble ? '🤖 正在全量架构集成' : '🧪 正在编码与独立验真')}
+              <div class="p-2.5 rounded-md bg-paper-sunken border border-line flex items-center justify-between text-xs">
+                <span class="text-ink-soft">当前状态:</span>
+                <span class="font-semibold ${isPassed ? 'text-ok' : 'text-crail'}">
+                  ${isPassed ? `[PASS] 门禁通过 ${agent.attempts ? '(第 ' + agent.attempts + '/3 次)' : ''}` : (isEnsemble ? '正在全量架构集成' : '正在编码与独立验真')}
                 </span>
               </div>
 
-              <!-- Token & Cost Telemetry -->
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="p-2 rounded-xl bg-slate-900/70 border border-slate-800">
-                  <div class="text-slate-400 text-[10px]">🪙 Token 消耗</div>
-                  <div class="font-mono font-bold text-purple-300 text-xs">${r.tokens?.totalTokens != null ? r.tokens.totalTokens.toLocaleString() : '—'}</div>
-                </div>
-                <div class="p-2 rounded-xl bg-slate-900/70 border border-slate-800">
-                  <div class="text-slate-400 text-[10px]">💵 预估成本</div>
-                  <div class="font-mono font-bold text-emerald-400 text-xs">${r.tokens?.costEstimate ?? '—'}</div>
-                </div>
+              <!-- Combined Single-Line Telemetry -->
+              <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1">
+                <span>Tokens: <b class="text-ink">${r.tokens?.totalTokens != null ? r.tokens.totalTokens.toLocaleString() : '—'}</b> · <b class="text-ok">${r.tokens?.costEstimate ?? '$0.00'}</b></span>
+                <span class="text-[11px] truncate text-ink-soft">${escapeHtml((r.tools_called || agent.toolsCalled || []).join('·') || 'view·edit')}</span>
               </div>
 
-              <!-- Tools Called Telemetry -->
-              <div class="p-2 rounded-xl bg-slate-900/50 border border-slate-800 text-[11px] flex items-center justify-between">
-                <span class="text-slate-400">🛠️ 工具调用:</span>
-                <span class="text-cyan-300 font-mono">${escapeHtml((r.tools_called || agent.toolsCalled || []).join(' · ') || '—')}</span>
-              </div>
-
+              <!-- Gate 3 Boxes -->
               <div class="grid grid-cols-3 gap-2 text-center text-xs">
-                <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <div class="text-slate-400 text-[10px]">Build</div>
-                  <div class="font-bold ${buildPassed ? 'text-emerald-400' : 'text-slate-400'}">${buildPassed ? '✓ PASS' : '-'}</div>
+                <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                  <div class="text-ink-soft text-[10px]">Build</div>
+                  <div class="font-bold ${buildPassed ? 'text-ok' : 'text-bad'}">${buildPassed ? '[PASS]' : '[FAIL]'}</div>
                 </div>
-                <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <div class="text-slate-400 text-[10px]">Lint</div>
-                  <div class="font-bold ${lintPassed ? 'text-emerald-400' : 'text-rose-400'}">${lintPassed ? '✓ PASS' : '-'}</div>
+                <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                  <div class="text-ink-soft text-[10px]">Lint</div>
+                  <div class="font-bold ${lintPassed ? 'text-ok' : 'text-bad'}">${lintPassed ? '[PASS]' : '[FAIL]'}</div>
                 </div>
-                <div class="p-2 rounded-xl bg-slate-900/60 border border-slate-800">
-                  <div class="text-slate-400 text-[10px]">Tests</div>
-                  <div class="font-bold ${testPassed ? 'text-emerald-400' : 'text-slate-400'}">${testPassed ? '✓ PASS' : '-'}</div>
+                <div class="p-2 rounded-md bg-paper-sunken border border-line font-mono">
+                  <div class="text-ink-soft text-[10px]">Tests</div>
+                  <div class="font-bold ${testPassed ? 'text-ok' : 'text-bad'}">${testPassed ? '[PASS]' : '[FAIL]'}</div>
                 </div>
               </div>
 
-              <div class="flex items-center justify-between text-xs px-1 text-slate-400">
-                <span>业务改动: <b class="text-emerald-400">+${sourceAdded}</b> / <b class="text-rose-400">-${sourceRemoved}</b></span>
-                <span>测试改动: <b class="text-slate-300">+${testAdded}</b></span>
+              <div class="flex items-center justify-between text-xs px-1 text-ink-soft">
+                <span>代码改动: <b class="text-ok">+${sourceAdded}</b> / <b class="text-bad">-${sourceRemoved}</b></span>
+                <span>测试改动: <b class="text-ink">+${testAdded}</b></span>
               </div>
             </div>
 
-            <div class="flex items-center gap-2 pt-2 border-t border-slate-800/80" data-agent-actions="${escapeHtml(agent.name)}">
-              <button class="action-view-log flex-1 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition cursor-pointer">
-                📜 执行日志
+            <div class="flex items-center gap-2 pt-2 border-t border-line" data-agent-actions="${escapeHtml(agent.name)}">
+              <button class="action-view-log flex-1 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-semibold border border-line-strong hover:border-crail transition cursor-pointer">
+                执行日志
               </button>
-              <button class="action-keep flex-1 py-2 rounded-xl ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30'} text-xs font-bold transition cursor-pointer">
+              <button class="action-keep flex-1 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-white text-xs font-bold transition cursor-pointer">
                 一键采用
               </button>
             </div>
@@ -817,12 +801,12 @@
 
           const btn = document.createElement('button');
           btn.onclick = () => keepAgent(agent.name);
-          btn.className = `w-full py-3 px-4 rounded-xl text-xs font-semibold flex items-center justify-between transition cursor-pointer ${isEnsemble ? 'bg-purple-600 hover:bg-purple-500 text-white' : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'}`;
-          btn.innerHTML = `<span>采用 <b>${escapeHtml(cardTitle)}</b></span> <span class="font-mono text-[10px] text-slate-400">${escapeHtml(agent.branch)}</span>`;
+          btn.className = 'w-full py-2.5 px-3 rounded-md text-xs font-semibold flex items-center justify-between transition cursor-pointer bg-paper-panel hover:bg-paper-sunken text-ink border border-line-strong hover:border-crail';
+          btn.innerHTML = `<span>采用 <b>${escapeHtml(cardTitle)}</b></span> <span class="font-mono text-[10px] text-ink-soft">${escapeHtml(agent.branch)}</span>`;
           keepButtons.appendChild(btn);
         });
       } else {
-        // Idle State: Show static Task Launch Console without touching textarea
+        // Idle State: Show static Task Launch Console
         const launcher = document.getElementById('workbench-task-launcher');
         const container = document.getElementById('agent-cards-container');
         if (launcher) launcher.classList.remove('hidden');
@@ -831,12 +815,12 @@
           container.innerHTML = '';
         }
 
-        document.getElementById('run-id-badge').textContent = `状态: 空闲就绪`;
+        document.getElementById('run-id-badge').textContent = '状态: 空闲就绪';
         document.getElementById('run-category-badge').textContent = 'Ready';
-        document.getElementById('base-commit-badge').textContent = `主仓库就绪`;
-        document.getElementById('current-task-text').textContent = '🎯 当前系统空闲就绪 — 在下方输入任务并勾选想要派出的本地 Agent 团队即可开始！';
+        document.getElementById('base-commit-badge').textContent = '主仓库就绪';
+        document.getElementById('current-task-text').textContent = '当前系统空闲就绪 — 在下方输入任务并勾选想要派出的本地 Agent 团队即可开始';
 
-        keepButtons.innerHTML = `<div class="text-xs text-slate-500 p-4 text-center border border-dashed border-slate-700 rounded-xl">暂无正在协同的分支</div>`;
+        keepButtons.innerHTML = '<div class="text-xs text-ink-faint p-4 text-center border border-dashed border-line rounded-md">暂无正在协同的分支</div>';
       }
     }
 
@@ -848,9 +832,9 @@
         const btn = document.getElementById(`diff-tab-${t}`);
         if (btn) {
           if (t === type) {
-            btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition cursor-pointer';
+            btn.className = 'px-3 py-1 rounded-md text-xs font-semibold bg-crail text-white border border-crail transition cursor-pointer';
           } else {
-            btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 border border-transparent transition cursor-pointer';
+            btn.className = 'px-3 py-1 rounded-md text-xs font-medium text-ink-soft hover:text-ink border border-line transition cursor-pointer';
           }
         }
       });
@@ -909,14 +893,14 @@
 
       if (badge) {
         if (target.security) {
-          badge.className = `p-3.5 rounded-xl text-xs flex items-center justify-between border ${target.security.isSuspicious ? 'bg-amber-950/30 border-amber-800 text-amber-300' : 'bg-emerald-950/30 border-emerald-800 text-emerald-300'}`;
+          badge.className = 'p-3 rounded-md text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink';
           badge.innerHTML = `
-            <span><b>测试完备度与安全性：</b> ${target.security.summary}</span>
-            <span>安全评分: <b>${target.security.score}/100</b></span>
+            <span><b>测试完备度与安全性：</b> ${escapeHtml(target.security.summary)}</span>
+            <span class="font-mono">安全评分: <b>${target.security.score}/100</b></span>
           `;
         } else {
-          badge.className = 'p-3.5 rounded-xl text-xs flex items-center justify-between border bg-emerald-950/30 border-emerald-800 text-emerald-300';
-          badge.innerHTML = `<span><b>测试完备度：</b> 独立单元测试全量验证通过</span> <span>安全评分: <b>100/100</b></span>`;
+          badge.className = 'p-3 rounded-md text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink';
+          badge.innerHTML = `<span><b>测试完备度：</b> 独立单元测试全量验证通过</span> <span class="font-mono">安全评分: <b>100/100</b></span>`;
         }
       }
     }
@@ -933,10 +917,9 @@
 
         if (activities.length === 0) {
           grid.innerHTML = `
-            <div class="col-span-full py-12 text-center bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl space-y-3">
-              <div class="text-3xl">👀</div>
-              <h4 class="font-bold text-sm text-slate-200">当前无正在执行的协同任务</h4>
-              <p class="text-xs text-slate-400">请在「⚡ 任务协同工作台」发起新任务，这里将实时并排展示每个 Agent 的思维链路与执行动作！</p>
+            <div class="col-span-full py-12 text-center bg-paper-sunken/40 border border-dashed border-line rounded-lg space-y-2">
+              <h4 class="font-bold text-sm text-ink">当前无正在执行的协同任务</h4>
+              <p class="text-xs text-ink-soft">请在「任务协同工作台」发起新任务，这里将实时展示每个 Agent 的思维链路与执行动作</p>
             </div>
           `;
           return;
@@ -946,20 +929,17 @@
         activities.forEach(act => {
           const isPassed = act.testPassed && act.buildPassed && act.lintPassed;
           const card = document.createElement('div');
-          card.className = 'bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between';
+          card.className = 'bg-paper-panel border border-line rounded-lg p-5 space-y-4 flex flex-col justify-between';
 
           let timelineHtml = '';
           (act.steps || []).forEach(step => {
             timelineHtml += `
-              <div class="flex items-start gap-2.5 text-xs">
-                <span class="text-sm shrink-0">${escapeHtml(step.icon)}</span>
-                <div class="flex-1 min-w-0">
-                  <div class="font-bold text-slate-200 flex items-center justify-between">
-                    <span class="truncate">${escapeHtml(step.title)}</span>
-                    <span class="text-[10px] text-slate-500 font-mono">${escapeHtml(step.time)}</span>
-                  </div>
-                  <div class="text-[11px] text-slate-400 truncate">${escapeHtml(step.detail)}</div>
+              <div class="flex items-start justify-between text-xs py-1.5 border-b border-line last:border-0">
+                <div class="flex-1 min-w-0 pr-2">
+                  <div class="font-semibold text-ink">${escapeHtml(step.title)}</div>
+                  <div class="text-[11px] text-ink-soft truncate">${escapeHtml(step.detail)}</div>
                 </div>
+                <span class="text-[10px] text-ink-faint font-mono shrink-0">${escapeHtml(step.time)}</span>
               </div>
             `;
           });
@@ -967,56 +947,50 @@
           card.innerHTML = `
             <div class="space-y-3.5">
               <!-- Card Header -->
-              <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div class="flex items-center justify-between border-b border-line pb-2.5">
                 <div class="flex items-center gap-2">
-                  <span class="w-3 h-3 rounded-full ${isPassed ? 'bg-emerald-400' : 'bg-cyan-400 animate-pulse'}"></span>
-                  <h4 class="font-bold text-sm text-slate-100">${escapeHtml(act.displayName)}</h4>
+                  <span class="w-2.5 h-2.5 rounded-full ${isPassed ? 'bg-ok' : 'bg-crail'}"></span>
+                  <h4 class="font-bold text-sm text-ink">${escapeHtml(act.displayName)}</h4>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button onclick="viewAgentLog('${escapeJsAttr(act.agent)}')" class="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-[11px] text-slate-300 border border-slate-700 transition cursor-pointer">
-                    📜 全屏日志
+                  <button onclick="viewAgentLog('${escapeJsAttr(act.agent)}')" class="px-2.5 py-1 rounded-md bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+                    全屏日志
                   </button>
-                  <span class="text-xs font-mono text-slate-400">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃中'}</span>
+                  <span class="text-xs font-mono text-ink-soft">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃中'}</span>
                 </div>
               </div>
 
               <!-- Current Action Banner -->
-              <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800/90 text-xs">
-                <div class="text-[10px] text-slate-500 font-semibold mb-0.5">当前具体动作</div>
-                <div class="font-bold text-cyan-300 truncate">${escapeHtml(act.currentAction)}</div>
+              <div class="p-2.5 rounded-md bg-paper-sunken border border-line text-xs">
+                <div class="text-[10px] text-ink-soft font-semibold mb-0.5">当前具体动作</div>
+                <div class="font-bold text-ink truncate">${escapeHtml(act.currentAction)}</div>
               </div>
 
               <!-- Timeline of Steps -->
-              <div class="space-y-2.5 p-3 rounded-xl bg-slate-950/40 border border-slate-800/50">
-                <div class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">执行步骤与思维链路</div>
+              <div class="space-y-1 p-3 rounded-md bg-paper-sunken border border-line">
+                <div class="text-[10px] text-ink-soft font-bold uppercase tracking-wider mb-1">执行步骤与思维链路</div>
                 ${timelineHtml}
               </div>
 
               <!-- Telemetry Metrics -->
-              <div class="grid grid-cols-2 gap-2 text-xs">
-                <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div class="text-slate-500 text-[10px]">🪙 Token 消耗</div>
-                  <div class="font-mono font-bold text-purple-300 text-xs">${act.tokens?.totalTokens != null ? act.tokens.totalTokens.toLocaleString() : '—'}</div>
-                </div>
-                <div class="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
-                  <div class="text-slate-500 text-[10px]">💵 预估成本</div>
-                  <div class="font-mono font-bold text-emerald-400 text-xs">${act.tokens?.costEstimate ?? '—'}</div>
-                </div>
+              <div class="p-2 rounded-md bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1">
+                <span>Tokens: <b class="text-ink">${act.tokens?.totalTokens != null ? act.tokens.totalTokens.toLocaleString() : '—'}</b> · <b class="text-ok">${act.tokens?.costEstimate ?? '$0.00'}</b></span>
+                <span class="text-[11px] truncate text-ink-soft">${escapeHtml((act.toolsCalled || []).join('·') || 'view·edit')}</span>
               </div>
 
               <!-- Test & Code Stats -->
-              <div class="flex items-center justify-between text-xs px-1 text-slate-400">
-                <span>代码改动: <b class="text-emerald-400">+${act.sourceDiff?.added || 0}</b> / <b class="text-rose-400">-${act.sourceDiff?.removed || 0}</b></span>
-                <span>测试门禁: <b class="${act.testPassed ? 'text-emerald-400' : 'text-slate-300'}">${act.testsPassedCount || 0}/${act.testsTotalCount || 0} PASS</b></span>
+              <div class="flex items-center justify-between text-xs px-1 text-ink-soft">
+                <span>代码改动: <b class="text-ok">+${act.sourceDiff?.added || 0}</b> / <b class="text-bad">-${act.sourceDiff?.removed || 0}</b></span>
+                <span>测试门禁: <b class="${act.testPassed ? 'text-ok' : 'text-ink'}">${act.testsPassedCount || 0}/${act.testsTotalCount || 0} PASS</b></span>
               </div>
             </div>
 
             <!-- Terminal Log Viewer -->
-            <details class="pt-2 border-t border-slate-800/80">
-              <summary class="text-xs text-slate-400 hover:text-slate-200 cursor-pointer font-semibold py-1">
-                📜 查看终端日志与模型输出
+            <details class="pt-2 border-t border-line">
+              <summary class="text-xs text-ink-soft hover:text-ink cursor-pointer font-semibold py-1">
+                查看终端日志与模型输出
               </summary>
-              <pre class="mt-2 bg-slate-950 p-3 rounded-xl text-[11px] font-mono text-slate-300 max-h-48 overflow-y-auto border border-slate-800 leading-relaxed whitespace-pre-wrap">${escapeHtml(act.rawLog || '// 暂无日志输出')}</pre>
+              <pre class="mt-2 bg-[#1F1E1D] p-3 rounded-md text-[11px] font-mono text-[#E8E4DA] max-h-48 overflow-y-auto border border-line leading-relaxed whitespace-pre-wrap">${escapeHtml(act.rawLog || '// 暂无日志输出')}</pre>
             </details>
           `;
 
@@ -1037,7 +1011,6 @@
         .replace(/'/g, '&#039;');
     }
 
-    // Safe for inline onclick="fn('${...}')" contexts: JS-escape first, then HTML-escape
     function escapeJsAttr(str) {
       return escapeHtml(String(str ?? '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"));
     }
@@ -1067,17 +1040,17 @@
 
       if (summaryContainer) {
         summaryContainer.innerHTML = `
-          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <div class="text-xs text-slate-400">已完成任务总数</div>
-            <div class="text-3xl font-bold text-emerald-400 mt-1">${stats.totalRuns || 0}</div>
+          <div class="p-5 rounded-lg bg-paper-panel border border-line">
+            <div class="text-xs text-ink-soft">已完成任务总数</div>
+            <div class="text-2xl font-bold font-mono text-ink mt-1">${stats.totalRuns || 0}</div>
           </div>
-          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <div class="text-xs text-slate-400">最高分协同 Agent</div>
-            <div class="text-3xl font-bold text-purple-300 mt-1">${escapeHtml(bestAgent.toUpperCase())}</div>
+          <div class="p-5 rounded-lg bg-paper-panel border border-line">
+            <div class="text-xs text-ink-soft">最高分协同 Agent</div>
+            <div class="text-2xl font-bold font-mono text-crail mt-1">${escapeHtml(bestAgent.toUpperCase())}</div>
           </div>
-          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
-            <div class="text-xs text-slate-400">平均任务耗时</div>
-            <div class="text-3xl font-bold text-cyan-300 mt-1">${avgDuration}</div>
+          <div class="p-5 rounded-lg bg-paper-panel border border-line">
+            <div class="text-xs text-ink-soft">平均任务耗时</div>
+            <div class="text-2xl font-bold font-mono text-info mt-1">${avgDuration}</div>
           </div>
         `;
       }
@@ -1087,28 +1060,28 @@
         const catEntries = Object.entries(categories);
         if (catEntries.length === 0) {
           breakdownContainer.innerHTML = `
-            <div class="text-xs text-slate-500 py-3">暂无分类统计数据</div>
+            <div class="text-xs text-ink-faint py-3">暂无分类统计数据</div>
           `;
         } else {
           const totalCatRuns = catEntries.reduce((sum, [, c]) => sum + (c.total || 0), 0) || 1;
           const itemsHtml = catEntries.map(([catName, catData]) => {
             const pct = Math.round(((catData.total || 0) / totalCatRuns) * 100);
             return `
-              <div class="space-y-1.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/80">
+              <div class="space-y-1.5 p-3 rounded-md bg-paper-sunken border border-line">
                 <div class="flex items-center justify-between text-xs">
-                  <span class="font-bold text-slate-200">${escapeHtml(catName)}</span>
-                  <span class="text-slate-400 font-mono">${catData.total || 0} 次 (${pct}%)</span>
+                  <span class="font-bold text-ink">${escapeHtml(catName)}</span>
+                  <span class="text-ink-soft font-mono">${catData.total || 0} 次 (${pct}%)</span>
                 </div>
-                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style="width: ${pct}%"></div>
+                <div class="w-full h-2 bg-paper rounded-full overflow-hidden border border-line">
+                  <div class="h-full bg-crail rounded-full" style="width: ${pct}%"></div>
                 </div>
               </div>
             `;
           }).join('');
 
           breakdownContainer.innerHTML = `
-            <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
-              <span>📊</span> 任务分类分布与采纳比例
+            <h4 class="text-xs font-bold text-ink mb-3">
+              任务分类分布与采纳比例
             </h4>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               ${itemsHtml}
@@ -1170,7 +1143,7 @@
     }
 
     async function discardCurrentRace() {
-      if (!confirm('确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n💡 说明：历史任务、性能画像与战绩指标已永久保存在本地 SQLite 数据库中，不受任何影响。')) return;
+      if (!confirm('确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n说明：历史任务、性能画像与战绩指标已永久保存在本地 SQLite 数据库中，不受任何影响。')) return;
       try {
         const res = await fetch('/api/discard', { method: 'POST' });
         if (!res.ok) {
@@ -1322,10 +1295,9 @@
 
         if (history.length === 0) {
           container.innerHTML = `
-            <div class="py-12 text-center bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl space-y-3">
-              <div class="text-3xl">📜</div>
-              <h4 class="font-bold text-sm text-slate-200">暂无历史任务记录</h4>
-              <p class="text-xs text-slate-400">在工作台发起并完成协同任务后，所有战绩与代码方案都将自动保存在这里！</p>
+            <div class="py-12 text-center bg-paper-sunken/40 border border-dashed border-line rounded-lg space-y-2">
+              <h4 class="font-bold text-sm text-ink">暂无历史任务记录</h4>
+              <p class="text-xs text-ink-soft">在工作台发起并完成协同任务后，所有战绩与代码方案都将自动保存在这里</p>
             </div>
           `;
           return;
@@ -1344,11 +1316,11 @@
           const dateStr = new Date(run.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
           const card = document.createElement('div');
-          card.className = 'bg-slate-900/90 border border-slate-800 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4 transition';
+          card.className = 'bg-paper-panel border border-line hover:border-line-strong rounded-lg p-5 space-y-3.5 transition';
 
           const agentBadges = results.map(r => `
-            <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${r.test_passed ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
-              ${r.test_passed ? '✓' : '✗'} ${escapeHtml(r.agent)} (${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '-'})
+            <span class="px-2 py-0.5 rounded text-xs font-mono font-semibold ${r.test_passed ? 'bg-ok/10 text-ok border border-ok/30' : 'bg-bad/10 text-bad border border-bad/30'}">
+              [${r.test_passed ? 'PASS' : 'FAIL'}] ${escapeHtml(r.agent)} (${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '-'})
             </span>
           `).join('');
 
@@ -1356,31 +1328,31 @@
             <div class="flex items-start justify-between gap-4 flex-wrap">
               <div class="space-y-1.5 flex-1 min-w-[280px]">
                 <div class="flex items-center gap-2 flex-wrap text-xs">
-                  <span class="px-2.5 py-0.5 rounded-md font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">#${escapeHtml(run.id)}</span>
-                  <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-cyan-300 border border-slate-700">${escapeHtml(run.task_category || 'feature')}</span>
-                  <span class="text-slate-500 font-mono text-[11px]">${dateStr}</span>
-                  <span class="text-slate-500 font-mono text-[11px]">Base: ${escapeHtml(run.base_commit?.slice(0, 7) || 'main')}</span>
+                  <span class="px-2 py-0.5 rounded font-mono font-bold bg-paper-sunken text-ink border border-line">#${escapeHtml(run.id)}</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-crail-soft text-crail border border-crail/30">${escapeHtml(run.task_category || 'feature')}</span>
+                  <span class="text-ink-soft font-mono text-[11px]">${dateStr}</span>
+                  <span class="text-ink-soft font-mono text-[11px]">Base: ${escapeHtml(run.base_commit?.slice(0, 7) || 'main')}</span>
                 </div>
-                <h4 class="font-bold text-base text-slate-100 leading-snug">${escapeHtml(run.task_text || '未命名的任务需求')}</h4>
+                <h4 class="font-bold text-sm text-ink leading-snug">${escapeHtml(run.task_text || '未命名的任务需求')}</h4>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="switchHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition flex items-center gap-1.5 cursor-pointer">
-                  <span>🔍</span> 查看复盘
+                <button onclick="switchHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3 py-1.5 rounded-md bg-crail hover:bg-crail-hover text-white text-xs font-semibold transition flex items-center gap-1 cursor-pointer">
+                  查看复盘
                 </button>
-                <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
-                  <span>✏️</span> 修改并复用
+                <button onclick="reuseHistoricalTask('${escapeJsAttr(run.id)}')" class="px-3 py-1.5 rounded-md bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition flex items-center gap-1 cursor-pointer">
+                  修改并复用
                 </button>
               </div>
             </div>
 
             <!-- Agent Results Row -->
-            <div class="pt-3 border-t border-slate-800/80 flex items-center justify-between gap-4 flex-wrap">
+            <div class="pt-2.5 border-t border-line flex items-center justify-between gap-4 flex-wrap">
               <div class="flex items-center gap-2 flex-wrap">
-                <span class="text-xs text-slate-400 font-semibold">协同战绩:</span>
-                ${agentBadges || '<span class="text-xs text-slate-500 font-mono">暂无详细记录</span>'}
+                <span class="text-xs text-ink-soft font-semibold">协同战绩:</span>
+                ${agentBadges || '<span class="text-xs text-ink-faint font-mono">暂无详细记录</span>'}
               </div>
-              <div class="text-xs font-semibold ${isAllPassed ? 'text-emerald-400' : 'text-yellow-400'}">
-                ${isAllPassed ? '🎉 门禁全量通过' : `⚠️ 门禁通过率 ${passedCount}/${totalCount}`}
+              <div class="text-xs font-semibold font-mono ${isAllPassed ? 'text-ok' : 'text-crail'}">
+                ${isAllPassed ? '[全量通过]' : `[通过率 ${passedCount}/${totalCount}]`}
               </div>
             </div>
           `;
@@ -1427,12 +1399,15 @@
 
     function switchTab(tab) {
       ['orchestrator', 'activity', 'diff', 'studio', 'history', 'detector', 'stats'].forEach(t => {
-        document.getElementById(`panel-${t}`).classList.toggle('hidden', t !== tab);
+        const panel = document.getElementById(`panel-${t}`);
+        if (panel) panel.classList.toggle('hidden', t !== tab);
         const btn = document.getElementById(`tab-${t}`);
-        if (t === tab) {
-          btn.className = 'px-4 py-1.5 rounded-lg font-medium transition bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-        } else {
-          btn.className = 'px-4 py-1.5 rounded-lg font-medium transition text-slate-400 hover:text-slate-200';
+        if (btn) {
+          if (t === tab) {
+            btn.className = 'pb-2 font-semibold text-ink border-b-2 border-crail transition';
+          } else {
+            btn.className = 'pb-2 font-medium text-ink-soft hover:text-ink border-b-2 border-transparent transition';
+          }
         }
       });
       if (tab === 'diff') loadDiffs();
@@ -1468,7 +1443,6 @@
         loadStatus();
       };
 
-      // Live agent status push — update detection dots without full-page reload
       evtSource.addEventListener('agent_status', (e) => {
         try {
           const { agents } = JSON.parse(e.data);
@@ -1500,7 +1474,6 @@
       });
 
       evtSource.onerror = () => {
-        // Drop the broken stream and reconnect with exponential backoff (1s → 2s → 4s ... capped at 30s)
         if (evtSource) {
           try { evtSource.close(); } catch {}
           evtSource = null;

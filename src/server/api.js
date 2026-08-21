@@ -187,12 +187,12 @@ export function createServer(repoRoot = process.cwd()) {
 
           if (runInfo.mode === 'orchestration' && runInfo.subtaskResults) {
             const roleLabels = {
-              algorithm_architect: '🏛️ 算法架构师',
-              core_implementer: '⚙️ 核心开发',
-              domain_architect: '🏛️ 系统架构师',
-              backend_developer: '⚙️ 后端开发',
-              qa_engineer: '🧪 黑盒测试专家',
-              supervisor_integration: '👑 架构总监 (全量集成)'
+              algorithm_architect: '算法架构师',
+              core_implementer: '核心开发',
+              domain_architect: '系统架构师',
+              backend_developer: '后端开发',
+              qa_engineer: '黑盒测试专家',
+              supervisor_integration: '架构总监 (全量集成)'
             };
 
             const activities = [
@@ -215,7 +215,7 @@ export function createServer(repoRoot = process.cwd()) {
                   agentLabel: `专精角色: ${roleName} · 执行 Agent: ${r.agent.toUpperCase()}`,
                   branch: r.branchName,
                   status: isPassed ? 'passed' : 'failed',
-                  currentAction: isPassed ? `✅ 门禁通过 (第 ${r.attempts || 1}/3 次检验)` : `❌ 门禁未通过 (已尝试 ${r.attempts || 1}/3 次)`,
+                  currentAction: isPassed ? `门禁通过 (第 ${r.attempts || 1}/3 次检验)` : `门禁未通过 (已尝试 ${r.attempts || 1}/3 次)`,
                   durationSeconds: r.durationSeconds || 0,
                   tokens: r.tokens || ZERO_TOKENS,
                   toolsCalled: r.toolsCalled || [],
@@ -228,10 +228,10 @@ export function createServer(repoRoot = process.cwd()) {
                   testDiff: { added: r.diffStats?.testAdded || 0, removed: r.diffStats?.testRemoved || 0 },
                   outputFile: r.subtask.outputFile,
                   steps: [
-                    { icon: '⚡', title: '工作树沙盒挂载', detail: `基于上游基线切出分支: ${r.branchName}`, status: 'completed', time: '0.0s' },
-                    { icon: '🔍', title: '子任务契约理解', detail: r.subtask.description, status: 'completed', time: '0.5s' },
-                    { icon: '✍️', title: '目标模块代码编写', detail: `交付文件: ${r.subtask.outputFile}`, status: 'completed', time: '2.3s' },
-                    { icon: isPassed ? '✅' : '🧪', title: '客观质量门禁与断言验真', detail: isPassed ? `Build/Lint/Tests 全部通过 (尝试 ${r.attempts || 1}/3 次)` : '门禁未通过', status: isPassed ? 'completed' : 'failed', time: `${(r.durationSeconds || 1.2).toFixed(1)}s` }
+                    { icon: '', title: '工作树沙盒挂载', detail: `基于上游基线切出分支: ${r.branchName}`, status: 'completed', time: '0.0s' },
+                    { icon: '', title: '子任务契约理解', detail: r.subtask.description, status: 'completed', time: '0.5s' },
+                    { icon: '', title: '目标模块代码编写', detail: `交付文件: ${r.subtask.outputFile}`, status: 'completed', time: '2.3s' },
+                    { icon: '', title: '客观质量门禁与断言验真', detail: isPassed ? `Build/Lint/Tests 全部通过 (尝试 ${r.attempts || 1}/3 次)` : '门禁未通过', status: isPassed ? 'completed' : 'failed', time: `${(r.durationSeconds || 1.2).toFixed(1)}s` }
                   ],
                   rawLog: rawLog || '// 暂无实时日志输出'
                 };
@@ -240,13 +240,13 @@ export function createServer(repoRoot = process.cwd()) {
                 subtaskId: 'integrated',
                 subtaskTitle: '主 Agent 架构级全量集成',
                 role: 'supervisor_integration',
-                roleName: '👑 架构总监 (全量集成)',
+                roleName: '架构总监 (全量集成)',
                 agent: 'supervisor',
                 displayName: `[最终集成] 主 Agent 架构级全量集成`,
-                agentLabel: `专精角色: 👑 架构总监 · 执行 Agent: SUPERVISOR`,
+                agentLabel: `专精角色: 架构总监 · 执行 Agent: SUPERVISOR`,
                 branch: runInfo.finalResult?.branch || `arace/${runId}/integrated`,
                 status: runInfo.finalResult?.gatePassed ? 'passed' : 'active',
-                currentAction: runInfo.finalResult?.gatePassed ? '✅ 终极全量门禁全部通过，就绪待交付' : '🧪 正在执行终极全量门禁验真',
+                currentAction: runInfo.finalResult?.gatePassed ? '终极全量门禁全部通过，就绪待交付' : '正在执行终极全量门禁验真',
                 durationSeconds: runInfo.finalResult?.durationSeconds || 0,
                 tokens: runInfo.finalResult?.tokens || ZERO_TOKENS,
                 toolsCalled: runInfo.finalResult?.toolsCalled || [],
@@ -259,8 +259,8 @@ export function createServer(repoRoot = process.cwd()) {
                 testDiff: { added: runInfo.finalResult?.diffStats?.testAdded || 0, removed: runInfo.finalResult?.diffStats?.testRemoved || 0 },
                 outputFile: '全量项目交付',
                 steps: [
-                  { icon: '👑', title: '子任务代码整合', detail: '聚合所有已过门禁的专精子任务成果', status: 'completed', time: '0.0s' },
-                  { icon: '🛡️', title: '终极全量物理门禁', detail: '执行全量回归测试套件与安全审计', status: runInfo.finalResult?.gatePassed ? 'completed' : 'running', time: '1.2s' }
+                  { icon: '', title: '子任务代码整合', detail: '聚合所有已过门禁的专精子任务成果', status: 'completed', time: '0.0s' },
+                  { icon: '', title: '终极全量物理门禁', detail: '执行全量回归测试套件与安全审计', status: runInfo.finalResult?.gatePassed ? 'completed' : 'running', time: '1.2s' }
                 ],
                 rawLog: '// 主 Agent 全量架构集成已完成'
               }

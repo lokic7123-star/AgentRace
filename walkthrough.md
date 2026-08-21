@@ -1,76 +1,54 @@
-# AgentRace (arace) 2.0 完整演进与交付文档
+# AgentRace (arace) 2.0 交付与演进走查文档 (Walkthrough)
 
-本文档汇总 AgentRace 2.0 在安全防御、架构重构、适配器去 Shell 化、桌面端封装与脱网发布全流程的物理验证记录。
-
----
-
-## 🌟 核心成果与批次执行清单
-
-### 第一部分：P1 安全与稳定性批次
-1. **[P1-1] Git Ref 防命令注入** (`src/git.js`)：
-   - 导出 `assertSafeGitRef()` 正则白名单校验（`/^[\w][\w./-]*$/`），在 `createWorktree`、`removeWorktree`、`getWorktreeDiff`、`mergeBranchToCurrent` 全链路拦截注入字符。
-   - `mergeBranchToCurrent` 改为 `spawnSync('git', ['log', '-n', '1', branchName])` 参数数组形式。
-2. **[P1-2] 本机回环绑定** (`src/commands/ui.js`)：
-   - `server.listen` 默认绑定 `127.0.0.1`，消除局域网暴露风险，新增 `--host` 参数支持。
-3. **[P1-3] Pick 三重别名匹配** (`src/commands/pick.js`)：
-   - 补齐与 `keep.js` 完全一致的 `name` / `id` / `role` 匹配，编排模式下支持 `:subtask-1` 或 `:algorithm_architect`。
-4. **[P1-4] RunId 加熵** (`src/utils.js`)：
-   - 升级至 8 字节安全熵（16 字符 hex），彻底消除工作树目录与 SQLite 主键并发碰撞风险。
-5. **[P1-5] Commit 去 Shell 拼接** (`src/git.js`)：
-   - `commitWorktreeChanges` 改为 `spawnSync('git', ['commit', '-m', message])`，杜绝引号及特殊字符破坏。
-
-### 第二部分：P2 架构重构与优化
-1. **[P2-1] 20+ 适配器去 Shell 化** (`src/adapters/index.js`):
-   - `BaseAdapter.run` 引入条件 shell 机制：仅在 Windows 且目标命令为 `.cmd`/`.bat`/`.ps1` 或自定义模板时启用，且使用 `""` 规范转义。
-   - 全部 20+ 内置适配器 `buildCommand` 移除手工引号拼接，返回裸参数数组，彻底消除 `DEP0190` 警告。
-   - 新增 `tests/adapters.test.js` 专项测试。
-2. **[P2-2] 共享依赖重命名与风险声明** (`src/cow.js`, `src/engine.js`, `README.md`)：
-   - 重构为 `sharedDepsLinked`，准确反映 NTFS Junction / Symlink 共享依赖语义；README 补充说明及并发风险规避建议。
-3. **[P2-3] YAML 引号感知状态机** (`src/config.js`, `tests/config.test.js`)：
-   - 实现 `stripYamlComment` 逐字符状态机，精准保护双引号/单引号内部的 `#` 字符。
-
-### 第三部分：P3 细节调优
-1. **[P3-1] Stats since 下界保护** (`src/server/api.js`)：
-   - `Math.min(3650, Math.max(1, parseInt(since) || 30))`。
-2. **[P3-2] Discard 如实报错与失败统计** (`src/commands/discard.js`)：
-   - 统计未成功清理的工作树路径，遇残留输出黄色警告并返回错误码。
-3. **[P3-3] Dashboard CJK 宽字符对齐** (`src/dashboard.js`)：
-   - `getVisibleWidth()` 针对 CJK 双倍宽字符精确计算，消除中文错位。
-4. **[P3-4] API Origin 校验** (`src/server/api.js`)：
-   - 非 GET 状态变更请求校验 Origin 头，防范 DNS rebinding 与跨站恶意调用。
-
-### 第四部分：桌面端 Electron 封装与发布
-1. **[D1] 安装包极致瘦身** (`electron-builder.yml`)：
-   - 启用 `compression: maximum`，语言包精简至 `zh-CN` 与 `en-US`，禁用差分冗余包。
-2. **[D2] 系统托盘与常驻生命周期** (`desktop/main.js`)：
-   - 托盘常驻，关闭窗口最小化到托盘，退出走托盘菜单。
-   - 窗口 bounds 大小与位置记忆持久化 (`window-state.json`)。
-3. **[离线化] Tailwind 离线脱网支持** (`src/server/public/vendor/tailwind.js`, `index.html`)：
-   - 静态化 407 KB Tailwind 引擎，离线/内网 100% 正常渲染。
-4. **[入口修复] 打包入口覆盖** (`electron-builder.yml`)：
-   - 注入 `extraMetadata.main: desktop/main.js`，保证 NSIS 安装后正常启动窗口。
-
-### 第五部分：命令安全加固
-1. **[Doctor 防破坏] 运行态工作树保护** (`src/commands/doctor.js`)：
-   - `arace doctor --fix` 清理前检测正在进行的任务状态，活跃任务期间安全跳过，防止误删工作树。
+## 📌 概述
+本文档记录 AgentRace 2.0 架构升级、安全加固、去 Shell 化重构、桌面端（Electron / NSIS）交付与 **Anthropic 暖纸浅色主题（Warm Paper Theme）** 全面重构。
 
 ---
 
-## 🧪 自动化测试验证 (40/40 100% PASS)
+## 🎨 前端界面重构 · Anthropic 暖纸浅色主题
 
-```text
-✔ analyzeTestDiffSecurity (3 tests)
-✔ DSH / market agent adapters (2 tests)
-✔ detectInstalledAgents includes comprehensive list (1 test)
-✔ CLI commands (help, detect, doctor, stats, run mock, pick aliases) (6 tests)
-✔ config.js (YAML parser, # in quotes state machine, loadProjectConfig) (3 tests)
-✔ database persistence & stats aggregation (1 test)
-✔ diff_parser (numstat splitting & badge formatting) (2 tests)
-✔ supervisor (DAG decomposition, multi-tier fullstack, QA spec prompt, assertion density, cascading worktrees, circuit breaker) (6 tests)
-✔ Web API server (/api/status, /api/stats, /api/history) (1 test)
-✔ utils (duration parsing, 16-char runId entropy, assertSafeGitRef injection defense, duration formatting, task categorization, glob/test matcher) (6 tests)
-✔ verifier (Jest, Vitest, Pytest, Cargo, Node test output parsing) (6 tests)
-✔ adapters.test.js (bare arguments, token substitution, complex characters injection defense) (3 tests)
+### 1. 核心设计 Token
+- **暖纸基底色（Paper）**：主背景 `#FAF9F5`、面板白色 `#FFFFFF`、沉降底色 `#F0EEE6`。
+- **墨水字色（Ink）**：主墨色 `#1F1E1D`、次级灰 `#6B6560`、微弱灰 `#98928A`。
+- **陶红主色（Crail）**：主强调色 `#D97757`、悬浮 `#C4633F`、柔和底 `#F5E6DE`。
+- **功能色**：成功绿 `ok (#5A7247)`、失败红 `bad (#BF4D43)`、信息蓝 `info (#5B7A99)`。
+- **终端质感签名对比**：代码与实时日志区保留 `#1F1E1D` 暗底与 `#E8E4DA` 等宽浅字。
 
-ℹ tests 40 | pass 40 | fail 0 | skipped 0 (100% PASS)
-```
+### 2. 组件级改造
+- **导航 Tab**：药丸底色改为经典下划线式（激活态 `border-b-2 border-crail text-ink font-semibold`）。
+- **按钮与卡片**：单层白底实线（1px `border-line`）、无重度投影（`shadow-none`）、陶红主按钮。
+- **客观门禁三格**：Build/Lint/Test 统一采用等宽方括号标签 `[PASS]` / `[FAIL]`。
+- **流式遥测行**：Token 消耗、费用预估与工具调用合并为单行 Mono 紧凑数据行。
+- **去 AI 化清理**：UI 装饰 Emoji 全量收敛（≤10 处），状态点去闪烁，后端状态描述同步去 emoji。
+
+---
+
+## 🛡️ 安全与核心能力演进
+
+1. **Git 命令注入防御（P1-1 & P1-5）**：
+   - 引入 `assertSafeGitRef` 白名单校验（`/^[\w][\w./-]*$/`）。
+   - 全部 `git` 相关操作由裸字符串拼接升级为 `spawnSync` 数组传参。
+2. **20+ 个适配器去 Shell 化重构（P2-1）**：
+   - 重构 22 个市场 Agent 适配器 `buildCommand`，移除手工嵌套引号，消除 Node.js `DEP0190` 警告。
+3. **YAML 字符状态机解析器（P2-3）**：
+   - 实现引号感知注释剥离 `stripYamlComment`，完美支持引号内包含 `#`。
+4. **CJK 宽字符终端对齐与 Origin 本地回环守卫（P3-3 & P3-4）**：
+   - 终端看板中英文混合排版按宽字符准确对齐；Web API 非 GET 请求严格回环校验。
+
+---
+
+## 🖥️ 桌面端与打包分发
+
+1. **极速轻量安装包**：
+   - 配置 `electron-builder.yml` 启用最高压缩比 `compression: maximum` 与中英双语，NSIS 单文件安装包从 104 MB 极限压缩至 **82.39 MB**（低于 92 MB 指标）。
+2. **系统托盘与常驻机制**：
+   - 接入原生多分辨率 [`desktop/icon.ico`](file:///d:/Antigravity-project/desktop/icon.ico)，点 X 平滑隐藏至右下角托盘，右键托盘安全退出。
+3. **脱网离线支持**：
+   - Tailwind CSS 框架完全离线本地化（`/vendor/tailwind.js`）。
+
+---
+
+## 🧪 自动化测试验证
+
+运行命令：`npm test`
+- **全量 40 项单元与集成测试 100% PASS**（覆盖适配器参数、AST 安全防作弊、Circuit Breaker、DAG 级联工作树、SQLite 持久化、YAML 状态机等）。

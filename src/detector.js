@@ -387,11 +387,11 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
       runningProcesses.includes(agent.name.toLowerCase())
     );
 
-    let statusLabel = '⚪ 未安装';
+    let statusLabel = '未安装';
     if (isRunning) {
-      statusLabel = '🟢 进程运行中 (Active)';
+      statusLabel = '进程运行中 (Active)';
     } else if (installed) {
-      statusLabel = '🔵 本地已安装 (发起时按需启动)';
+      statusLabel = '本地已安装 (按需启动)';
     }
 
     results.push({
@@ -420,7 +420,7 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
         type: 'custom_agent',
         available: probe.found || Boolean(config.mock),
         isRunning,
-        statusLabel: isRunning ? '🟢 进程运行中' : (probe.found ? '🔵 本地已安装 (按需拉起)' : '⚪ 未安装'),
+        statusLabel: isRunning ? '进程运行中' : (probe.found ? '本地已安装 (按需拉起)' : '未安装'),
         path: probe.path || (config.mock ? 'mock-builtin' : null),
         version: probe.found ? 'configured' : (config.mock ? 'mock-mode' : 'command not found'),
         description: config.description || 'Custom configured agent'
