@@ -283,3 +283,21 @@ export function updateRunTaskText(runId, taskText) {
   db.prepare(`UPDATE runs SET task_text = ? WHERE id = ?`).run(taskText, runId);
 }
 
+export function purgeSeedRuns(repoPath = null) {
+  const db = getDatabase();
+  let findQuery = `SELECT id FROM runs WHERE task_text LIKE '%Fix concurrency lock timeout%' OR task_text LIKE '%seed test%'`;
+  const params = [];
+  if (repoPath) {
+    findQuery += ` AND repo_path = ?`;
+    params.push(repoPath);
+  }
+  const seedRows = db.prepare(findQuery).all(...params);
+  const ids = seedRows.map(r => r.id);
+  if (ids.length === 0) return { deletedCount: 0 };
+
+  const placeholders = ids.map(() => '?').join(',');
+  db.prepare(`DELETE FROM run_results WHERE run_id IN (${placeholders})`).run(...ids);
+  db.prepare(`DELETE FROM runs WHERE id IN (${placeholders})`).run(...ids);
+  return { deletedCount: ids.length, deletedIds: ids };
+}
+

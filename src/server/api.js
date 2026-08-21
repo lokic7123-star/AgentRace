@@ -5,7 +5,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { getRepoRoot, getWorktreeDiff, assertSafeGitRef } from '../git.js';
 import { loadProjectConfig } from '../config.js';
-import { getLatestRun, getStats, markAgentKept, getRunHistory, getRunById, updateRunTaskText } from '../db.js';
+import { getLatestRun, getStats, markAgentKept, getRunHistory, getRunById, updateRunTaskText, purgeSeedRuns } from '../db.js';
 import { analyzeTestDiffSecurity } from '../ast_guard.js';
 import { detectInstalledAgents, detectInstalledAgentsAsync } from '../detector.js';
 import { synthesizeEnsemble } from '../synthesizer.js';
@@ -122,6 +122,12 @@ export function createServer(repoRoot = process.cwd()) {
     if (pathname === '/api/history') {
       const history = getRunHistory({ repoPath: root, limit: 50 });
       jsonResponse(res, 200, { history });
+      return;
+    }
+
+    if (pathname === '/api/history/purge-seed' && req.method === 'POST') {
+      const result = purgeSeedRuns(root);
+      jsonResponse(res, 200, { success: true, ...result });
       return;
     }
 

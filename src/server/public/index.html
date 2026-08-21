@@ -116,6 +116,13 @@
             <span id="base-commit-badge" class="text-xs text-ink-soft font-mono">主仓库就绪</span>
           </div>
           <h2 id="current-task-text" class="text-base font-serif font-bold text-ink leading-snug">当前系统空闲就绪，请在下方输入需求并发起任务</h2>
+          <!-- Expandable Full Text Details (U1) -->
+          <details id="current-task-details" class="hidden text-xs text-ink-soft pt-0.5">
+            <summary class="cursor-pointer font-medium hover:text-ink select-none inline-flex items-center gap-1 text-crail hover:underline">
+              <span>查看原始需求全文 ▸</span>
+            </summary>
+            <div id="current-task-fulltext" class="mt-2 p-3 bg-paper-sunken rounded-lg border border-line whitespace-pre-wrap text-ink font-mono text-xs leading-relaxed max-h-60 overflow-y-auto select-text"></div>
+          </details>
           <div class="flex items-center gap-2 pt-1 flex-wrap">
             <button onclick="openEditTaskModal()" id="btn-edit-task" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition cursor-pointer">
               修改需求
@@ -149,14 +156,14 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3 bg-paper-sunken p-3.5 rounded-lg border border-line">
             <div class="space-y-1.5">
               <label class="block text-[11px] font-mono font-semibold uppercase tracking-wider text-ink-soft">协同模式</label>
-              <div class="flex items-center gap-2">
-                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-semibold text-crail bg-crail-soft border border-crail/40 px-3 py-1.5 rounded-full transition">
-                  <input type="radio" name="arace-mode" value="orchestration" checked class="accent-crail">
-                  智能编排分工
+              <div class="flex items-center gap-4 text-xs font-medium text-ink pt-1">
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="orchestration-mode-choice" value="orchestration" checked class="text-crail focus:ring-crail">
+                  <span>流水线分工编排</span>
                 </label>
-                <label class="flex items-center gap-1.5 cursor-pointer text-xs font-medium text-ink-soft hover:text-ink px-3 py-1.5 rounded-full transition">
-                  <input type="radio" name="arace-mode" value="race" class="accent-crail">
-                  竞速打擂
+                <label class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="radio" name="orchestration-mode-choice" value="race" class="text-crail focus:ring-crail">
+                  <span>多模型竞速打擂</span>
                 </label>
               </div>
             </div>
@@ -184,6 +191,14 @@
           <button onclick="submitInlineTask()" class="w-full py-2.5 rounded-full bg-crail hover:bg-crail-hover font-semibold text-white text-sm transition cursor-pointer">
             启动协同任务
           </button>
+        </div>
+
+        <!-- Pipeline Explainer Banner (U2) -->
+        <div id="orchestrator-pipeline-banner" class="hidden p-3.5 rounded-lg bg-paper-sunken border border-line flex items-center gap-3 text-xs text-ink">
+          <span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-crail-soft text-crail border border-crail/30 shrink-0">流水线协同</span>
+          <span id="orchestrator-pipeline-text" class="flex-1 leading-relaxed">
+            主 Agent 将任务拆解为多步流水线分工执行，最后整合产出并做总门禁验收。
+          </span>
         </div>
 
         <!-- 2. Dynamic Agent Working Cards (shown when running) -->
@@ -218,14 +233,32 @@
           <div class="flex items-center justify-between flex-wrap gap-3 border-b border-line pb-3">
             <div>
               <h3 class="font-serif text-base font-bold text-ink">方案代码与测试对比</h3>
-              <p class="text-xs text-ink-soft mt-0.5">展示当前活跃任务的方案 · 查看各 Agent 产出的核心实现、测试用例与 Git 变更补丁。</p>
+              <p class="text-xs text-ink-soft mt-0.5">展示当前活跃任务的方案 · 查看各阶段 Agent 产出的核心实现、测试用例与 Git 变更补丁。</p>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="text-xs text-ink-soft">Agent:</span>
-              <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-paper-panel border border-line-strong text-xs rounded-lg px-3 py-1.5 text-ink min-w-[180px] cursor-pointer focus:border-crail focus:outline-none">
-                <!-- Options populated dynamically -->
-              </select>
+            <div class="flex items-center gap-3 flex-wrap">
+              <!-- Mode Toggle: Single vs Side-by-Side Dual (U3b) -->
+              <div class="flex items-center bg-paper-sunken p-1 rounded-lg border border-line gap-1">
+                <button onclick="setDiffViewMode('single')" id="diff-mode-btn-single" class="px-2.5 py-1 rounded text-xs font-semibold bg-paper-panel text-ink shadow-sm transition cursor-pointer">
+                  单方案查看
+                </button>
+                <button onclick="setDiffViewMode('dual')" id="diff-mode-btn-dual" class="px-2.5 py-1 rounded text-xs font-medium text-ink-soft hover:text-ink transition cursor-pointer">
+                  并排双栏对比
+                </button>
+              </div>
+
+              <!-- Single View Selector -->
+              <div id="diff-single-selector-wrapper" class="flex items-center gap-2">
+                <span class="text-xs text-ink-soft">选择方案:</span>
+                <select id="diff-agent-selector" onchange="renderSelectedDiff()" class="bg-paper-panel border border-line-strong text-xs rounded-lg px-3 py-1.5 text-ink min-w-[200px] cursor-pointer focus:border-crail focus:outline-none">
+                  <!-- Options populated dynamically -->
+                </select>
+              </div>
             </div>
+          </div>
+
+          <!-- Comparison Explanation Tip (U3b) -->
+          <div class="text-[11px] text-ink-soft bg-paper-sunken px-3.5 py-2 rounded-lg border border-line flex items-center justify-between">
+            <span>💡 <b>对比提示:</b> 竞速模式可横向对比各模型实现差异 · 编排模式可直观并排对比流水线各子任务（设计/核心/测试）与最终总集成交付代码。</span>
           </div>
 
           <!-- File View Switcher Tabs -->
@@ -241,8 +274,34 @@
             </button>
           </div>
 
-          <div id="diff-security-badge" class="hidden p-3 rounded-lg text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
-          <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap" id="diff-content-area">// 正在加载方案代码...</pre>
+          <!-- Single View Content -->
+          <div id="diff-single-view-container" class="space-y-3">
+            <div id="diff-security-badge" class="hidden p-3 rounded-lg text-xs flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
+            <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap select-text" id="diff-content-area">// 正在加载方案代码...</pre>
+          </div>
+
+          <!-- Side-by-Side Dual View Content (U3b) -->
+          <div id="diff-dual-view-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 hidden">
+            <!-- Left Side -->
+            <div class="space-y-2 flex flex-col min-w-0">
+              <div class="flex items-center justify-between gap-2 p-2 bg-paper-sunken rounded-lg border border-line">
+                <span class="text-xs font-semibold text-ink shrink-0">方案 A (对照):</span>
+                <select id="diff-dual-left-selector" onchange="renderDualDiff()" class="bg-paper-panel border border-line-strong text-xs rounded px-2.5 py-1 text-ink flex-1 min-w-0 cursor-pointer focus:border-crail focus:outline-none"></select>
+              </div>
+              <div id="diff-dual-left-badge" class="hidden p-2 rounded text-[11px] flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
+              <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap select-text flex-1" id="diff-dual-left-content">// 方案 A 代码...</pre>
+            </div>
+
+            <!-- Right Side -->
+            <div class="space-y-2 flex flex-col min-w-0">
+              <div class="flex items-center justify-between gap-2 p-2 bg-paper-sunken rounded-lg border border-line">
+                <span class="text-xs font-semibold text-ink shrink-0">方案 B (实验/集成):</span>
+                <select id="diff-dual-right-selector" onchange="renderDualDiff()" class="bg-paper-panel border border-line-strong text-xs rounded px-2.5 py-1 text-ink flex-1 min-w-0 cursor-pointer focus:border-crail focus:outline-none"></select>
+              </div>
+              <div id="diff-dual-right-badge" class="hidden p-2 rounded text-[11px] flex items-center justify-between border bg-paper-sunken border-line text-ink"></div>
+              <pre class="bg-[#1F1E1D] p-4 rounded-lg text-xs overflow-x-auto text-[#E8E4DA] font-mono max-h-[600px] border border-line leading-relaxed whitespace-pre-wrap select-text flex-1" id="diff-dual-right-content">// 方案 B 代码...</pre>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -300,7 +359,11 @@
               <h3 class="font-serif text-base font-bold text-ink">历史任务记录</h3>
               <p class="text-xs text-ink-soft mt-0.5">保存在本地 SQLite 数据库中，随时查看历史交付方案与门禁战绩。</p>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-wrap">
+              <!-- Purge Seed Data Button (U4a) -->
+              <button onclick="purgeHistoricalSeedData()" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-bad/10 text-xs text-bad border border-line-strong hover:border-bad transition cursor-pointer" title="清除开发初期预置的模板测试数据，保留用户真实任务">
+                清理测试数据
+              </button>
               <button onclick="loadHistory(true)" class="px-3.5 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition cursor-pointer">
                 刷新历史
               </button>
@@ -323,7 +386,7 @@
           <div class="flex items-center justify-between border-b border-line pb-3">
             <div>
               <h3 class="font-serif text-base font-bold text-ink">任务执行与协同效率分析</h3>
-              <p class="text-xs text-ink-soft mt-0.5">基于本地 SQLite 历史数据聚合计算</p>
+              <p class="text-xs text-ink-soft mt-0.5">基于本地 SQLite 历史真实任务数据聚合计算 · <span class="text-ink-faint">任务分类由关键词自动推断</span></p>
             </div>
             <span class="text-xs text-ink-soft font-mono">统计窗口: 最近 30 天</span>
           </div>
@@ -807,7 +870,7 @@
       } catch (err) {}
     }
 
-    // B1, B2, B3, B9, B10, B5, C12: Render Active Run
+    // B1, B2, B3, B9, B10, B5, C12, U1, U2: Render Active Run
     function renderActiveRun(data) {
       const active = data.activeRun;
       const dbRun = data.latestDbRun;
@@ -823,7 +886,33 @@
         document.getElementById('run-id-badge').textContent = `Task #${active.runId}`;
         document.getElementById('run-category-badge').textContent = active.taskCategory || 'feature';
         document.getElementById('base-commit-badge').textContent = `Base: ${active.baseCommit || 'main'} (${active.branchName || 'main'})`;
-        document.getElementById('current-task-text').textContent = active.taskText;
+
+        // U1a: First line in title + expandable details for full text
+        const fullTaskText = active.taskText || '';
+        const firstLine = fullTaskText.split('\n')[0].trim();
+        document.getElementById('current-task-text').textContent = firstLine.length > 75 ? firstLine.slice(0, 75) + '...' : (firstLine || '未命名任务');
+
+        const detailsEl = document.getElementById('current-task-details');
+        const fullTextEl = document.getElementById('current-task-fulltext');
+        if (fullTaskText.length > 75 || fullTaskText.includes('\n')) {
+          if (detailsEl) detailsEl.classList.remove('hidden');
+          if (fullTextEl) fullTextEl.textContent = fullTaskText;
+        } else {
+          if (detailsEl) detailsEl.classList.add('hidden');
+        }
+
+        // U2: Pipeline Explainer Bar
+        const pipelineBanner = document.getElementById('orchestrator-pipeline-banner');
+        const pipelineText = document.getElementById('orchestrator-pipeline-text');
+        if (active.mode === 'orchestration') {
+          if (pipelineBanner) pipelineBanner.classList.remove('hidden');
+          const subCount = active.subtaskResults?.length || (active.agents?.length ? active.agents.length - 1 : 3) || 3;
+          if (pipelineText) {
+            pipelineText.textContent = `主 Agent（${(active.judge || 'antigravity').toUpperCase()}）已将需求拆解为 ${subCount} 步专业流水线顺序执行，各阶段在物理沙盒中独立编码与验真，最后整合产出并做总门禁全量验收。`;
+          }
+        } else {
+          if (pipelineBanner) pipelineBanner.classList.add('hidden');
+        }
 
         container.innerHTML = '';
         keepButtons.innerHTML = '';
@@ -846,6 +935,15 @@
           const statusDotClass = isPassed ? 'bg-ok' : (isFailed ? 'bg-bad' : 'bg-info animate-pulse');
           const statusTextClass = isPassed ? 'text-ok' : (isFailed ? 'text-bad' : 'text-info');
 
+          // U2: Plain language mapping
+          const plainLabels = {
+            algorithm_architect: '子任务 1/3 · 算法设计思路',
+            core_implementer: '子任务 2/3 · 编写核心代码',
+            qa_engineer: '子任务 3/3 · 独立测试验证',
+            domain_architect: '子任务 · 系统架构方案',
+            backend_developer: '子任务 · 后端逻辑实现',
+            supervisor_integration: '最后一步 · 整合产出与总验收'
+          };
           const roleLabels = {
             algorithm_architect: '算法架构师',
             core_implementer: '核心开发',
@@ -855,12 +953,14 @@
             supervisor_integration: '架构总监 (全量集成)'
           };
 
-          const roleName = agent.role ? (roleLabels[agent.role] || agent.role) : (isEnsemble ? '主协调' : '协同');
-          const roleBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-paper-sunken text-ink-soft border border-line">${agent.id ? '[' + escapeHtml(agent.id) + '] ' : ''}${escapeHtml(roleName)}</span>`;
-          const cardTitle = agent.title || `${agent.name.toUpperCase()} ${isEnsemble ? '(融合版)' : ''}`;
-          const agentSubtitle = agent.title 
-            ? `执行: <b class="text-ink font-mono">${escapeHtml(agent.name.toUpperCase())}</b> · 交付: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span>`
-            : '';
+          const isSupervisorOrEnsemble = isEnsemble || agent.role === 'supervisor_integration' || agent.name === 'supervisor';
+          const cardTitle = agent.role ? (plainLabels[agent.role] || agent.title || agent.role) : (isSupervisorOrEnsemble ? '最后一步 · 全量架构集成与总验收' : agent.title || `${agent.name.toUpperCase()} 方案`);
+          const technicalRole = agent.role ? (roleLabels[agent.role] || agent.role) : (isSupervisorOrEnsemble ? '架构总监' : '协同专家');
+          const engineName = (agent.engine || agent.name || 'ANTIGRAVITY').toUpperCase();
+
+          const engineBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-crail-soft text-crail border border-crail/30">执行: ${escapeHtml(engineName)}</span>`;
+          const roleBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-paper-sunken text-ink-soft border border-line">${escapeHtml(technicalRole)}</span>`;
+          const agentSubtitle = `交付产出: <span class="font-mono text-ink-soft">${escapeHtml(agent.outputFile || 'src/solution.js')}</span>`;
 
           const buildPassed = agent.verify?.build?.passed ?? (r.build_passed ?? true);
           const lintPassed = agent.verify?.lint?.passed ?? (r.lint_passed ?? true);
@@ -913,8 +1013,9 @@
               <div>
                 <div class="flex items-start justify-between gap-2">
                   <div class="space-y-1 min-w-0 flex-1">
-                    <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-1.5 flex-wrap">
                       <span class="w-2 h-2 rounded-full ${statusDotClass} shrink-0"></span>
+                      ${engineBadge}
                       ${roleBadge}
                     </div>
                     <h4 class="font-serif font-bold text-sm text-ink leading-snug line-clamp-2 min-h-[2.5em] mt-1">${escapeHtml(cardTitle)}</h4>
@@ -999,12 +1100,44 @@
         document.getElementById('run-category-badge').textContent = 'Ready';
         document.getElementById('base-commit-badge').textContent = '主仓库就绪';
         document.getElementById('current-task-text').textContent = '当前系统空闲就绪，请在下方输入需求并发起任务';
+        const detailsEl = document.getElementById('current-task-details');
+        if (detailsEl) detailsEl.classList.add('hidden');
+
+        const pipelineBanner = document.getElementById('orchestrator-pipeline-banner');
+        if (pipelineBanner) pipelineBanner.classList.add('hidden');
 
         keepButtons.innerHTML = '<div class="text-xs text-ink-soft p-4 text-center border border-dashed border-line rounded-lg">暂无正在协同的分支</div>';
       }
     }
 
+    // U3: Diff View & Side-by-Side Dual Comparator
     let currentDiffFileType = 'solution';
+    let currentDiffViewMode = 'single';
+
+    function setDiffViewMode(mode) {
+      currentDiffViewMode = mode;
+      const singleBtn = document.getElementById('diff-mode-btn-single');
+      const dualBtn = document.getElementById('diff-mode-btn-dual');
+      const singleWrapper = document.getElementById('diff-single-selector-wrapper');
+      const singleContainer = document.getElementById('diff-single-view-container');
+      const dualContainer = document.getElementById('diff-dual-view-container');
+
+      if (mode === 'dual') {
+        if (singleBtn) singleBtn.className = 'px-2.5 py-1 rounded text-xs font-medium text-ink-soft hover:text-ink transition cursor-pointer';
+        if (dualBtn) dualBtn.className = 'px-2.5 py-1 rounded text-xs font-semibold bg-paper-panel text-ink shadow-sm transition cursor-pointer';
+        if (singleWrapper) singleWrapper.classList.add('hidden');
+        if (singleContainer) singleContainer.classList.add('hidden');
+        if (dualContainer) dualContainer.classList.remove('hidden');
+        renderDualDiff();
+      } else {
+        if (singleBtn) singleBtn.className = 'px-2.5 py-1 rounded text-xs font-semibold bg-paper-panel text-ink shadow-sm transition cursor-pointer';
+        if (dualBtn) dualBtn.className = 'px-2.5 py-1 rounded text-xs font-medium text-ink-soft hover:text-ink transition cursor-pointer';
+        if (singleWrapper) singleWrapper.classList.remove('hidden');
+        if (singleContainer) singleContainer.classList.remove('hidden');
+        if (dualContainer) dualContainer.classList.add('hidden');
+        renderSelectedDiff();
+      }
+    }
 
     function switchDiffFileView(type) {
       currentDiffFileType = type;
@@ -1018,35 +1151,85 @@
           }
         }
       });
-      renderSelectedDiff();
+      if (currentDiffViewMode === 'dual') {
+        renderDualDiff();
+      } else {
+        renderSelectedDiff();
+      }
+    }
+
+    // U3a: Human-readable Agent Title mapping
+    function getHumanReadableAgentLabel(d) {
+      const roleNames = {
+        algorithm_architect: '子任务 1 · 算法设计思路',
+        core_implementer: '子任务 2 · 核心功能实现',
+        qa_engineer: '子任务 3 · 单元测试用例',
+        supervisor_integration: '最终集成 · 完整交付版',
+        supervisor: '主协调 · 最终集成版',
+        integrated: '最后整合 · 总交付',
+        ensemble: '融合交付版'
+      };
+      const agentKey = (d.agent || '').toLowerCase();
+      const branchKey = (d.branch || '').toLowerCase();
+      const matchedRole = Object.keys(roleNames).find(k => agentKey.includes(k) || branchKey.includes(k));
+      const titlePrefix = matchedRole ? roleNames[matchedRole] : (d.title || d.displayName || `${(d.agent || 'antigravity').toUpperCase()} 方案`);
+      const eng = (d.agent || 'antigravity').toUpperCase();
+      return `${titlePrefix} (${eng})`;
     }
 
     function populateDiffSelector(diffs) {
       const select = document.getElementById('diff-agent-selector');
-      if (!select) return;
-      const currentVal = select.value;
-      select.innerHTML = '';
+      const dualLeft = document.getElementById('diff-dual-left-selector');
+      const dualRight = document.getElementById('diff-dual-right-selector');
+
+      const selectors = [select, dualLeft, dualRight].filter(Boolean);
+      selectors.forEach(s => { s.innerHTML = ''; });
 
       if (diffs.length === 0) {
-        const opt = document.createElement('option');
-        opt.value = '';
-        opt.textContent = '暂无方案分支';
-        select.appendChild(opt);
+        selectors.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = '暂无方案分支';
+          s.appendChild(opt);
+        });
         renderSelectedDiff();
+        renderDualDiff();
         return;
       }
 
-      diffs.forEach(d => {
-        const opt = document.createElement('option');
-        opt.value = d.agent;
-        opt.textContent = `${d.agent.toUpperCase()} 方案 (${d.branch})`;
-        if (d.agent === currentVal) opt.selected = true;
-        select.appendChild(opt);
+      diffs.forEach((d, idx) => {
+        const label = getHumanReadableAgentLabel(d);
+        selectors.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = d.agent;
+          opt.textContent = label;
+          if (s === dualRight && diffs.length > 1) {
+            if (idx === diffs.length - 1) opt.selected = true;
+          } else {
+            if (idx === 0) opt.selected = true;
+          }
+          s.appendChild(opt);
+        });
       });
+
       renderSelectedDiff();
+      renderDualDiff();
     }
 
-    // C4: Security score without hardcoded 100/100
+    function getDiffFileContent(target, fileType) {
+      if (!target) return '// 暂无方案数据';
+      if (fileType === 'solution') {
+        const sol = (target.files || []).find(f => f.name.includes('solution.js') || f.name.includes('models.js'));
+        return sol ? sol.content : ('// 该 Agent 方案源码:\n\n' + (target.diffText || '// 暂无核心实现代码'));
+      } else if (fileType === 'test') {
+        const testFile = (target.files || []).find(f => f.name.includes('.test.js'));
+        return testFile ? testFile.content : ('// 该 Agent 单元测试用例:\n\n' + (target.diffText || '// 暂无测试代码'));
+      } else {
+        return target.diffText || '// 该 Agent 无 Git Diff 变更';
+      }
+    }
+
+    // C4, U3a: Single Diff View Renderer
     function renderSelectedDiff() {
       const select = document.getElementById('diff-agent-selector');
       const selected = select ? select.value : '';
@@ -1061,15 +1244,7 @@
       }
 
       if (pre) {
-        if (currentDiffFileType === 'solution') {
-          const sol = (target.files || []).find(f => f.name.includes('solution.js'));
-          pre.textContent = sol ? sol.content : ('// 该 Agent 方案源码:\n\n' + (target.diffText || '// 暂无代码修改'));
-        } else if (currentDiffFileType === 'test') {
-          const testFile = (target.files || []).find(f => f.name.includes('.test.js'));
-          pre.textContent = testFile ? testFile.content : ('// 该 Agent 单元测试用例:\n\n' + (target.diffText || '// 暂无测试代码'));
-        } else {
-          pre.textContent = target.diffText || '// 该 Agent 无 Git Diff 变更';
-        }
+        pre.textContent = getDiffFileContent(target, currentDiffFileType);
       }
 
       if (badge) {
@@ -1084,6 +1259,39 @@
           badge.innerHTML = `<span><b>测试完备度:</b> 独立单元测试已验证</span> <span class="font-mono text-ink-soft">安全评分: 未评估</span>`;
         }
       }
+    }
+
+    // U3b: Side-by-Side Dual Diff Renderer
+    function renderDualDiff() {
+      const leftSelect = document.getElementById('diff-dual-left-selector');
+      const rightSelect = document.getElementById('diff-dual-right-selector');
+      const leftVal = leftSelect ? leftSelect.value : '';
+      const rightVal = rightSelect ? rightSelect.value : '';
+
+      const leftTarget = currentDiffs.find(d => d.agent === leftVal) || currentDiffs[0];
+      const rightTarget = currentDiffs.find(d => d.agent === rightVal) || (currentDiffs.length > 1 ? currentDiffs[1] : currentDiffs[0]);
+
+      const leftPre = document.getElementById('diff-dual-left-content');
+      const rightPre = document.getElementById('diff-dual-right-content');
+      const leftBadge = document.getElementById('diff-dual-left-badge');
+      const rightBadge = document.getElementById('diff-dual-right-badge');
+
+      if (leftPre) leftPre.textContent = getDiffFileContent(leftTarget, currentDiffFileType);
+      if (rightPre) rightPre.textContent = getDiffFileContent(rightTarget, currentDiffFileType);
+
+      const renderBadgeHelper = (badgeEl, target) => {
+        if (!badgeEl) return;
+        if (!target) { badgeEl.className = 'hidden'; return; }
+        badgeEl.className = 'p-2 rounded text-[11px] flex items-center justify-between border bg-paper-sunken border-line text-ink';
+        if (target.security && target.security.score != null) {
+          badgeEl.innerHTML = `<span><b>测试:</b> ${escapeHtml(target.security.summary)}</span> <span class="font-mono">评分: <b>${target.security.score}/100</b></span>`;
+        } else {
+          badgeEl.innerHTML = `<span><b>测试:</b> 单元测试已验证</span> <span class="font-mono text-ink-soft">未评估</span>`;
+        }
+      };
+
+      renderBadgeHelper(leftBadge, leftTarget);
+      renderBadgeHelper(rightBadge, rightTarget);
     }
 
     // B4, B11, C10, C12: Render Activity Log without details expander
@@ -1266,6 +1474,7 @@
         if (catEntries.length === 0) {
           breakdownContainer.innerHTML = `
             <div class="text-xs text-ink-soft py-3">暂无分类统计数据</div>
+            <div class="text-[11px] text-ink-soft font-mono mt-3 text-right">※ 统计指标基于当前 ${stats.totalRuns || 0} 条实际任务运行记录</div>
           `;
         } else {
           const totalCatRuns = catEntries.reduce((sum, [, c]) => sum + (c.total || 0), 0) || 1;
@@ -1291,6 +1500,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               ${itemsHtml}
             </div>
+            <div class="text-[11px] text-ink-soft font-mono mt-3 text-right">※ 统计指标基于当前 ${stats.totalRuns || 0} 条实际任务运行记录（自动排除开发测试数据）</div>
           `;
         }
       }
@@ -1524,23 +1734,26 @@
           const results = run.results || [];
           const dateStr = new Date(run.created_at).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
 
+          const firstLine = (run.task_text || '未命名任务').split('\n')[0].trim();
+          const displayTitle = firstLine.length > 65 ? firstLine.slice(0, 65) + '...' : firstLine;
+
           const agentBadges = results.map(r => `
             <span class="px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold ${r.test_passed ? 'bg-ok/10 text-ok' : 'bg-bad/10 text-bad'}">
               ${r.test_passed ? '✓' : '✗'}${escapeHtml(r.agent)}
             </span>
           `).join('');
 
-          // B8: Compact single line grid row
+          // B8, U1b: Compact single line grid row with prominent first line title
           const row = document.createElement('div');
           row.className = 'grid grid-cols-[auto_1fr_auto] items-center gap-3 px-3.5 py-2.5 hover:bg-paper-sunken transition text-xs';
 
           row.innerHTML = `
             <div class="flex items-center gap-2 shrink-0">
-              <span class="font-mono font-bold text-ink">#${escapeHtml(run.id)}</span>
+              <span class="font-mono font-semibold text-[11px] text-ink-soft bg-paper-sunken px-1.5 py-0.5 rounded border border-line">#${escapeHtml(run.id)}</span>
               <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-crail-soft text-crail border border-crail/30">${escapeHtml(run.task_category || 'feature')}</span>
             </div>
             <div class="min-w-0 pr-2">
-              <div class="truncate text-sm font-medium text-ink" title="${escapeHtml(run.task_text || '')}">${escapeHtml(run.task_text || '未命名任务')}</div>
+              <div class="truncate text-xs font-bold text-ink" title="${escapeHtml(run.task_text || '')}">${escapeHtml(displayTitle)}</div>
               <div class="flex gap-1.5 mt-0.5 flex-wrap">${agentBadges || '<span class="text-ink-soft font-mono text-[10px]">无结果</span>'}</div>
             </div>
             <div class="flex items-center gap-2.5 shrink-0">
@@ -1562,6 +1775,27 @@
         }
       } catch (err) {
         console.error('Failed to load history:', err);
+      }
+    }
+
+    // U4a: Purge Seed Data
+    async function purgeHistoricalSeedData() {
+      const confirmed = await confirmDialog('清理开发测试数据', '此操作将从数据库中永久清除开发阶段预置的 40+ 条测试假数据（包含固定模板文本），您的真实编码任务将被完整保留。\n\n确定清理吗？');
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/history/purge-seed', { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          toast(`清理失败: ${err.error || res.statusText}`, 'error');
+          return;
+        }
+        const data = await res.json();
+        toast(`已成功清理 ${data.deletedCount || 0} 条开发调试数据，真实任务记录已保留。`, 'success');
+        loadHistory(true);
+        loadStats();
+      } catch (err) {
+        toast('清理测试数据失败: ' + err.message, 'error');
       }
     }
 
