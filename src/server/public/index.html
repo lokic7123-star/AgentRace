@@ -753,16 +753,39 @@
       });
     }
 
-    // C1: loadStatus updates status without triggering diffs/activities storm
-    async function loadStatus() {
+    // C1: loadStatus updates status without triggering diffs/activities storm (with de-duplication & in-flight lock)
+    let _isLoadingStatus = false;
+    let _lastStatusRawJson = '';
+
+    async function loadStatus(force = false) {
+      if (document.hidden && !force) return;
+      if (_isLoadingStatus) return;
+      _isLoadingStatus = true;
       try {
         const res = await fetch('/api/status');
-        const data = await res.json();
+        if (!res.ok) return;
+        const rawText = await res.text();
+        if (!force && rawText === _lastStatusRawJson) {
+          return;
+        }
+        _lastStatusRawJson = rawText;
+        const data = JSON.parse(rawText);
         currentData = data;
         renderActiveRun(data);
       } catch (err) {
         console.error('Failed to load status:', err);
+      } finally {
+        _isLoadingStatus = false;
       }
+    }
+
+    let _refreshDebounceTimer = null;
+    function scheduleRefresh(delay = 150) {
+      if (_refreshDebounceTimer) clearTimeout(_refreshDebounceTimer);
+      _refreshDebounceTimer = setTimeout(() => {
+        _refreshDebounceTimer = null;
+        loadStatus();
+      }, delay);
     }
 
     async function loadDiffs() {
@@ -1827,7 +1850,7 @@
       };
 
       evtSource.onmessage = (e) => {
-        loadStatus();
+        scheduleRefresh(150);
       };
 
       evtSource.addEventListener('agent_status', (e) => {
@@ -1841,7 +1864,7 @@
       });
 
       evtSource.addEventListener('orchestration_progress', (e) => {
-        loadStatus();
+        scheduleRefresh(150);
         const actPanel = document.getElementById('panel-activity');
         if (actPanel && !actPanel.classList.contains('hidden')) {
           renderActivityLog();
@@ -1849,18 +1872,18 @@
       });
 
       evtSource.addEventListener('race_complete', (e) => {
-        loadStatus();
+        scheduleRefresh(50);
         loadDetection();
         loadHistory();
       });
 
       evtSource.addEventListener('task_updated', (e) => {
-        loadStatus();
+        scheduleRefresh(50);
         loadHistory();
       });
 
       evtSource.addEventListener('task_switched', (e) => {
-        loadStatus();
+        scheduleRefresh(50);
         loadDiffs();
       });
 
@@ -1873,17 +1896,24 @@
           sseReconnectTimer = setTimeout(() => {
             sseReconnectTimer = null;
             setupSSE();
-            loadStatus();
+            scheduleRefresh(50);
           }, sseRetryDelay);
           sseRetryDelay = Math.min(sseRetryDelay * 2, SSE_RETRY_MAX_DELAY);
         }
       };
     }
 
+    // Refresh when tab regains visibility
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        loadStatus(true);
+      }
+    });
+
     // Initial load and C1 30s interval fallback
     setupSSE();
     loadDetection();
-    loadStatus();
+    loadStatus(true);
     loadHistory();
     setInterval(() => {
       loadStatus();

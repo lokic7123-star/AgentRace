@@ -7,7 +7,7 @@ import { getRepoRoot, getWorktreeDiff, assertSafeGitRef } from '../git.js';
 import { loadProjectConfig } from '../config.js';
 import { getLatestRun, getStats, markAgentKept, getRunHistory, getRunById, updateRunTaskText } from '../db.js';
 import { analyzeTestDiffSecurity } from '../ast_guard.js';
-import { detectInstalledAgents } from '../detector.js';
+import { detectInstalledAgents, detectInstalledAgentsAsync } from '../detector.js';
 import { synthesizeEnsemble } from '../synthesizer.js';
 import { keepCommand } from '../commands/keep.js';
 import { discardCommand } from '../commands/discard.js';
@@ -42,18 +42,23 @@ export function createServer(repoRoot = process.cwd()) {
   const root = getRepoRoot(repoRoot);
   const config = loadProjectConfig(root);
 
-  // Periodic agent status detection with diff-based SSE broadcast
+  // Periodic agent status detection with diff-based SSE broadcast (15s interval + async in-flight lock)
   let lastDetectedJson = '';
-  const statusTimer = setInterval(() => {
+  let isDetecting = false;
+  const statusTimer = setInterval(async () => {
+    if (isDetecting) return;
+    isDetecting = true;
     try {
-      const detected = detectInstalledAgents(config.adapters);
+      const detected = await detectInstalledAgentsAsync(config.adapters);
       const json = JSON.stringify(detected);
       if (json !== lastDetectedJson) {
         lastDetectedJson = json;
         broadcastEvent('agent_status', { agents: detected });
       }
-    } catch {}
-  }, 3000);
+    } catch {} finally {
+      isDetecting = false;
+    }
+  }, 15000);
   statusTimer.unref();
 
   const server = http.createServer(async (req, res) => {
@@ -109,7 +114,7 @@ export function createServer(repoRoot = process.cwd()) {
     }
 
     if (pathname === '/api/detect') {
-      const detected = detectInstalledAgents(config.adapters);
+      const detected = await detectInstalledAgentsAsync(config.adapters);
       jsonResponse(res, 200, { agents: detected });
       return;
     }

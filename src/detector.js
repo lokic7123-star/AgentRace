@@ -1,7 +1,10 @@
-import { execSync, spawnSync } from 'node:child_process';
+import { execSync, spawnSync, exec } from 'node:child_process';
+import { promisify } from 'node:util';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+
+const execAsync = promisify(exec);
 
 export const KNOWN_AGENTS = [
   {
@@ -349,9 +352,27 @@ function getRunningProcesses(forceRefresh = false) {
   return runningText;
 }
 
-export function detectInstalledAgents(customAdapters = {}, forceRefresh = false) {
-  const binaryMap = getPathBinaryMap(forceRefresh);
-  const runningProcesses = getRunningProcesses(forceRefresh);
+async function getRunningProcessesAsync(forceRefresh = false) {
+  const now = Date.now();
+  if (_processCache && !forceRefresh && (now - _lastProcessScan < 10000)) {
+    return _processCache;
+  }
+  let runningText = '';
+  try {
+    if (os.platform() === 'win32') {
+      const { stdout } = await execAsync('tasklist /FO CSV /NH', { encoding: 'utf8', timeout: 5000 });
+      runningText = (stdout || '').toLowerCase();
+    } else {
+      const { stdout } = await execAsync('ps -A -o comm=', { encoding: 'utf8', timeout: 5000 });
+      runningText = (stdout || '').toLowerCase();
+    }
+  } catch {}
+  _processCache = runningText;
+  _lastProcessScan = now;
+  return runningText;
+}
+
+function buildDetectedResults(binaryMap, runningProcesses, customAdapters = {}) {
   const results = [];
 
   for (const agent of KNOWN_AGENTS) {
@@ -429,4 +450,16 @@ export function detectInstalledAgents(customAdapters = {}, forceRefresh = false)
   }
 
   return results;
+}
+
+export function detectInstalledAgents(customAdapters = {}, forceRefresh = false) {
+  const binaryMap = getPathBinaryMap(forceRefresh);
+  const runningProcesses = getRunningProcesses(forceRefresh);
+  return buildDetectedResults(binaryMap, runningProcesses, customAdapters);
+}
+
+export async function detectInstalledAgentsAsync(customAdapters = {}, forceRefresh = false) {
+  const binaryMap = getPathBinaryMap(forceRefresh);
+  const runningProcesses = await getRunningProcessesAsync(forceRefresh);
+  return buildDetectedResults(binaryMap, runningProcesses, customAdapters);
 }
