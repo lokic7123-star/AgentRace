@@ -148,7 +148,7 @@ export function getStats({ repoPath, sinceDays = 30, category = null }) {
   const runs = db.prepare(runsQuery).all(...runsParams);
   const runIds = runs.map(r => r.id);
 
-  if (runIds.length === 0) {
+  if (runs.length === 0) {
     return {
       repoPath: repoPath || 'All',
       sinceDays,
@@ -158,8 +158,22 @@ export function getStats({ repoPath, sinceDays = 30, category = null }) {
     };
   }
 
-  const placeholders = runIds.map(() => '?').join(',');
-  const results = db.prepare(`SELECT * FROM run_results WHERE run_id IN (${placeholders})`).all(...runIds);
+  let resultsQuery = `
+    SELECT r.*, m.task_category 
+    FROM run_results r 
+    JOIN runs m ON r.run_id = m.id 
+    WHERE m.created_at >= ?
+  `;
+  const resultsParams = [sinceDate];
+  if (repoPath) {
+    resultsQuery += ` AND m.repo_path = ?`;
+    resultsParams.push(repoPath);
+  }
+  if (category) {
+    resultsQuery += ` AND m.task_category = ?`;
+    resultsParams.push(category);
+  }
+  const results = db.prepare(resultsQuery).all(...resultsParams);
 
   // Group by category
   const categories = {};
@@ -173,8 +187,7 @@ export function getStats({ repoPath, sinceDays = 30, category = null }) {
   const agentMetrics = {};
 
   for (const res of results) {
-    const run = runs.find(r => r.id === res.run_id);
-    const cat = run?.task_category || 'other';
+    const cat = res.task_category || 'other';
     const agent = res.agent;
 
     if (!agentMetrics[agent]) {

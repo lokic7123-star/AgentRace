@@ -58,3 +58,17 @@ test('parseTestOutput parses Node.js native test runner output', () => {
   assert.strictEqual(parsed.total, 14);
   assert.strictEqual(parsed.summary, '14/14 pass');
 });
+
+test('parseTestOutput parses modern Vitest output without colon', () => {
+  const vitestPass = `Tests  12 passed (12)`;
+  const parsed1 = parseTestOutput(vitestPass, true);
+  assert.strictEqual(parsed1.passed, 12);
+  assert.strictEqual(parsed1.total, 12);
+  assert.strictEqual(parsed1.summary, '12/12 pass');
+
+  const vitestFail = `Tests  2 failed | 10 passed (12)`;
+  const parsed2 = parseTestOutput(vitestFail, false);
+  assert.strictEqual(parsed2.passed, 10);
+  assert.strictEqual(parsed2.total, 12);
+  assert.strictEqual(parsed2.summary, '10/12 pass');
+});

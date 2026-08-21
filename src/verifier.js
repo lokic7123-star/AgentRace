@@ -152,12 +152,25 @@ export function parseTestOutput(output, isExitZero) {
     return { passed: isExitZero ? 1 : 0, total: 1, summary: isExitZero ? 'pass' : 'fail' };
   }
 
-  // Jest / Vitest: Tests: 14 passed, 14 total
+  // Jest / Vitest: Tests: 14 passed, 14 total OR Tests  2 passed (2) / Tests  1 failed | 2 passed (3)
   const jestMatch = output.match(/Tests:\s+(?:(\d+)\s+failed,?\s*)?(?:(\d+)\s+passed,?\s*)?(?:(\d+)\s+total)/i);
   if (jestMatch) {
     const failed = parseInt(jestMatch[1] || '0', 10);
     const passed = parseInt(jestMatch[2] || '0', 10);
     const total = parseInt(jestMatch[3] || '0', 10);
+    return {
+      passed,
+      total,
+      summary: `${passed}/${total} pass`
+    };
+  }
+
+  // Vitest modern CLI output: Tests  1 failed | 2 passed (3) OR Tests  2 passed (2)
+  const vitestModernMatch = output.match(/Tests\s+(?:(\d+)\s+failed\s*\|?\s*)?(?:(\d+)\s+passed\s*)?\((\d+)\)/i);
+  if (vitestModernMatch) {
+    const failed = parseInt(vitestModernMatch[1] || '0', 10);
+    const passed = parseInt(vitestModernMatch[2] || '0', 10);
+    const total = parseInt(vitestModernMatch[3] || `${failed + passed}`, 10);
     return {
       passed,
       total,

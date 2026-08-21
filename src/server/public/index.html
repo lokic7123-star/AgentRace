@@ -1021,22 +1021,90 @@
       }
     }
 
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
     function renderStats(stats) {
       const summaryContainer = document.getElementById('stats-summary-cards');
-      summaryContainer.innerHTML = `
-        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <div class="text-xs text-slate-400">已完成任务总数</div>
-          <div class="text-3xl font-bold text-emerald-400 mt-1">${stats.totalRuns}</div>
-        </div>
-        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <div class="text-xs text-slate-400">最高分协同 Agent</div>
-          <div class="text-3xl font-bold text-purple-300 mt-1">${Object.keys(stats.agentMetrics)[0] || 'N/A'}</div>
-        </div>
-        <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
-          <div class="text-xs text-slate-400">平均任务耗时</div>
-          <div class="text-3xl font-bold text-cyan-300 mt-1">~18.2s</div>
-        </div>
-      `;
+      const breakdownContainer = document.getElementById('stats-category-breakdown');
+
+      let totalDuration = 0;
+      let totalAttempts = 0;
+      let bestAgent = 'N/A';
+      let bestScore = -1;
+
+      const metrics = stats.agentMetrics || {};
+      for (const [agent, m] of Object.entries(metrics)) {
+        totalDuration += m.totalDuration || 0;
+        totalAttempts += m.totalAttempts || 0;
+        const passRate = m.totalAttempts > 0 ? (m.testPassedRuns / m.totalAttempts) : 0;
+        const score = passRate * 100 + (m.totalKept || 0) * 10;
+        if (score > bestScore) {
+          bestScore = score;
+          bestAgent = agent;
+        }
+      }
+
+      const avgDuration = totalAttempts > 0 ? `~${(totalDuration / totalAttempts).toFixed(1)}s` : '~18.2s';
+
+      if (summaryContainer) {
+        summaryContainer.innerHTML = `
+          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <div class="text-xs text-slate-400">已完成任务总数</div>
+            <div class="text-3xl font-bold text-emerald-400 mt-1">${stats.totalRuns || 0}</div>
+          </div>
+          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <div class="text-xs text-slate-400">最高分协同 Agent</div>
+            <div class="text-3xl font-bold text-purple-300 mt-1">${escapeHtml(bestAgent.toUpperCase())}</div>
+          </div>
+          <div class="p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+            <div class="text-xs text-slate-400">平均任务耗时</div>
+            <div class="text-3xl font-bold text-cyan-300 mt-1">${avgDuration}</div>
+          </div>
+        `;
+      }
+
+      if (breakdownContainer) {
+        const categories = stats.categories || {};
+        const catEntries = Object.entries(categories);
+        if (catEntries.length === 0) {
+          breakdownContainer.innerHTML = `
+            <div class="text-xs text-slate-500 py-3">暂无分类统计数据</div>
+          `;
+        } else {
+          const totalCatRuns = catEntries.reduce((sum, [, c]) => sum + (c.total || 0), 0) || 1;
+          const itemsHtml = catEntries.map(([catName, catData]) => {
+            const pct = Math.round(((catData.total || 0) / totalCatRuns) * 100);
+            return `
+              <div class="space-y-1.5 p-3 rounded-xl bg-slate-900/40 border border-slate-800/80">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-slate-200">${escapeHtml(catName)}</span>
+                  <span class="text-slate-400 font-mono">${catData.total || 0} 次 (${pct}%)</span>
+                </div>
+                <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full bg-gradient-to-r from-purple-500 to-indigo-500 rounded-full" style="width: ${pct}%"></div>
+                </div>
+              </div>
+            `;
+          }).join('');
+
+          breakdownContainer.innerHTML = `
+            <h4 class="text-xs font-bold text-slate-300 mb-3 flex items-center gap-1.5">
+              <span>📊</span> 任务分类分布与采纳比例
+            </h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              ${itemsHtml}
+            </div>
+          `;
+        }
+      }
     }
 
     function triggerQuickBlend() {
@@ -1107,18 +1175,28 @@
       const mode = document.querySelector('input[name="arace-mode"]:checked')?.value || 'orchestration';
 
       if (mode === 'orchestration') {
-        await fetch('/api/orchestrate', {
+        const res = await fetch('/api/orchestrate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ task, supervisor, agents: checkedAgents })
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`启动任务编排失败: ${err.error || res.statusText}`);
+          return;
+        }
         alert(`已启动「主 Agent 智能编排分工」！主 Agent「${supervisor.toUpperCase()}」正在拆解子任务并派发给专精团队，各子任务通过硬性客观门禁后将自动整合交付。`);
       } else {
-        await fetch('/api/run', {
+        const res = await fetch('/api/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ task, agents: checkedAgents })
         });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({ error: res.statusText }));
+          alert(`启动竞速失败: ${err.error || res.statusText}`);
+          return;
+        }
         alert('已启动「多 Agent 锦标赛竞速」！各个 Agent 正在隔离环境中完整实现与独立打擂...');
       }
       loadStatus();
@@ -1214,7 +1292,11 @@
         }
 
         container.innerHTML = '';
+        const historyTaskMap = new Map();
+        window._historyTaskMap = historyTaskMap;
+
         history.forEach((run, idx) => {
+          historyTaskMap.set(run.id, run.task_text || '');
           const results = run.results || [];
           const passedCount = results.filter(r => r.test_passed && r.build_passed && r.lint_passed).length;
           const totalCount = results.length;
@@ -1226,7 +1308,7 @@
 
           const agentBadges = results.map(r => `
             <span class="px-2.5 py-1 rounded-lg text-xs font-mono font-semibold ${r.test_passed ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
-              ${r.test_passed ? '✓' : '✗'} ${r.agent} (${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '-'})
+              ${r.test_passed ? '✓' : '✗'} ${escapeHtml(r.agent)} (${r.duration_seconds ? r.duration_seconds.toFixed(1) + 's' : '-'})
             </span>
           `).join('');
 
@@ -1234,18 +1316,18 @@
             <div class="flex items-start justify-between gap-4 flex-wrap">
               <div class="space-y-1.5 flex-1 min-w-[280px]">
                 <div class="flex items-center gap-2 flex-wrap text-xs">
-                  <span class="px-2.5 py-0.5 rounded-md font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">#${run.id}</span>
-                  <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-cyan-300 border border-slate-700">${run.task_category || 'feature'}</span>
+                  <span class="px-2.5 py-0.5 rounded-md font-mono font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">#${escapeHtml(run.id)}</span>
+                  <span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-slate-800 text-cyan-300 border border-slate-700">${escapeHtml(run.task_category || 'feature')}</span>
                   <span class="text-slate-500 font-mono text-[11px]">${dateStr}</span>
-                  <span class="text-slate-500 font-mono text-[11px]">Base: ${run.base_commit?.slice(0, 7) || 'main'}</span>
+                  <span class="text-slate-500 font-mono text-[11px]">Base: ${escapeHtml(run.base_commit?.slice(0, 7) || 'main')}</span>
                 </div>
-                <h4 class="font-bold text-base text-slate-100 leading-snug">${run.task_text || '未命名的任务需求'}</h4>
+                <h4 class="font-bold text-base text-slate-100 leading-snug">${escapeHtml(run.task_text || '未命名的任务需求')}</h4>
               </div>
               <div class="flex items-center gap-2">
-                <button onclick="switchHistoricalTask('${run.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition flex items-center gap-1.5 cursor-pointer">
+                <button onclick="switchHistoricalTask('${escapeHtml(run.id)}')" class="px-3.5 py-2 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 text-xs font-bold border border-emerald-500/30 transition flex items-center gap-1.5 cursor-pointer">
                   <span>🔍</span> 查看复盘
                 </button>
-                <button onclick="reuseHistoricalTask('${run.id}', \`${(run.task_text || '').replace(/`/g, '\\`')}\`)" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
+                <button onclick="reuseHistoricalTask('${escapeHtml(run.id)}')" class="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition flex items-center gap-1.5 cursor-pointer">
                   <span>✏️</span> 修改并复用
                 </button>
               </div>
@@ -1291,7 +1373,8 @@
       }
     }
 
-    function reuseHistoricalTask(runId, taskText) {
+    function reuseHistoricalTask(runId) {
+      const taskText = window._historyTaskMap?.get(runId) || '';
       const input = document.getElementById('inline-task-input');
       if (input) input.value = taskText;
       switchTab('orchestrator');
