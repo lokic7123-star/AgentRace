@@ -116,14 +116,14 @@
             <span id="base-commit-badge" class="text-xs text-ink-soft font-mono">主仓库就绪</span>
           </div>
           <h2 id="current-task-text" class="text-base font-serif font-bold text-ink leading-snug">当前系统空闲就绪，请在下方输入需求并发起任务</h2>
-          <div class="flex items-center gap-2 pt-1">
-            <button onclick="openEditTaskModal()" id="btn-edit-task" class="px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+          <div class="flex items-center gap-2 pt-1 flex-wrap">
+            <button onclick="openEditTaskModal()" id="btn-edit-task" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-xs text-ink border border-line-strong hover:border-crail transition cursor-pointer">
               修改需求
             </button>
-            <button onclick="newOrchestrationTask()" id="btn-new-task" class="px-3 py-1 rounded-full bg-crail-soft hover:bg-crail/20 text-xs text-crail font-semibold border border-crail/30 transition cursor-pointer">
+            <button onclick="newOrchestrationTask()" id="btn-new-task" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-crail-soft hover:bg-crail/20 text-xs text-crail font-semibold border border-crail/30 transition cursor-pointer">
               发起新任务
             </button>
-            <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件" class="px-3 py-1 rounded-full text-bad hover:bg-bad/10 text-xs transition cursor-pointer">
+            <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full text-bad hover:bg-bad/10 text-xs transition cursor-pointer">
               清理工作区
             </button>
           </div>
@@ -902,10 +902,10 @@
             </div>
 
             <div class="flex items-center gap-2 pt-2 border-t border-line" data-agent-actions="${escapeHtml(agent.name)}">
-              <button class="action-view-log flex-1 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition cursor-pointer">
+              <button class="action-view-log flex-1 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition cursor-pointer whitespace-nowrap shrink-0">
                 日志
               </button>
-              <button class="action-keep flex-1 py-1.5 rounded-full text-xs font-semibold transition ${keepBtnClass}" ${keepBtnDisabled} title="${keepBtnTitle}">
+              <button class="action-keep flex-1 py-1.5 rounded-full text-xs font-semibold transition whitespace-nowrap shrink-0 ${keepBtnClass}" ${keepBtnDisabled} title="${keepBtnTitle}">
                 ${keepBtnText}
               </button>
             </div>
@@ -1262,7 +1262,7 @@
           toast(`协同融合失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        toast(`主 Agent「${judge}」协同融合完成！最优代码已集成至 ensemble 分支。`, 'success');
+        toast(`主 Agent「${judge}」协同融合完成，最优代码已集成至 ensemble 分支。`, 'success');
         loadStatus();
         loadDiffs();
       } catch (err) {
