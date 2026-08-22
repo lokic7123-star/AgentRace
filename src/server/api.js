@@ -328,6 +328,17 @@ export function createServer(repoRoot = process.cwd()) {
       return;
     }
 
+    function extractErrorSummary(rawLog) {
+      if (!rawLog) return '';
+      const lines = rawLog.split('\n').map(l => l.trim()).filter(Boolean);
+      const failureKeywords = /error|fail|assertion|rejected|exception|cannot find|timed out|abort|fatal/i;
+      const errLines = lines.filter(l => failureKeywords.test(l));
+      if (errLines.length > 0) {
+        return errLines.slice(-3).join('\n');
+      }
+      return lines.slice(-2).join('\n');
+    }
+
     if (pathname === '/api/activities') {
       const latestRunFile = path.join(root, '.arace', 'latest_run.json');
       const dbRun = getLatestRun(root);
@@ -336,12 +347,14 @@ export function createServer(repoRoot = process.cwd()) {
       let agents = [];
       let runId = dbRun?.run?.id || 'idle';
       let taskText = dbRun?.run?.task_text || '';
+      let progressLog = [];
 
       if (fs.existsSync(latestRunFile)) {
         try {
           const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
           runId = runInfo.runId;
           taskText = runInfo.taskText;
+          progressLog = runInfo.progressLog || [];
 
           if (runInfo.mode === 'orchestration' && runInfo.subtaskResults) {
             const roleLabels = {
@@ -361,6 +374,29 @@ export function createServer(repoRoot = process.cwd()) {
                 let rawLog = '';
                 if (fs.existsSync(logFile)) {
                   try { rawLog = fs.readFileSync(logFile, 'utf8'); } catch {}
+                }
+
+                // V1a/V1c: Genuine timeline steps from progressLog
+                const matchedLogs = progressLog.filter(p => p.subtaskId === r.subtask.id || (p.agent && p.agent === r.agent));
+                let steps = [];
+                if (matchedLogs.length > 0) {
+                  steps = matchedLogs.map(item => ({
+                    icon: item.stage === 3 ? '🧪' : (item.stage === 4 ? '🤖' : '⚡'),
+                    title: item.message,
+                    detail: `执行引擎: ${(item.agent || r.agent).toUpperCase()}`,
+                    status: item.message.includes('未通过') || item.message.includes('失败') ? 'failed' : 'completed',
+                    time: new Date(item.ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                  }));
+                } else {
+                  steps = [
+                    {
+                      icon: isPassed ? '✅' : (r.attempts ? '⚠️' : '⏳'),
+                      title: isPassed ? '客观质量门禁与断言验真通过' : (r.attempts ? `第 ${r.attempts}/3 次门禁验真` : '暂无实时事件'),
+                      detail: isPassed ? `Build/Lint/Tests 全部通过 (尝试 ${r.attempts || 1}/3 次)` : (r.attempts ? '门禁未通过' : '等待子任务启动'),
+                      status: isPassed ? 'completed' : (r.attempts ? 'failed' : 'running'),
+                      time: `${(r.durationSeconds || 0).toFixed(1)}s`
+                    }
+                  ];
                 }
 
                 return {
@@ -385,12 +421,8 @@ export function createServer(repoRoot = process.cwd()) {
                   sourceDiff: { added: r.diffStats?.sourceAdded || 0, removed: r.diffStats?.sourceRemoved || 0 },
                   testDiff: { added: r.diffStats?.testAdded || 0, removed: r.diffStats?.testRemoved || 0 },
                   outputFile: r.subtask.outputFile,
-                  steps: [
-                    { icon: '', title: '工作树沙盒挂载', detail: `基于上游基线切出分支: ${r.branchName}`, status: 'completed', time: '0.0s' },
-                    { icon: '', title: '子任务契约理解', detail: r.subtask.description, status: 'completed', time: '0.5s' },
-                    { icon: '', title: '目标模块代码编写', detail: `交付文件: ${r.subtask.outputFile}`, status: 'completed', time: '2.3s' },
-                    { icon: '', title: '客观质量门禁与断言验真', detail: isPassed ? `Build/Lint/Tests 全部通过 (尝试 ${r.attempts || 1}/3 次)` : '门禁未通过', status: isPassed ? 'completed' : 'failed', time: `${(r.durationSeconds || 1.2).toFixed(1)}s` }
-                  ],
+                  steps,
+                  errorSummary: isPassed ? '' : extractErrorSummary(rawLog),
                   rawLog: rawLog || '// 暂无实时日志输出'
                 };
               }),
@@ -416,11 +448,21 @@ export function createServer(repoRoot = process.cwd()) {
                 sourceDiff: { added: runInfo.finalResult?.diffStats?.sourceAdded || 0, removed: runInfo.finalResult?.diffStats?.sourceRemoved || 0 },
                 testDiff: { added: runInfo.finalResult?.diffStats?.testAdded || 0, removed: runInfo.finalResult?.diffStats?.testRemoved || 0 },
                 outputFile: '全量项目交付',
-                steps: [
-                  { icon: '', title: '子任务代码整合', detail: '聚合所有已过门禁的专精子任务成果', status: 'completed', time: '0.0s' },
-                  { icon: '', title: '终极全量物理门禁', detail: '执行全量回归测试套件与安全审计', status: runInfo.finalResult?.gatePassed ? 'completed' : 'running', time: '1.2s' }
-                ],
-                rawLog: '// 主 Agent 全量架构集成已完成'
+                steps: progressLog.filter(p => p.stage >= 4).map(item => ({
+                  icon: '🤖',
+                  title: item.message,
+                  detail: '主 Agent 架构集成与全局验真',
+                  status: item.message.includes('冲突') ? 'failed' : 'completed',
+                  time: new Date(item.ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                })).concat(progressLog.filter(p => p.stage >= 4).length === 0 ? [{
+                  icon: runInfo.finalResult?.gatePassed ? '✅' : '⏳',
+                  title: runInfo.finalResult?.gatePassed ? '终极全量物理门禁通过' : '暂无实时事件',
+                  detail: runInfo.finalResult?.gatePassed ? '全量回归测试套件与安全审计通过' : '等待子任务集成',
+                  status: runInfo.finalResult?.gatePassed ? 'completed' : 'running',
+                  time: `${(runInfo.finalResult?.durationSeconds || 0).toFixed(1)}s`
+                }] : []),
+                errorSummary: runInfo.finalResult?.gatePassed ? '' : extractErrorSummary(runInfo.finalResult?.verify?.log),
+                rawLog: runInfo.finalResult?.verify?.log || '// 主 Agent 全量架构集成已完成'
               }
             ];
 
@@ -434,6 +476,7 @@ export function createServer(repoRoot = process.cwd()) {
         agents = dbRun.results.map(r => ({ name: r.agent, branch: `arace/${r.agent}` }));
       }
 
+      // V1e: Genuine race mode activities
       const activities = agents.map(a => {
         const r = results.find(item => item.agent === a.name) || {};
         const logFile = path.join(root, '.arace', 'worktrees', runId, 'logs', `${a.name}.log`);
@@ -441,7 +484,6 @@ export function createServer(repoRoot = process.cwd()) {
         if (fs.existsSync(logFile)) {
           try { rawLog = fs.readFileSync(logFile, 'utf8'); } catch {}
         } else {
-          // Check fallback worktree log
           const wtDir = path.join(root, '.arace', 'worktrees');
           if (fs.existsSync(wtDir)) {
             const runs = fs.readdirSync(wtDir);
@@ -457,44 +499,35 @@ export function createServer(repoRoot = process.cwd()) {
 
         const isPassed = r.test_passed && r.build_passed && r.lint_passed;
         const isEnsemble = a.name === 'ensemble';
+        const matchedLogs = progressLog.filter(p => p.agent === a.name);
 
-        const steps = [
-          {
-            icon: '⚡',
-            title: '隔离沙盒与工作树挂载',
-            detail: `在独立 Git 工作树中分配工作环境`,
-            status: 'completed',
-            time: '0.0s'
-          },
-          {
-            icon: '🔍',
-            title: '需求阅读与代码依赖分析',
-            detail: rawLog.includes('view_file') || rawLog.includes('需求理解') ? '完成关键模块与算法模型推导' : '分析项目结构与相关代码',
-            status: 'completed',
-            time: '1.2s'
-          },
-          {
-            icon: '✍️',
-            title: '编写方案与重构代码',
-            detail: (r.source_lines_added || 0) > 0 ? `完成算法实现 (+${r.source_lines_added || 0}/-${r.source_lines_removed || 0} 行)` : '编写核心逻辑与算法实现',
-            status: (r.duration_seconds || isPassed) ? 'completed' : 'running',
-            time: '4.8s'
-          },
-          {
-            icon: isPassed ? '✅' : '🧪',
-            title: isEnsemble ? '主 Agent 提炼融合' : '全量自动化测试独立验真',
-            detail: isPassed ? `测试全量通过 (${r.tests_passed_count || 0}/${r.tests_total_count || 0})` : (r.duration_seconds ? '门禁验真已完成' : '正在执行 Build / Lint / Tests'),
-            status: isPassed ? 'completed' : (r.duration_seconds ? 'completed' : 'pending'),
-            time: r.duration_seconds ? `${r.duration_seconds.toFixed(1)}s` : '进行中'
-          }
-        ];
+        let steps = [];
+        if (matchedLogs.length > 0) {
+          steps = matchedLogs.map(item => ({
+            icon: item.stage === 3 ? '🧪' : '⚡',
+            title: item.message,
+            detail: `引擎: ${a.name.toUpperCase()}`,
+            status: item.message.includes('未通过') ? 'failed' : 'completed',
+            time: new Date(item.ts).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+          }));
+        } else {
+          steps = [
+            {
+              icon: isPassed ? '✅' : (r.duration_seconds ? '⚠️' : '⏳'),
+              title: isPassed ? '自动化测试门禁通过' : (r.duration_seconds ? '门禁未通过' : '暂无实时事件'),
+              detail: isPassed ? `测试通过 (${r.tests_passed_count || 0}/${r.tests_total_count || 0})` : (r.duration_seconds ? '门禁验真已完成' : '等待沙盒任务调度'),
+              status: isPassed ? 'completed' : (r.duration_seconds ? 'failed' : 'running'),
+              time: r.duration_seconds ? `${r.duration_seconds.toFixed(1)}s` : '进行中'
+            }
+          ];
+        }
 
         return {
           agent: a.name,
           displayName: a.name.toUpperCase() + (isEnsemble ? ' (主 Agent 融合)' : ''),
           branch: a.branch,
-          status: isPassed ? 'passed' : (r.duration_seconds ? 'completed' : 'active'),
-          currentAction: isPassed ? '✅ 方案已通过全部测试' : (isEnsemble ? '🤖 正在融合各方优势代码' : (r.duration_seconds ? '🏁 方案验证完成' : '🧪 正在编码与独立验真')),
+          status: isPassed ? 'passed' : (r.duration_seconds ? 'failed' : 'active'),
+          currentAction: isPassed ? '✅ 方案已通过全部测试' : (isEnsemble ? '🤖 正在融合各方优势代码' : (r.duration_seconds ? '❌ 门禁未通过' : '🧪 正在编码与独立验真')),
           durationSeconds: r.duration_seconds || 0,
           tokens: r.tokens || ZERO_TOKENS,
           toolsCalled: r.toolsCalled || [],
@@ -506,6 +539,7 @@ export function createServer(repoRoot = process.cwd()) {
           sourceDiff: { added: r.source_lines_added || 0, removed: r.source_lines_removed || 0 },
           testDiff: { added: r.test_lines_added || 0, removed: r.test_lines_removed || 0 },
           steps,
+          errorSummary: isPassed ? '' : extractErrorSummary(rawLog),
           rawLog: rawLog || '// 暂无实时日志输出'
         };
       });
@@ -605,6 +639,23 @@ export function createServer(repoRoot = process.cwd()) {
           rootDir: root,
           availableAgents: agents,
           onProgress: (p) => {
+            // V1a: Append to latest_run.json progressLog
+            try {
+              const latestRunFile = path.join(root, '.arace', 'latest_run.json');
+              if (fs.existsSync(latestRunFile)) {
+                const runInfo = JSON.parse(fs.readFileSync(latestRunFile, 'utf8'));
+                if (!runInfo.progressLog) runInfo.progressLog = [];
+                runInfo.progressLog.push({
+                  ts: new Date().toISOString(),
+                  stage: p.stage,
+                  subtaskId: p.subtaskId,
+                  subtaskTitle: p.subtaskTitle,
+                  agent: p.agent,
+                  message: p.message
+                });
+                fs.writeFileSync(latestRunFile, JSON.stringify(runInfo, null, 2));
+              }
+            } catch {}
             broadcastEvent('orchestration_progress', p);
           }
         }).then(result => {

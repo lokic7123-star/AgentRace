@@ -130,8 +130,8 @@
             <button onclick="newOrchestrationTask()" id="btn-new-task" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-crail-soft hover:bg-crail/20 text-xs text-crail font-semibold border border-crail/30 transition cursor-pointer">
               发起新任务
             </button>
-            <button onclick="discardCurrentRace()" id="btn-discard" title="清理当前任务的临时 Git 工作树与沙盒文件" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full text-bad hover:bg-bad/10 text-xs transition cursor-pointer">
-              清理工作区
+            <button onclick="discardCurrentRace()" id="btn-discard" title="结束当前任务并清理临时 Git 工作树与沙盒文件（历史战绩与方案记录永久保存在数据库中）" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full text-bad hover:bg-bad/10 text-xs transition cursor-pointer">
+              结束并清理
             </button>
           </div>
         </div>
@@ -1004,6 +1004,18 @@
           const keepBtnTitle = isFailed ? '门禁未通过，不建议采用' : (isPassed ? '一键合并该方案' : '采用该方案');
           const keepBtnText = isPassed ? '一键采用' : (isFailed ? '未过门禁' : '采用方案');
 
+          // V1d: Error summary and log button highlight on failure
+          const errorSummaryText = isFailed ? (agent.errorSummary || (agent.verify?.log ? extractErrorSummary(agent.verify.log) : '')) : '';
+          const cardErrorBanner = errorSummaryText ? `
+            <div class="mt-2 p-2 bg-bad/10 border border-bad/30 rounded text-[11px] font-mono text-bad whitespace-pre-wrap leading-tight">
+              <b>❌ 门禁失败摘要:</b>\n${escapeHtml(errorSummaryText)}
+            </div>
+          ` : '';
+
+          const logBtnClass = isFailed 
+            ? 'action-view-log flex-1 py-1.5 rounded-full bg-bad text-white hover:bg-bad/80 text-xs font-semibold transition cursor-pointer whitespace-nowrap shrink-0 shadow-sm'
+            : 'action-view-log flex-1 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition cursor-pointer whitespace-nowrap shrink-0';
+
           // B9: Card layout with line-clamp-2 min-h-[2.5em] and flex-1 body
           const card = document.createElement('div');
           card.className = `bg-paper-panel border ${isEnsemble ? 'border-crail' : 'border-line'} rounded-lg p-5 space-y-3.5 flex flex-col justify-between h-full`;
@@ -1031,6 +1043,7 @@
                     ${statusText}
                   </span>
                 </div>
+                ${cardErrorBanner}
 
                 <!-- Telemetry -->
                 <div class="p-2 rounded-lg bg-paper-sunken border border-line text-xs font-mono text-ink-soft flex items-center justify-between flex-wrap gap-1 mt-2">
@@ -1062,7 +1075,7 @@
             </div>
 
             <div class="flex items-center gap-2 pt-2 border-t border-line" data-agent-actions="${escapeHtml(agent.name)}">
-              <button class="action-view-log flex-1 py-1.5 rounded-full bg-paper-panel hover:bg-paper-sunken text-ink text-xs font-medium border border-line-strong hover:border-crail transition cursor-pointer whitespace-nowrap shrink-0">
+              <button class="${logBtnClass}">
                 日志
               </button>
               <button class="action-keep flex-1 py-1.5 rounded-full text-xs font-semibold transition whitespace-nowrap shrink-0 ${keepBtnClass}" ${keepBtnDisabled} title="${keepBtnTitle}">
@@ -1359,6 +1372,16 @@
             diffTxt = `<b class="text-ok">+${actSourceAdded}</b> / <b class="text-bad">-${actSourceRemoved}</b>`;
           }
 
+          const errorSummaryHtml = act.errorSummary ? `
+            <div class="mt-2.5 p-2.5 bg-bad/10 border border-bad/30 rounded text-[11px] font-mono text-bad whitespace-pre-wrap leading-tight">
+              <b>❌ 门禁未通过根因:</b>\n${escapeHtml(act.errorSummary)}
+            </div>
+          ` : '';
+
+          const logBtnClass = isFailed
+            ? 'whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-bad text-white hover:bg-bad/80 text-[11px] font-semibold transition cursor-pointer shadow-sm'
+            : 'whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer';
+
           card.innerHTML = `
             <div class="space-y-3 flex-1 flex flex-col justify-between">
               <div>
@@ -1372,12 +1395,15 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-2 shrink-0">
-                    <button onclick="openLogDirectly('${escapeJsAttr(act.agent)}', '${escapeJsAttr(act.rawLog || '')}')" class="whitespace-nowrap shrink-0 px-3 py-1 rounded-full bg-paper-panel hover:bg-paper-sunken text-[11px] text-ink border border-line-strong hover:border-crail transition cursor-pointer">
+                    <button onclick="openLogDirectly('${escapeJsAttr(act.agent)}', '${escapeJsAttr(act.rawLog || '')}')" class="${logBtnClass}">
                       日志
                     </button>
                     <span class="text-xs font-mono text-ink-soft">${act.durationSeconds ? act.durationSeconds.toFixed(1) + 's' : '活跃'}</span>
                   </div>
                 </div>
+
+                <!-- Failure Error Summary (V1d) -->
+                ${errorSummaryHtml}
 
                 <!-- Timeline of Steps -->
                 <div class="space-y-1 p-3 rounded-lg bg-paper-sunken border border-line mt-2.5">
@@ -1561,8 +1587,15 @@
       }
     }
 
+    // V3: Clear discard semantics with historical persistence explanation
     async function discardCurrentRace() {
-      const confirmed = await confirmDialog('清理工作区确认', '确定清理当前任务的临时 Git 工作树与沙盒文件吗？\n\n说明：历史任务、性能画像与战绩指标已保存在本地 SQLite 数据库中。');
+      const isRunning = currentData?.activeRun?.status === 'running';
+      const promptTitle = isRunning ? '终止并清理任务' : '结束并清理工作区';
+      const promptMsg = isRunning
+        ? '⚠️ 当前协同任务正在执行中！\n\n确定强制终止并清理临时沙盒工作区吗？已生成的日志与历史指标仍将保存在数据库中。'
+        : '确定结束当前任务并清理临时 Git 工作树与沙盒文件吗？\n\n说明：历史任务、性能画像与战绩指标已保存在本地 SQLite 数据库中。';
+
+      const confirmed = await confirmDialog(promptTitle, promptMsg);
       if (!confirmed) return;
       
       try {
@@ -1572,12 +1605,13 @@
           toast(`清理失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        toast('临时工作区已清理完成。', 'success');
+        toast('工作区已结束并清理，已切回就绪状态。', 'success');
       } catch (err) {
         toast('清理失败: ' + err.message, 'error');
         return;
       }
-      loadStatus();
+      loadStatus(true);
+      loadDiffs();
     }
 
     async function viewAgentLog(agent) {
@@ -1596,6 +1630,7 @@
       document.getElementById('log-modal').classList.add('hidden');
     }
 
+    // V2, V4: submitInlineTask with Engine Health Gatekeeper and Allocation Preview
     async function submitInlineTask() {
       const task = document.getElementById('inline-task-input')?.value || '';
       if (!task.trim()) return toast('请输入任务需求描述', 'error');
@@ -1603,7 +1638,47 @@
       if (checkedAgents.length === 0) return toast('请至少选择一个参与协同的 Agent', 'error');
       
       const supervisor = document.getElementById('quick-judge-select')?.value || 'antigravity';
-      const mode = document.querySelector('input[name="arace-mode"]:checked')?.value || 'orchestration';
+      const modeRadio = document.querySelector('input[name="orchestration-mode-choice"]:checked') || document.querySelector('input[name="arace-mode"]:checked');
+      const mode = modeRadio ? modeRadio.value : 'orchestration';
+
+      // V4: Engine Health Gatekeeper (阻止制 - 不允许带病运行污染历史)
+      const unavailableAgents = [];
+      for (const ag of checkedAgents) {
+        const found = detectedAgents.find(d => d.name === ag || d.id === ag);
+        if (found && found.available === false) {
+          unavailableAgents.push(ag.toUpperCase());
+        }
+      }
+      const supFound = detectedAgents.find(d => d.name === supervisor || d.id === supervisor);
+      if (mode === 'orchestration' && supFound && supFound.available === false) {
+        if (!unavailableAgents.includes(supervisor.toUpperCase())) {
+          unavailableAgents.push(`${supervisor.toUpperCase()} (主协调)`);
+        }
+      }
+
+      if (unavailableAgents.length > 0) {
+        toast(`无法启动任务：所选引擎 [${unavailableAgents.join(', ')}] 未安装或不可用。已自动拦截以保护历史数据，请在「探测大厅」配置就绪后再试。`, 'error');
+        switchTab('detector');
+        return;
+      }
+
+      // V2: Allocation Transparency (轮流分配制确认预览)
+      const roleSteps = [
+        '子任务 1 · 算法架构与设计思路',
+        '子任务 2 · 核心功能与代码实现',
+        '子任务 3 · 独立测试与边界验证'
+      ];
+      const previewAssignments = roleSteps.map((stepTitle, idx) => {
+        const allocatedEngine = checkedAgents[idx % checkedAgents.length].toUpperCase();
+        return `• ${stepTitle} ➔ 【${allocatedEngine}】`;
+      }).join('\n');
+
+      const confirmMsg = mode === 'orchestration'
+        ? `确定启动智能流水线协同任务吗？\n\n【流水线轮流分配预览】:\n${previewAssignments}\n• 最终全量集成与总门禁 ➔ 【${supervisor.toUpperCase()} (主协调)】\n\n已选参与引擎: ${checkedAgents.map(a => a.toUpperCase()).join(' · ')}`
+        : `确定启动多模型竞速打擂吗？\n\n参与模型: ${checkedAgents.map(a => a.toUpperCase()).join(' · ')}`;
+
+      const confirmed = await confirmDialog('确认启动任务', confirmMsg);
+      if (!confirmed) return;
 
       if (mode === 'orchestration') {
         const res = await fetch('/api/orchestrate', {
@@ -1616,7 +1691,7 @@
           toast(`启动任务编排失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        toast(`已启动智能编排，主 Agent「${supervisor.toUpperCase()}」正在拆解执行。`, 'success');
+        toast(`协同任务已下发！主 Agent「${supervisor.toUpperCase()}」统筹，参与引擎: ${checkedAgents.map(a => a.toUpperCase()).join(' · ')}`, 'success');
       } else {
         const res = await fetch('/api/run', {
           method: 'POST',
@@ -1628,9 +1703,9 @@
           toast(`启动竞速失败: ${err.error || res.statusText}`, 'error');
           return;
         }
-        toast('已启动竞速打擂。', 'success');
+        toast(`已启动竞速打擂，参与引擎: ${checkedAgents.map(a => a.toUpperCase()).join(' · ')}`, 'success');
       }
-      loadStatus();
+      loadStatus(true);
     }
 
     function newOrchestrationTask() {
@@ -2118,6 +2193,12 @@
 
       evtSource.addEventListener('task_switched', (e) => {
         scheduleRefresh(50);
+        loadDiffs();
+      });
+
+      evtSource.addEventListener('race_discarded', (e) => {
+        scheduleRefresh(50);
+        loadHistory();
         loadDiffs();
       });
 
